@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import base64
 import os
+import zlib
 from datetime import date, datetime, timedelta, timezone
+from io import StringIO
 from typing import Iterable
 
 import numpy as np
@@ -28,6 +31,28 @@ def _records(frame: pd.DataFrame) -> list[dict]:
                 item[k]=v
         out.append(item)
     return out
+
+
+def decode_legacy_ohlcv_compact(payload_compact: str, codec: str, ticker: str | None = None) -> pd.DataFrame:
+    """Decode the Super Scanner's compressed OHLCV cache without weakening evidence labels.
+
+    ZLIB_CSV_V1 is base64(zlib(csv)). The adapter is intentionally narrow: unknown
+    codecs and unusually large payloads are rejected rather than guessed.
+    """
+    if not payload_compact or str(codec or "").upper() != "ZLIB_CSV_V1":
+        return pd.DataFrame()
+    text = str(payload_compact).strip()
+    if len(text) > 8_000_000:
+        raise ValueError("Legacy OHLCV compact payload exceeds safety limit")
+    try:
+        compressed = base64.b64decode(text, validate=True)
+        raw = zlib.decompress(compressed)
+        if len(raw) > 32_000_000:
+            raise ValueError("Legacy OHLCV decompressed payload exceeds safety limit")
+        frame = pd.read_csv(StringIO(raw.decode("utf-8")))
+        return normalize_price_frame(frame, ticker)
+    except (ValueError, zlib.error, UnicodeDecodeError) as exc:
+        raise ValueError(f"Invalid {codec} OHLCV payload") from exc
 
 
 class SupabaseStore:
@@ -118,14 +143,44 @@ class SupabaseStore:
             self.client.table("flow_daily_prices").upsert(rows[i:i+500],on_conflict="ticker,trade_date,source").execute()
         return len(rows)
 
+    def _load_legacy_price_cache(self, ticker: str, min_rows: int, limit: int) -> pd.DataFrame:
+        """Read the existing Super Scanner cache when Flow shares that Supabase project.
+
+        This is a data-source compatibility path only. It never upgrades broker evidence.
+        """
+        t=canonical_ticker(ticker)
+        try:
+            resp=(self.client.table("ohlcv_daily_cache")
+                  .select("ticker,payload_compact,payload_codec,last_bar_date")
+                  .in_("ticker", [t, f"{t}.JK"])
+                  .order("last_bar_date", desc=True)
+                  .limit(1).execute())
+            rows=resp.data or []
+            if not rows:
+                return pd.DataFrame()
+            row=rows[0]
+            frame=decode_legacy_ohlcv_compact(row.get("payload_compact"), row.get("payload_codec"), t)
+            if len(frame) < min_rows:
+                return pd.DataFrame()
+            frame=frame.tail(int(limit)).reset_index(drop=True)
+            # Warm-copy into Flow's normalized cache. Failure to warm must not block reads.
+            try:
+                self.upsert_prices(t, frame, source="LEGACY_SUPER_CACHE")
+            except Exception:
+                pass
+            return frame
+        except Exception:
+            return pd.DataFrame()
+
     def load_prices(self, ticker: str, min_rows: int = 80, limit: int = 450) -> pd.DataFrame:
         t=canonical_ticker(ticker)
         resp=(self.client.table("flow_daily_prices").select("trade_date,open,high,low,close,volume")
               .eq("ticker",t).order("trade_date",desc=True).limit(int(limit)).execute())
         rows=resp.data or []
-        if len(rows)<min_rows: return pd.DataFrame()
-        f=pd.DataFrame(rows).rename(columns={"trade_date":"date"})
-        return normalize_price_frame(f,t)
+        if len(rows)>=min_rows:
+            f=pd.DataFrame(rows).rename(columns={"trade_date":"date"})
+            return normalize_price_frame(f,t)
+        return self._load_legacy_price_cache(t, min_rows=min_rows, limit=limit)
 
     def prune_history(self, *, scan_days: int = 45, broker_days: int = 150, price_days: int = 550) -> None:
         now=date.today()
