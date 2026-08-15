@@ -1,6 +1,7 @@
 -- IDX Flow Scanner v0.1.1
 -- Private backend database contract. All exposed public tables have RLS enabled,
--- and anon/authenticated table privileges are revoked.
+-- anon/authenticated table privileges are revoked, and backend service_role
+-- privileges are granted explicitly for Supabase's 2026 opt-in Data API model.
 
 create extension if not exists pgcrypto;
 
@@ -133,6 +134,7 @@ alter table public.flow_scan_runs enable row level security;
 alter table public.flow_scan_results enable row level security;
 alter table public.flow_ingestion_audit enable row level security;
 
+-- No browser/client access. Streamlit persists server-side only.
 revoke all on table public.flow_issuers from anon, authenticated;
 revoke all on table public.flow_daily_prices from anon, authenticated;
 revoke all on table public.flow_broker_flows from anon, authenticated;
@@ -141,6 +143,29 @@ revoke all on table public.flow_scan_runs from anon, authenticated;
 revoke all on table public.flow_scan_results from anon, authenticated;
 revoke all on table public.flow_ingestion_audit from anon, authenticated;
 revoke usage, select on all sequences in schema public from anon, authenticated;
+
+-- Supabase 2026 no longer guarantees automatic Data API grants for newly
+-- created entities. Grant the backend role explicitly so sb_secret/service_role
+-- server-side clients can use PostgREST while RLS remains defense in depth.
+grant usage on schema public to service_role;
+grant select, insert, update, delete on table public.flow_issuers to service_role;
+grant select, insert, update, delete on table public.flow_daily_prices to service_role;
+grant select, insert, update, delete on table public.flow_broker_flows to service_role;
+grant select, insert, update, delete on table public.flow_feature_snapshots to service_role;
+grant select, insert, update, delete on table public.flow_scan_runs to service_role;
+grant select, insert, update, delete on table public.flow_scan_results to service_role;
+grant select, insert, update, delete on table public.flow_ingestion_audit to service_role;
+grant usage, select on all sequences in schema public to service_role;
+
+-- Keep future scanner entities backend-only by default.
+alter default privileges for role postgres in schema public
+    revoke select, insert, update, delete on tables from anon, authenticated;
+alter default privileges for role postgres in schema public
+    revoke usage, select on sequences from anon, authenticated;
+alter default privileges for role postgres in schema public
+    grant select, insert, update, delete on tables to service_role;
+alter default privileges for role postgres in schema public
+    grant usage, select on sequences to service_role;
 
 comment on table public.flow_broker_flows is 'Direct broker-summary evidence. Never populate with price-volume proxy data.';
 comment on column public.flow_feature_snapshots.evidence_tier is 'BROKER_DIRECT only when direct broker-summary coverage passes configured threshold; otherwise PRICE_PROXY.';
