@@ -55,14 +55,18 @@ PYTHONPATH=src pytest -q
 
 ## Supabase
 
-Apply `supabase/migrations/001_initial_schema.sql` to the dedicated project. Runtime should use backend-only secrets:
+The designated production database is the existing Supabase project **`Idx emir framework`** (the first/legacy Emir project), project ref **`utgrknbmtmhpjurvcabg`**. The current Emir Scanner remains on **`Idx emir framework v2`** and is not modified by this scanner.
+
+Apply `supabase/migrations/001_initial_schema.sql` to the designated Flow project. Runtime should use backend-only secrets:
 
 ```toml
-SUPABASE_URL = "https://<project-ref>.supabase.co"
+SUPABASE_URL = "https://utgrknbmtmhpjurvcabg.supabase.co"
 SUPABASE_SECRET_KEY = "<backend secret/service-role key>"
 ```
 
-All scanner tables enable RLS, and `anon` / `authenticated` table privileges are revoked. Streamlit performs server-side persistence only.
+All scanner tables enable RLS, and `anon` / `authenticated` table privileges are revoked. Streamlit performs server-side persistence only. Never commit the secret/service-role key to GitHub.
+
+A temporary `flow_*` namespace may exist in the Super Scanner database only as a fail-safe while the legacy Emir project's PostgreSQL recovery completes. It must be removed after the designated project passes SQL, migration, and persistence validation.
 
 ## Deployment
 
@@ -92,7 +96,7 @@ Weights are explicitly **not** claimed to reproduce any proprietary formula. Bef
 
 ## Next production gates
 
-- Dedicated Supabase project + migration + advisor checks.
+- Designated Supabase project SQL health + clean Flow migration + advisor checks.
 - Verified broker-summary ingestion adapter and freshness audit.
 - Persistent OHLCV/broker caches and resumable 400-ticker jobs.
 - Independent historical labels for accumulation → markup and distribution → drawdown.
