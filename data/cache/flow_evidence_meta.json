@@ -6,7 +6,7 @@
     "status": "BLOCKED: IDX official TradingSummary access blocked with HTTP 403 (Cloudflare challenge)",
     "tickers": 0
   },
-  "generated_at": "2026-08-16T11:35:10.136012+00:00",
+  "generated_at": "2026-08-16T12:06:15.681060+00:00",
   "goapi_broker_direct": {
     "budget_requests": 5,
     "days": 0,
@@ -24,13 +24,13 @@
   "indexalpha_broker_direct": {
     "budget_requests": 5,
     "contract": "STOCK_LEVEL_GROSS_BUY_SELL_EXACT_DAY_RG_ALL",
-    "days": 0,
-    "freshest": null,
-    "jobs_planned": 0,
+    "days": 1,
+    "freshest": "2026-08-14",
+    "jobs_planned": 5,
     "provider": "INDEX_ALPHA_BROKER_SUMMARY",
-    "requests_attempted": 0,
-    "rows": 0,
-    "status": "NO_TOKEN",
+    "requests_attempted": 5,
+    "rows": 108,
+    "status": "UPDATED",
     "target_history_days": 20,
     "targets": [
       "MMIX",
@@ -39,9 +39,9 @@
       "MDLA",
       "OMED"
     ],
-    "tickers": 0,
-    "token_present": false,
-    "verified_tickers": 0
+    "tickers": 5,
+    "token_present": true,
+    "verified_tickers": 5
   },
   "official_market_broker_health": {
     "brokers": 0,
