@@ -1,0 +1,84 @@
+name: Patch Index Alpha Integration
+
+on:
+  push:
+    branches:
+      - feature/indexalpha-free-broker
+    paths:
+      - '.github/workflows/patch-indexalpha-integration.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/indexalpha-free-broker
+      - name: Wire provider into evidence builder and app
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          p = Path('scripts/build_flow_evidence_cache.py')
+          s = p.read_text(encoding='utf-8')
+          marker = '''from idx_flow_scanner.providers.idx_official import (\n'''
+          imports = '''from idx_flow_scanner.providers.indexalpha import (\n    IndexAlphaQuotaExhausted,\n    IndexAlphaUnavailable,\n    choose_indexalpha_daily_jobs,\n    fetch_indexalpha_broker_summary,\n    load_bundled_indexalpha_broker_flows,\n    load_indexalpha_targets,\n    merge_indexalpha_broker_frames,\n    write_indexalpha_broker_cache,\n)\n'''
+          if imports not in s:
+              s = s.replace(marker, imports + marker, 1)
+          s = s.replace(
+              'GOAPI_BROKER_CACHE = CACHE_DIR / "goapi_broker_60d.csv.gz"\n',
+              'GOAPI_BROKER_CACHE = CACHE_DIR / "goapi_broker_60d.csv.gz"\nINDEX_ALPHA_BROKER_CACHE = CACHE_DIR / "indexalpha_broker_60d.csv.gz"\n',
+              1,
+          )
+          s = s.replace(
+              '        "goapi_broker_direct": {},\n',
+              '        "goapi_broker_direct": {},\n        "indexalpha_broker_direct": {},\n',
+              1,
+          )
+          insert_before = '''    CACHE_DIR.mkdir(parents=True, exist_ok=True)\n    META_PATH.write_text(json.dumps(meta, indent=2, sort_keys=True) + "\\n", encoding="utf-8")\n'''
+          block = '''    # Free permanent stock-level broker path: Index Alpha. The public free plan\n    # allows five requests/day, so we pin a five-ticker cohort and request one\n    # exact trading day per ticker. A range aggregate is never expanded into\n    # fabricated daily evidence. Existing direct-evidence gates remain unchanged.\n    existing_indexalpha = load_bundled_indexalpha_broker_flows(\n        universe, INDEX_ALPHA_BROKER_CACHE, lookback_calendar_days=180\n    )\n    indexalpha_targets = [t for t in load_indexalpha_targets() if t in set(universe)]\n    indexalpha_key_present = bool(str(os.getenv("INDEX_ALPHA_KEY") or "").strip())\n    indexalpha_budget = max(0, int(os.getenv("INDEX_ALPHA_DAILY_BUDGET", "5") or "5"))\n    indexalpha_jobs = choose_indexalpha_daily_jobs(\n        indexalpha_targets, existing_indexalpha, trade_dates, budget_requests=indexalpha_budget\n    ) if indexalpha_key_present else []\n    indexalpha_status = (\n        "NO_TOKEN" if not indexalpha_key_present else\n        "NO_BUDGET" if indexalpha_budget == 0 else "UNCHANGED"\n    )\n    indexalpha_parts: list[pd.DataFrame] = []\n    indexalpha_attempted = 0\n    for ticker, day in indexalpha_jobs:\n        try:\n            frame = fetch_indexalpha_broker_summary(\n                ticker, day, investor="all", market="RG"\n            )\n            indexalpha_attempted += 1\n            if not frame.empty:\n                indexalpha_parts.append(frame)\n            indexalpha_status = "UPDATED"\n        except IndexAlphaQuotaExhausted as exc:\n            indexalpha_status = f"QUOTA_EXHAUSTED: {exc}"\n            break\n        except IndexAlphaUnavailable as exc:\n            indexalpha_status = f"UNAVAILABLE: {exc}"\n            break\n        except Exception as exc:\n            indexalpha_status = f"ERROR: {type(exc).__name__}: {exc}"\n            break\n\n    fresh_indexalpha = pd.concat(indexalpha_parts, ignore_index=True) if indexalpha_parts else pd.DataFrame()\n    merged_indexalpha = merge_indexalpha_broker_frames(existing_indexalpha, fresh_indexalpha)\n    if not merged_indexalpha.empty:\n        write_indexalpha_broker_cache(merged_indexalpha, INDEX_ALPHA_BROKER_CACHE)\n    indexalpha_verified_tickers = 0\n    if not merged_indexalpha.empty and "source_verified" in merged_indexalpha.columns:\n        raw = merged_indexalpha["source_verified"]\n        verified = raw if pd.api.types.is_bool_dtype(raw) else raw.astype(str).str.lower().isin({"1", "true", "yes", "verified"})\n        indexalpha_verified_tickers = int(merged_indexalpha.loc[verified.fillna(False), "ticker"].nunique())\n    meta["indexalpha_broker_direct"] = {\n        "status": indexalpha_status,\n        "provider": "INDEX_ALPHA_BROKER_SUMMARY",\n        "contract": "STOCK_LEVEL_GROSS_BUY_SELL_EXACT_DAY_RG_ALL",\n        "token_present": indexalpha_key_present,\n        "budget_requests": indexalpha_budget,\n        "requests_attempted": indexalpha_attempted,\n        "jobs_planned": len(indexalpha_jobs),\n        "targets": indexalpha_targets,\n        "verified_tickers": indexalpha_verified_tickers,\n        "target_history_days": len(trade_dates),\n        **_stats(merged_indexalpha),\n    }\n\n'''
+          if 'meta["indexalpha_broker_direct"]' not in s:
+              if insert_before not in s:
+                  raise SystemExit('evidence builder final marker not found')
+              s = s.replace(insert_before, block + insert_before, 1)
+          p.write_text(s, encoding='utf-8')
+
+          app = Path('app.py')
+          a = app.read_text(encoding='utf-8')
+          go_import = '''from idx_flow_scanner.providers.goapi import (\n    load_bundled_goapi_broker_flows,\n    merge_goapi_broker_frames,\n)\n'''
+          ia_import = '''from idx_flow_scanner.providers.indexalpha import load_bundled_indexalpha_broker_flows\n'''
+          if ia_import not in a:
+              a = a.replace(go_import, go_import + ia_import, 1)
+          a = a.replace(
+              '"optional GOAPI stock-level broker evidence • provenance-gated bandar cost • OOS memory"',
+              '"optional Index Alpha / GOAPI stock-level broker evidence • provenance-gated bandar cost • OOS memory"',
+              1,
+          )
+          old = '''        bundled_broker = load_bundled_goapi_broker_flows(universe)\n        broker = merge_goapi_broker_frames(db_broker, bundled_broker)\n        if store is not None and not bundled_broker.empty:\n            try:\n                store.upsert_broker_flows(bundled_broker)\n            except Exception as exc:\n                st.caption(f"Bundled GOAPI broker cache could not be persisted: {exc}")\n'''
+          new = '''        bundled_goapi = load_bundled_goapi_broker_flows(universe)\n        bundled_indexalpha = load_bundled_indexalpha_broker_flows(universe)\n        bundled_broker = merge_goapi_broker_frames(bundled_goapi, bundled_indexalpha)\n        broker = merge_goapi_broker_frames(db_broker, bundled_broker)\n        if store is not None and not bundled_broker.empty:\n            try:\n                store.upsert_broker_flows(bundled_broker)\n            except Exception as exc:\n                st.caption(f"Bundled verified broker cache could not be persisted: {exc}")\n'''
+          if old not in a:
+              raise SystemExit('app broker cache marker not found')
+          a = a.replace(old, new, 1)
+          a = a.replace(
+              '"goapi_broker_transport_cache": True,\n                    "broker_contract": "STOCK_LEVEL_NET_SIDE",',
+              '"goapi_broker_transport_cache": True,\n                    "indexalpha_broker_transport_cache": True,\n                    "broker_contract": "VERIFIED_STOCK_LEVEL_PROVIDER_ROWS",',
+              1,
+          )
+          app.write_text(a, encoding='utf-8')
+
+          readme = Path('README.md')
+          r = readme.read_text(encoding='utf-8')
+          anchor = '## v0.2.5 foreign evidence\n'
+          note = '''## Free-tier stock-level broker evidence\n\n- Index Alpha is an optional Bearer-token provider for stock-level broker summary.\n- The free policy is pinned to five tickers and at most five exact-day requests per day.\n- Production requests always use `from == to`; a multi-day aggregate is never expanded into synthetic daily rows.\n- Cached rows carry `INDEX_ALPHA_BROKER_SUMMARY`, verified vendor provenance, and regular-market (`RG`) scope.\n- The existing gate still requires at least 10 broker days, 70% 20D coverage, six brokers, <=10% buy/sell balance error, and >=95% verified provenance before `BROKER_DIRECT`.\n- Without `INDEX_ALPHA_KEY`, the provider is a no-op and scanner behavior stays PRICE_PROXY/GUARDED.\n\n'''
+          if note not in r and anchor in r:
+              r = r.replace(anchor, note + anchor, 1)
+          readme.write_text(r, encoding='utf-8')
+          PY
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add scripts/build_flow_evidence_cache.py app.py README.md
+          git commit -m "Wire Index Alpha free-tier broker cache"
+          git push origin HEAD:feature/indexalpha-free-broker
