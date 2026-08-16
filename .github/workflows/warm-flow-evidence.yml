@@ -9,6 +9,8 @@ on:
       - 'scripts/build_flow_evidence_cache.py'
       - 'src/idx_flow_scanner/providers/idx_official.py'
       - 'src/idx_flow_scanner/providers/indexalpha.py'
+      - 'src/idx_flow_scanner/foreign_evidence.py'
+      - 'src/idx_flow_scanner/vendor_foreign_storage.py'
       - '.github/workflows/warm-flow-evidence.yml'
 
 permissions:
@@ -29,11 +31,11 @@ jobs:
           python-version: '3.12'
           cache: pip
       - run: pip install -r requirements.txt
-      - name: Refresh official foreign and broker evidence caches
+      - name: Refresh official foreign and vendor flow evidence caches
         env:
           PYTHONPATH: src
           INDEXALPHA_KEY: ${{ secrets.INDEXALPHA_KEY }}
-          INDEXALPHA_DAILY_BUDGET: '5'
+          INDEXALPHA_DAILY_BUDGET: ${{ vars.INDEXALPHA_DAILY_BUDGET || '5' }}
           IDX_FOREIGN_TARGET_DAYS: '20'
           IDX_FOREIGN_MAX_CALENDAR_DAYS: '45'
           IDX_REQUEST_DELAY_SECONDS: '1.0'
@@ -45,6 +47,7 @@ jobs:
           git add data/cache/flow_evidence_meta.json
           test ! -f data/cache/idx_official_flow_60d.csv.gz || git add data/cache/idx_official_flow_60d.csv.gz
           test ! -f data/cache/indexalpha_broker_60d.csv.gz || git add data/cache/indexalpha_broker_60d.csv.gz
+          test ! -f data/cache/indexalpha_foreign_60d.csv.gz || git add data/cache/indexalpha_foreign_60d.csv.gz
           if git diff --cached --quiet; then
             echo "Flow evidence cache unchanged"
           else
