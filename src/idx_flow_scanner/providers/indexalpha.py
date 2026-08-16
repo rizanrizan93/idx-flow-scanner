@@ -11,7 +11,7 @@ from ..data import canonical_ticker, normalize_broker_summary
 
 INDEXALPHA_BASE_URL = "https://api.indexalpha.id"
 INDEXALPHA_BROKER_BATCH_URL = f"{INDEXALPHA_BASE_URL}/stocks/broker-summary/batch"
-INDEXALPHA_BROKER_SINGLE_URL = f"{INDEXALPHA_BASE_URL}/stocks/broker-summary"
+INDEXALPHA_FOREIGN_BATCH_URL = f"{INDEXALPHA_BASE_URL}/foreign-flow/batch"
 
 
 class IndexAlphaUnavailable(RuntimeError):
@@ -30,6 +30,35 @@ def _token(explicit: str | None = None) -> str | None:
     value = explicit or os.getenv("INDEXALPHA_KEY") or os.getenv("INDEXALPHA_TOKEN")
     value = str(value or "").strip()
     return value or None
+
+
+def _post_batch(url: str, payload: dict, token: str, timeout: float) -> dict:
+    from curl_cffi import requests as curl_requests
+
+    response = curl_requests.post(
+        url,
+        headers={
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {token}",
+        },
+        json=payload,
+        impersonate="chrome",
+        timeout=timeout,
+    )
+    if response.status_code == 403:
+        remaining = response.headers.get("X-Monthly-Remaining")
+        if str(remaining) == "0" or "limit" in str(response.text or "").lower():
+            raise IndexAlphaQuotaExhausted("Index Alpha quota exhausted")
+        raise IndexAlphaUnavailable("Index Alpha access denied")
+    if response.status_code == 429:
+        raise IndexAlphaUnavailable("Index Alpha rate limit reached")
+    if response.status_code != 200:
+        raise IndexAlphaUnavailable(f"Index Alpha HTTP {response.status_code}")
+    body = response.json()
+    if not isinstance(body, dict) or not body.get("success"):
+        raise IndexAlphaUnavailable(str((body or {}).get("error") or "Index Alpha invalid response"))
+    return body
 
 
 def _broker_rows_for_ticker(ticker: str, trade_date: str, items: object, *, market: str) -> list[dict[str, object]]:
@@ -75,11 +104,7 @@ def fetch_indexalpha_broker_batch(
     market: str = "RG",
     timeout: float = 30.0,
 ) -> pd.DataFrame:
-    """Fetch stock-level broker buy/sell evidence from the authenticated vendor API.
-
-    Index Alpha counts batch quota per ticker, not per HTTP request, so callers
-    must explicitly bound the ticker list before calling this function.
-    """
+    """Fetch stock-level broker buy/sell evidence from the authenticated vendor API."""
     token = _token(api_token)
     if not token:
         return pd.DataFrame()
@@ -87,33 +112,12 @@ def fetch_indexalpha_broker_batch(
     if not names:
         return pd.DataFrame()
     day = pd.Timestamp(trade_date).date().isoformat()
-
-    from curl_cffi import requests as curl_requests
-
-    response = curl_requests.post(
+    payload = _post_batch(
         INDEXALPHA_BROKER_BATCH_URL,
-        headers={
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {token}",
-        },
-        json={"tickers": names, "from": day, "to": day, "investor": investor, "market": market},
-        impersonate="chrome",
-        timeout=timeout,
+        {"tickers": names, "from": day, "to": day, "investor": investor, "market": market},
+        token,
+        timeout,
     )
-    if response.status_code == 403:
-        remaining = response.headers.get("X-Monthly-Remaining")
-        if str(remaining) == "0" or "limit" in str(response.text or "").lower():
-            raise IndexAlphaQuotaExhausted("Index Alpha quota exhausted")
-        raise IndexAlphaUnavailable("Index Alpha access denied")
-    if response.status_code == 429:
-        raise IndexAlphaUnavailable("Index Alpha rate limit reached")
-    if response.status_code != 200:
-        raise IndexAlphaUnavailable(f"Index Alpha HTTP {response.status_code}")
-
-    payload = response.json()
-    if not isinstance(payload, dict) or not payload.get("success"):
-        raise IndexAlphaUnavailable(str((payload or {}).get("error") or "Index Alpha invalid response"))
     data = payload.get("data")
     if not isinstance(data, dict):
         return pd.DataFrame()
@@ -123,34 +127,107 @@ def fetch_indexalpha_broker_batch(
     return normalize_broker_summary(pd.DataFrame(rows)) if rows else pd.DataFrame()
 
 
-def load_bundled_indexalpha_broker_flows(
-    universe: Iterable[str],
-    path: Path | None = None,
+def fetch_indexalpha_foreign_batch(
+    tickers: Iterable[str],
+    trade_date: str | pd.Timestamp,
     *,
-    lookback_calendar_days: int = 120,
+    api_token: str | None = None,
+    market: str = "ALL",
+    timeout: float = 30.0,
 ) -> pd.DataFrame:
-    """Load an audited broker-evidence transport cache produced by GitHub Actions."""
+    """Fetch per-stock foreign buy/sell values with explicit IDR units.
+
+    Vendor foreign-flow values are not written into the official IDX table. They
+    remain a separate verified vendor evidence source so share counts and IDR
+    values can never be accidentally mixed.
+    """
+    token = _token(api_token)
+    if not token:
+        return pd.DataFrame()
+    names = list(dict.fromkeys(canonical_ticker(t) for t in tickers if canonical_ticker(t)))[:50]
+    if not names:
+        return pd.DataFrame()
+    day = pd.Timestamp(trade_date).date().isoformat()
+    payload = _post_batch(
+        INDEXALPHA_FOREIGN_BATCH_URL,
+        {"tickers": names, "from": day, "to": day, "market": market},
+        token,
+        timeout,
+    )
+    data = payload.get("data")
+    if not isinstance(data, dict):
+        return pd.DataFrame()
+    rows: list[dict[str, object]] = []
+    for ticker in names:
+        item = data.get(ticker)
+        if not isinstance(item, dict):
+            continue
+        buy = pd.to_numeric(item.get("foreign_buy"), errors="coerce")
+        sell = pd.to_numeric(item.get("foreign_sell"), errors="coerce")
+        net = pd.to_numeric(item.get("net_foreign"), errors="coerce")
+        buy_f = float(buy) if pd.notna(buy) else 0.0
+        sell_f = float(sell) if pd.notna(sell) else 0.0
+        net_f = float(net) if pd.notna(net) else buy_f - sell_f
+        rows.append({
+            "ticker": ticker,
+            "trade_date": day,
+            "foreign_buy": buy_f,
+            "foreign_sell": sell_f,
+            "foreign_net": net_f,
+            "flow_unit": "IDR",
+            "market_type": str(market).upper(),
+            "source": "INDEXALPHA_FOREIGN_FLOW",
+            "source_verified": True,
+            "source_url": INDEXALPHA_FOREIGN_BATCH_URL,
+            "provenance_state": "VERIFIED_VENDOR_API",
+        })
+    if not rows:
+        return pd.DataFrame()
+    out = pd.DataFrame(rows)
+    out["trade_date"] = pd.to_datetime(out["trade_date"], errors="coerce").dt.normalize()
+    return out.sort_values(["ticker", "trade_date"], kind="stable").reset_index(drop=True)
+
+
+def load_bundled_indexalpha_broker_flows(
+    universe: Iterable[str], path: Path | None = None, *, lookback_calendar_days: int = 120,
+) -> pd.DataFrame:
     cache_path = path or (_root_path() / "data" / "cache" / "indexalpha_broker_60d.csv.gz")
     if not cache_path.exists():
         return pd.DataFrame()
     try:
-        raw = pd.read_csv(cache_path)
-    except Exception:
-        return pd.DataFrame()
-    try:
-        out = normalize_broker_summary(raw)
+        out = normalize_broker_summary(pd.read_csv(cache_path))
     except Exception:
         return pd.DataFrame()
     names = set(canonical_ticker(t) for t in universe if canonical_ticker(t))
     cutoff = pd.Timestamp.today().normalize() - pd.Timedelta(days=int(lookback_calendar_days))
     out = out[out["ticker"].isin(names) & out["trade_date"].ge(cutoff)].copy()
-    if "source_verified" not in out.columns:
-        out["source_verified"] = False
-    if "source_url" not in out.columns:
-        out["source_url"] = None
-    if "provenance_state" not in out.columns:
-        out["provenance_state"] = None
+    for col, default in (("source_verified", False), ("source_url", None), ("provenance_state", None)):
+        if col not in out.columns:
+            out[col] = default
     return out.sort_values(["ticker", "trade_date", "broker_code"], kind="stable").reset_index(drop=True)
+
+
+def load_bundled_indexalpha_foreign_flows(
+    universe: Iterable[str], path: Path | None = None, *, lookback_calendar_days: int = 120,
+) -> pd.DataFrame:
+    cache_path = path or (_root_path() / "data" / "cache" / "indexalpha_foreign_60d.csv.gz")
+    if not cache_path.exists():
+        return pd.DataFrame()
+    try:
+        out = pd.read_csv(cache_path)
+    except Exception:
+        return pd.DataFrame()
+    required = {"ticker", "trade_date", "foreign_buy", "foreign_sell", "foreign_net", "flow_unit", "source"}
+    if not required.issubset({str(c).strip().lower() for c in out.columns}):
+        return pd.DataFrame()
+    out.columns = [str(c).strip().lower() for c in out.columns]
+    out["ticker"] = out["ticker"].map(canonical_ticker)
+    out["trade_date"] = pd.to_datetime(out["trade_date"], errors="coerce").dt.normalize()
+    names = set(canonical_ticker(t) for t in universe if canonical_ticker(t))
+    cutoff = pd.Timestamp.today().normalize() - pd.Timedelta(days=int(lookback_calendar_days))
+    return out[out["ticker"].isin(names) & out["trade_date"].ge(cutoff)].dropna(
+        subset=["ticker", "trade_date"]
+    ).sort_values(["ticker", "trade_date"], kind="stable").reset_index(drop=True)
 
 
 def merge_broker_frames(*frames: pd.DataFrame) -> pd.DataFrame:
@@ -164,13 +241,22 @@ def merge_broker_frames(*frames: pd.DataFrame) -> pd.DataFrame:
     ).reset_index(drop=True)
 
 
+def merge_vendor_foreign_frames(*frames: pd.DataFrame) -> pd.DataFrame:
+    valid = [f.copy() for f in frames if f is not None and not f.empty]
+    if not valid:
+        return pd.DataFrame()
+    out = pd.concat(valid, ignore_index=True)
+    out["ticker"] = out["ticker"].map(canonical_ticker)
+    out["trade_date"] = pd.to_datetime(out["trade_date"], errors="coerce").dt.normalize()
+    return out.dropna(subset=["ticker", "trade_date"]).drop_duplicates(
+        ["ticker", "trade_date", "source"], keep="last"
+    ).sort_values(["ticker", "trade_date"], kind="stable").reset_index(drop=True)
+
+
 def choose_broker_refresh_tickers(
-    universe: Iterable[str],
-    existing: pd.DataFrame,
-    *,
-    budget_units: int,
+    universe: Iterable[str], existing: pd.DataFrame, *, budget_units: int,
 ) -> list[str]:
-    """Round-robin missing/stalest tickers so limited quotas are never wasted."""
+    """Choose missing/stalest tickers within a quota budget."""
     names = list(dict.fromkeys(canonical_ticker(t) for t in universe if canonical_ticker(t)))
     budget = max(0, int(budget_units))
     if budget == 0:
@@ -188,8 +274,11 @@ def choose_broker_refresh_tickers(
 
 def write_broker_cache(frame: pd.DataFrame, path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    clean = frame.copy() if frame is not None else pd.DataFrame()
-    if clean.empty:
-        return
-    clean = clean.replace({np.nan: None})
-    clean.to_csv(path, index=False, compression="gzip")
+    if frame is not None and not frame.empty:
+        frame.copy().replace({np.nan: None}).to_csv(path, index=False, compression="gzip")
+
+
+def write_foreign_cache(frame: pd.DataFrame, path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if frame is not None and not frame.empty:
+        frame.copy().replace({np.nan: None}).to_csv(path, index=False, compression="gzip")
