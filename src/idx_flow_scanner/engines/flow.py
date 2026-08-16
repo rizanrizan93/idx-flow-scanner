@@ -23,44 +23,167 @@ def _sigmoid_score(x: float, scale: float = 1.0) -> float:
 def broker_coverage_pct(broker: pd.DataFrame, price: pd.DataFrame, lookback: int = 20) -> float:
     if broker is None or broker.empty or price is None or price.empty:
         return 0.0
-    px_days = pd.DatetimeIndex(price["date"].dropna().unique())[-lookback:]
+    px_days = pd.DatetimeIndex(pd.to_datetime(price["date"], errors="coerce").dropna().unique())[-lookback:]
     if not len(px_days):
         return 0.0
-    br_days = pd.DatetimeIndex(broker["trade_date"].dropna().unique())
+    br_days = pd.DatetimeIndex(pd.to_datetime(broker["trade_date"], errors="coerce").dropna().unique())
     overlap = len(px_days.intersection(br_days))
     return float(100.0 * overlap / len(px_days))
 
 
-def compute_broker_features(broker: pd.DataFrame, price: pd.DataFrame, config: ScannerConfig) -> dict[str, float | int | list[str] | None]:
+def _window_broker_stats(frame: pd.DataFrame) -> pd.DataFrame:
+    if frame is None or frame.empty:
+        return pd.DataFrame(columns=["net_value", "buy_value", "sell_value", "buy_volume", "sell_volume", "gross_value"])
+    return frame.groupby("broker_code", observed=True).agg(
+        net_value=("net_value", "sum"), buy_value=("buy_value", "sum"), sell_value=("sell_value", "sum"),
+        buy_volume=("buy_volume", "sum"), sell_volume=("sell_volume", "sum"), gross_value=("gross_value", "sum"),
+    )
+
+
+def _weighted_persistence(frame: pd.DataFrame, cohort: pd.Index, weights: pd.Series) -> float:
+    if frame.empty or len(cohort) == 0:
+        return 0.0
+    values, wts = [], []
+    for code in cohort:
+        rows = frame[frame["broker_code"] == code]
+        if rows.empty:
+            continue
+        daily = rows.groupby("trade_date", observed=True)["net_value"].sum()
+        persistence = float((daily > 0).mean()) if len(daily) else 0.0
+        weight = max(float(weights.get(code, 0.0)), 0.0)
+        if weight > 0:
+            values.append(persistence); wts.append(weight)
+    if not wts or sum(wts) <= 0:
+        return 0.0
+    return float(np.average(values, weights=wts))
+
+
+def compute_broker_features(broker: pd.DataFrame, price: pd.DataFrame, config: ScannerConfig) -> dict[str, float | int | list[str] | str | None]:
+    """Direct broker features based on persistent net-buy cohorts, not aggregate net flow.
+
+    Broker summary is a closed system: aggregate net across all brokers should be near zero.
+    Accumulation is therefore inferred from concentration, persistence, stability and inventory
+    cost of the dominant net-buy cohort, while reversals of that cohort drive distribution risk.
+    """
+    empty = {
+        "broker_days":0,"coverage_pct":0.0,"accumulation_score":0.0,"accumulation_quality_score":0.0,
+        "operator_dominance_score":0.0,"supply_concentration_score":0.0,"estimated_smart_money_cost":None,
+        "premium_to_cost_pct":None,"cost_basis_score":0.0,"cost_position":"UNKNOWN","distribution_risk":50.0,
+        "top_accumulating_brokers":[],"top_distributing_brokers":[],"net_value_5d":0.0,"net_value_20d":0.0,
+        "net_value_60d":0.0,"persistence_5d":0.0,"persistence_20d":0.0,"persistence_60d":0.0,
+        "broker_cohort_stability":0.0,"broker_hhi":0.0,"net_conversion_ratio":0.0,"reversal_ratio_5d":0.0,
+        "broker_balance_error_pct":100.0,
+    }
     if broker is None or broker.empty:
-        return {"broker_days":0,"coverage_pct":0.0,"accumulation_score":0.0,"operator_dominance_score":0.0,"supply_concentration_score":0.0,"estimated_smart_money_cost":None,"premium_to_cost_pct":None,"cost_basis_score":0.0,"distribution_risk":50.0,"top_accumulating_brokers":[],"top_distributing_brokers":[],"net_value_5d":0.0,"net_value_20d":0.0,"net_value_60d":0.0,"persistence_20d":0.0}
-    b=broker.sort_values("trade_date").copy(); unique_days=pd.DatetimeIndex(b["trade_date"].unique()); day_map={}
+        return empty
+    b = broker.sort_values("trade_date").copy()
+    unique_days = pd.DatetimeIndex(pd.to_datetime(b["trade_date"], errors="coerce").dropna().unique())
+    if len(unique_days) == 0:
+        return empty
+    day_map, stats_map = {}, {}
     for w in config.windows:
-        days=unique_days[-w:]; day_map[w]=b[b["trade_date"].isin(days)]
-    totals={w:float(day_map.get(w,b.iloc[0:0])["net_value"].sum()) for w in config.windows}
-    gross20=float(day_map.get(20,b)["gross_value"].sum()); net_intensity20=totals.get(20,0.0)/max(gross20,1.0)
-    daily_net=day_map.get(20,b).groupby("trade_date",observed=True)["net_value"].sum(); persistence20=float((daily_net>0).mean()) if len(daily_net) else 0.0
-    by_broker20=day_map.get(20,b).groupby("broker_code",observed=True).agg(net_value=("net_value","sum"),buy_value=("buy_value","sum"),sell_value=("sell_value","sum"),buy_volume=("buy_volume","sum"))
-    positives=by_broker20[by_broker20["net_value"]>0].sort_values("net_value",ascending=False); negatives=by_broker20[by_broker20["net_value"]<0].sort_values("net_value")
-    positive_total=float(positives["net_value"].sum()); top_pos=positives.head(config.top_brokers); concentration=float(top_pos["net_value"].sum()/positive_total) if positive_total>0 else 0.0
-    accumulation_score=_clip_score(0.55*_sigmoid_score(net_intensity20,0.04)+45.0*persistence20)
-    operator_dominance_score=_clip_score(60.0*concentration+40.0*min(1.0,abs(net_intensity20)/0.08)); supply_concentration_score=_clip_score(100.0*concentration)
-    cost_num=0.0; cost_den=0.0
-    for broker_code in top_pos.index:
-        rows=day_map.get(60,b); rows=rows[rows["broker_code"]==broker_code]; net_vol=rows["net_volume"].clip(lower=0).fillna(0); avg=rows["buy_avg"].replace([np.inf,-np.inf],np.nan); valid=(net_vol>0)&avg.notna()&(avg>0); cost_num+=float((net_vol[valid]*avg[valid]).sum()); cost_den+=float(net_vol[valid].sum())
-    est_cost=cost_num/cost_den if cost_den>0 else None; last_close=float(price["close"].dropna().iloc[-1]) if price is not None and not price.empty else np.nan; premium=(100.0*(last_close/est_cost-1.0)) if est_cost and np.isfinite(last_close) else None
-    if premium is None: cost_basis_score=35.0
-    elif premium<=0: cost_basis_score=95.0
-    elif premium<=5: cost_basis_score=90.0
-    elif premium<=15: cost_basis_score=80.0
-    elif premium<=30: cost_basis_score=60.0
-    elif premium<=config.max_price_extension_from_cost_pct: cost_basis_score=45.0
-    else: cost_basis_score=20.0
-    by5=day_map.get(5,b).groupby("broker_code",observed=True)["net_value"].sum(); reversal_value=0.0; accumulated_value=0.0
-    for code,row in top_pos.iterrows():
-        acc=float(row["net_value"]); accumulated_value+=max(acc,0.0); recent=float(by5.get(code,0.0)); reversal_value += min(abs(recent),acc) if recent<0 else 0.0
-    reversal_ratio=reversal_value/max(accumulated_value,1.0); extension_penalty=0.0 if premium is None else float(np.clip((premium-20.0)/30.0,0.0,1.0)); distribution_risk=_clip_score(70.0*reversal_ratio+30.0*extension_penalty)
-    return {"broker_days":int(len(unique_days)),"coverage_pct":broker_coverage_pct(b,price,20),"accumulation_score":accumulation_score,"operator_dominance_score":operator_dominance_score,"supply_concentration_score":supply_concentration_score,"estimated_smart_money_cost":float(est_cost) if est_cost else None,"premium_to_cost_pct":float(premium) if premium is not None else None,"cost_basis_score":float(cost_basis_score),"distribution_risk":distribution_risk,"top_accumulating_brokers":top_pos.index.astype(str).tolist(),"top_distributing_brokers":negatives.head(config.top_brokers).index.astype(str).tolist(),"net_value_5d":totals.get(5,0.0),"net_value_20d":totals.get(20,0.0),"net_value_60d":totals.get(60,0.0),"persistence_20d":persistence20}
+        days = unique_days[-w:]
+        win = b[b["trade_date"].isin(days)].copy()
+        day_map[w] = win; stats_map[w] = _window_broker_stats(win)
+
+    stats20 = stats_map.get(20, pd.DataFrame())
+    positives20 = stats20[stats20["net_value"] > 0].sort_values("net_value", ascending=False)
+    negatives20 = stats20[stats20["net_value"] < 0].sort_values("net_value")
+    top_pos20 = positives20.head(config.top_brokers); top_neg20 = negatives20.head(config.top_brokers)
+    positive_total20 = float(positives20["net_value"].sum()) if not positives20.empty else 0.0
+    top_positive20 = float(top_pos20["net_value"].sum()) if not top_pos20.empty else 0.0
+    concentration20 = top_positive20 / positive_total20 if positive_total20 > 0 else 0.0
+    market_turnover20 = float(day_map.get(20, b)["gross_value"].sum()) / 2.0
+    net_conversion20 = positive_total20 / max(market_turnover20, 1.0)
+    top_intensity20 = top_positive20 / max(market_turnover20, 1.0)
+    intensity_score = _sigmoid_score(top_intensity20 - 0.08, 0.05)
+
+    if positive_total20 > 0:
+        shares = (positives20["net_value"] / positive_total20).clip(lower=0)
+        hhi = float((shares ** 2).sum())
+    else:
+        hhi = 0.0
+    hhi_score = _clip_score(100.0 * np.sqrt(max(hhi, 0.0)))
+
+    persistence, top_sets, cohort_values = {}, {}, {}
+    for w in config.windows:
+        stats = stats_map.get(w, pd.DataFrame())
+        pos = stats[stats["net_value"] > 0].sort_values("net_value", ascending=False) if not stats.empty else stats
+        top = pos.head(config.top_brokers) if not pos.empty else pos
+        top_sets[w] = set(top.index.astype(str)) if not top.empty else set()
+        cohort_values[w] = float(top["net_value"].sum()) if not top.empty else 0.0
+        persistence[w] = _weighted_persistence(day_map.get(w, b.iloc[0:0]), top.index, top["net_value"]) if not top.empty else 0.0
+
+    set5, set20, set60 = top_sets.get(5,set()), top_sets.get(20,set()), top_sets.get(60,set())
+    overlap_5_20 = len(set5 & set20) / max(len(set20), 1)
+    overlap_20_60 = len(set20 & set60) / max(len(set20), 1) if set60 else overlap_5_20
+    cohort_stability = float(np.clip(0.6 * overlap_5_20 + 0.4 * overlap_20_60, 0.0, 1.0))
+    persistence20 = persistence.get(20, 0.0)
+    persistence_score = 100.0 * persistence20
+    stability_score = 100.0 * cohort_stability
+    concentration_score = _clip_score(100.0 * concentration20)
+    conversion_score = _clip_score(100.0 * min(net_conversion20 / 0.35, 1.0))
+    accumulation_quality = _clip_score(0.34*persistence_score + 0.24*intensity_score + 0.18*stability_score + 0.14*concentration_score + 0.10*conversion_score)
+    accumulation_score = _clip_score(0.58*accumulation_quality + 0.22*persistence_score + 0.20*intensity_score)
+    operator_dominance_score = _clip_score(0.45*concentration_score + 0.30*hhi_score + 0.25*stability_score)
+    supply_concentration_score = _clip_score(0.60*concentration_score + 0.40*hhi_score)
+
+    cost_num = 0.0; cost_den = 0.0; rows60 = day_map.get(60, b)
+    for broker_code in top_pos20.index:
+        rows = rows60[rows60["broker_code"] == broker_code]
+        net_vol = rows["net_volume"].clip(lower=0).fillna(0)
+        avg = rows["buy_avg"].replace([np.inf,-np.inf], np.nan)
+        valid = (net_vol > 0) & avg.notna() & (avg > 0)
+        cost_num += float((net_vol[valid] * avg[valid]).sum()); cost_den += float(net_vol[valid].sum())
+    est_cost = cost_num / cost_den if cost_den > 0 else None
+    last_close = float(price["close"].dropna().iloc[-1]) if price is not None and not price.empty else np.nan
+    premium = 100.0 * (last_close / est_cost - 1.0) if est_cost and np.isfinite(last_close) else None
+    if premium is None: cost_basis_score, cost_position = 35.0, "UNKNOWN"
+    elif premium <= -5: cost_basis_score, cost_position = 95.0, "UNDER_COST"
+    elif premium <= 5: cost_basis_score, cost_position = 92.0, "NEAR_COST"
+    elif premium <= 15: cost_basis_score, cost_position = 82.0, "HEALTHY_MARKUP"
+    elif premium <= 30: cost_basis_score, cost_position = 62.0, "MARKUP"
+    elif premium <= config.max_price_extension_from_cost_pct: cost_basis_score, cost_position = 45.0, "EXTENDED"
+    else: cost_basis_score, cost_position = 20.0, "OVEREXTENDED"
+
+    stats5 = stats_map.get(5, pd.DataFrame()); reversal_value = 0.0; accumulated_value = 0.0
+    for code,row in top_pos20.iterrows():
+        acc = max(float(row["net_value"]), 0.0); accumulated_value += acc
+        recent = float(stats5.loc[code,"net_value"]) if not stats5.empty and code in stats5.index else 0.0
+        if recent < 0: reversal_value += min(abs(recent), acc)
+    reversal_ratio = reversal_value / max(accumulated_value, 1.0)
+    extension_penalty = 0.0 if premium is None else float(np.clip((premium - 20.0) / 30.0, 0.0, 1.0))
+    distribution_risk = _clip_score(62.0*reversal_ratio + 23.0*extension_penalty + 15.0*(1.0-cohort_stability))
+
+    win20 = day_map.get(20, b); total_buy = float(win20["buy_value"].sum()); total_sell = float(win20["sell_value"].sum())
+    balance_error_pct = 100.0 * abs(total_buy-total_sell) / max((total_buy+total_sell)/2.0, 1.0)
+    return {
+        "broker_days":int(len(unique_days)),"coverage_pct":broker_coverage_pct(b,price,20),"accumulation_score":accumulation_score,
+        "accumulation_quality_score":accumulation_quality,"operator_dominance_score":operator_dominance_score,
+        "supply_concentration_score":supply_concentration_score,"estimated_smart_money_cost":float(est_cost) if est_cost else None,
+        "premium_to_cost_pct":float(premium) if premium is not None else None,"cost_basis_score":float(cost_basis_score),
+        "cost_position":cost_position,"distribution_risk":distribution_risk,"top_accumulating_brokers":top_pos20.index.astype(str).tolist(),
+        "top_distributing_brokers":top_neg20.index.astype(str).tolist(),"net_value_5d":cohort_values.get(5,0.0),
+        "net_value_20d":cohort_values.get(20,0.0),"net_value_60d":cohort_values.get(60,0.0),"persistence_5d":persistence.get(5,0.0),
+        "persistence_20d":persistence20,"persistence_60d":persistence.get(60,0.0),"broker_cohort_stability":cohort_stability,
+        "broker_hhi":hhi,"net_conversion_ratio":net_conversion20,"reversal_ratio_5d":reversal_ratio,"broker_balance_error_pct":balance_error_pct,
+    }
+
+
+def compute_official_foreign_features(flow: pd.DataFrame, price: pd.DataFrame, lookback: int = 20) -> dict[str, float | int]:
+    default = {"foreign_institutional_score":50.0,"official_foreign_coverage_pct":0.0,"foreign_net_5d":0.0,"foreign_net_20d":0.0,"foreign_persistence_20d":0.0,"foreign_intensity_20d":0.0}
+    if flow is None or flow.empty or price is None or price.empty: return default
+    f=flow.copy(); f["trade_date"]=pd.to_datetime(f["trade_date"],errors="coerce").dt.normalize(); f=f.dropna(subset=["trade_date"]).sort_values("trade_date")
+    if f.empty: return default
+    px_days=pd.DatetimeIndex(pd.to_datetime(price["date"],errors="coerce").dropna().unique())[-lookback:]
+    coverage=100.0*len(px_days.intersection(pd.DatetimeIndex(f["trade_date"].unique())))/max(len(px_days),1)
+    daily=f.groupby("trade_date",observed=True).agg(foreign_buy=("foreign_buy","sum"),foreign_sell=("foreign_sell","sum"),traded_value=("traded_value","sum")).sort_index()
+    daily["foreign_net"]=daily["foreign_buy"]-daily["foreign_sell"]; d20=daily.tail(20); d5=daily.tail(5)
+    net20=float(d20["foreign_net"].sum()) if not d20.empty else 0.0; net5=float(d5["foreign_net"].sum()) if not d5.empty else 0.0
+    traded20=float(d20["traded_value"].sum()) if not d20.empty else 0.0; intensity20=net20/max(traded20,1.0)
+    persistence20=float((d20["foreign_net"]>0).mean()) if len(d20) else 0.0
+    score=_clip_score(0.58*_sigmoid_score(intensity20,0.035)+42.0*persistence20); confidence=float(np.clip(coverage/80.0,0.0,1.0)); score=50.0+confidence*(score-50.0)
+    return {"foreign_institutional_score":score,"official_foreign_coverage_pct":coverage,"foreign_net_5d":net5,"foreign_net_20d":net20,"foreign_persistence_20d":persistence20,"foreign_intensity_20d":intensity20}
 
 
 def compute_price_flow_features(price: pd.DataFrame, broker_features: dict[str, object]) -> dict[str, float]:
