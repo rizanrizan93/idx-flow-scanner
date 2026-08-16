@@ -1,0 +1,31 @@
+{
+  "broker_direct_vendor": {
+    "budget_units": 5,
+    "days": 0,
+    "freshest": null,
+    "provider": "INDEXALPHA_API",
+    "quota_units_attempted": 0,
+    "rows": 0,
+    "selected_tickers": [],
+    "status": "NO_TOKEN",
+    "tickers": 0,
+    "token_present": false,
+    "verified_tickers": 0
+  },
+  "generated_at": "2026-08-16T07:43:26.590661+00:00",
+  "official_idx": {
+    "days": 0,
+    "freshest": null,
+    "rows": 0,
+    "status": "BLOCKED: IDX official TradingSummary access blocked with HTTP 403 (Cloudflare challenge)",
+    "tickers": 0
+  },
+  "official_market_broker_health": {
+    "brokers": 0,
+    "direct_evidence_eligible": false,
+    "rows": 0,
+    "status": "BLOCKED: IDX official TradingSummary access blocked with HTTP 403 (Cloudflare challenge)"
+  },
+  "target_trade_date": "2026-08-14",
+  "universe_count": 400
+}

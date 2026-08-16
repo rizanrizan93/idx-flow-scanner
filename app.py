@@ -29,12 +29,18 @@ from idx_flow_scanner.outcomes import refresh_pending_outcomes, seed_signal_outc
 from idx_flow_scanner.pipeline import scan_universe
 from idx_flow_scanner.providers.idx_official import (
     fetch_idx_official_flow_history,
+    load_bundled_idx_official_flows,
     load_cached_idx_official_flows,
+    merge_official_flow_frames,
     upsert_idx_official_flows,
+)
+from idx_flow_scanner.providers.indexalpha import (
+    load_bundled_indexalpha_broker_flows,
+    merge_broker_frames,
 )
 from idx_flow_scanner.storage import SupabaseStore
 
-APP_VERSION = "0.2.1"
+APP_VERSION = "0.2.2"
 DEFAULT_UNIVERSE_PATH = ROOT / "data" / "universe" / "idx_400_syariah.csv"
 MANAGED_MIN_VALID_RATIO = 0.90
 
@@ -42,7 +48,8 @@ st.set_page_config(page_title="IDX Flow Scanner", page_icon="📡", layout="wide
 st.title("IDX Flow Scanner")
 st.caption(
     f"v{APP_VERSION} • clean-room bandarmology / accumulation engine • database-first • "
-    "managed 400-ticker mode • free IDX foreign-flow overlay • provenance-gated broker evidence • verified bandar-cost display • OOS memory"
+    "managed 400-ticker mode • persistent official IDX foreign-flow cache • provenance-gated broker evidence • "
+    "verified bandar-cost display • OOS memory"
 )
 
 
@@ -57,6 +64,24 @@ def connect_store(enabled: bool) -> tuple[SupabaseStore | None, str | None]:
         return SupabaseStore(supabase_url, supabase_key), None
     except Exception as exc:
         return None, str(exc)
+
+
+def broker_data_stats(frame: pd.DataFrame) -> dict[str, object]:
+    if frame is None or frame.empty:
+        return {"rows": 0, "tickers": 0, "days": 0, "verified_tickers": 0, "freshest": None}
+    dates = pd.to_datetime(frame.get("trade_date"), errors="coerce")
+    verified_tickers = 0
+    if "source_verified" in frame.columns:
+        raw = frame["source_verified"]
+        verified = raw.fillna(False) if pd.api.types.is_bool_dtype(raw) else raw.astype(str).str.strip().str.lower().isin({"1", "true", "yes", "y", "verified"})
+        verified_tickers = int(frame.loc[verified, "ticker"].nunique())
+    return {
+        "rows": int(len(frame)),
+        "tickers": int(frame["ticker"].nunique()) if "ticker" in frame.columns else 0,
+        "days": int(dates.nunique()) if dates is not None else 0,
+        "verified_tickers": verified_tickers,
+        "freshest": str(dates.max().date()) if dates is not None and pd.notna(dates.max()) else None,
+    }
 
 
 with st.sidebar:
@@ -84,16 +109,19 @@ with st.sidebar:
     use_idx_official = st.checkbox(
         "Official IDX foreign flow",
         value=True,
-        help="Gratis. Mengambil ForeignBuy/ForeignSell market-wide dari endpoint resmi IDX, lalu menyimpan cache ke Supabase.",
+        help=(
+            "Gratis. Urutan sumber: Supabase cache → bundled audited IDX cache → direct IDX refresh. "
+            "ForeignBuy/ForeignSell disimpan sebagai jumlah saham resmi IDX."
+        ),
     )
     persist = st.checkbox("Persist hasil scan", value=True)
     run_manual = st.button("Run / Re-run sekarang", type="primary", width="stretch")
 
 st.info(
-    "Evidence hierarchy: verified broker summary > official IDX foreign flow > OHLCV proxy. "
-    "Harga Bandar Est. hanya ditampilkan jika broker summary lolos BROKER_DIRECT. OHLCV/foreign flow tidak pernah "
-    "dipromosikan menjadi harga bandar. Direct evidence juga harus lolos coverage, history, broker quorum, buy/sell balance, "
-    "dan verified provenance."
+    "Evidence hierarchy: verified stock-level broker summary > official IDX foreign flow > OHLCV proxy. "
+    "Harga Bandar Est. hanya ditampilkan jika broker summary lolos BROKER_DIRECT. IDX market-wide broker totals, "
+    "OHLCV, dan foreign flow tidak pernah dipromosikan menjadi harga bandar. Direct evidence juga harus lolos coverage, "
+    "history, broker quorum, buy/sell balance, dan verified provenance."
 )
 
 if "last_results" not in st.session_state:
@@ -101,6 +129,7 @@ if "last_results" not in st.session_state:
     st.session_state.last_errors = []
     st.session_state.last_run_id = None
     st.session_state.last_price_stats = None
+    st.session_state.last_broker_stats = None
     st.session_state.last_official_stats = None
     st.session_state.last_outcome_stats = None
 
@@ -167,6 +196,8 @@ if trigger_scan and universe_source != "BUNDLED_400_SYARIAH" and managed_decisio
     trigger_scan = bool(run_manual)
 
 if trigger_scan:
+    db_broker = pd.DataFrame()
+    bundled_broker = pd.DataFrame()
     if broker_file is not None:
         try:
             broker = normalize_broker_summary(pd.read_csv(broker_file))
@@ -175,14 +206,21 @@ if trigger_scan:
         except Exception as exc:
             st.error(f"Broker Summary invalid: {exc}")
             st.stop()
-    elif store is not None:
-        try:
-            broker = store.load_broker_flows(universe)
-        except Exception as exc:
-            st.warning(f"Broker database read failed; continuing as PRICE_PROXY: {exc}")
-            broker = pd.DataFrame()
     else:
-        broker = pd.DataFrame()
+        if store is not None:
+            try:
+                db_broker = store.load_broker_flows(universe)
+            except Exception as exc:
+                st.warning(f"Broker database read failed; continuing with bundled evidence/PRICE_PROXY: {exc}")
+        bundled_broker = load_bundled_indexalpha_broker_flows(universe)
+        broker = merge_broker_frames(db_broker, bundled_broker)
+        if store is not None and not bundled_broker.empty:
+            try:
+                store.upsert_broker_flows(bundled_broker)
+            except Exception as exc:
+                st.caption(f"Bundled broker cache could not be persisted: {exc}")
+    broker_stats = broker_data_stats(broker)
+    st.session_state.last_broker_stats = broker_stats
 
     bar = st.progress(0.0, text="Preparing OHLCV...")
     status_box = st.empty()
@@ -204,6 +242,8 @@ if trigger_scan:
                     "universe_signature": signature,
                     "minimum_price_bars": config.minimum_price_bars,
                     "official_idx_foreign_flow": bool(use_idx_official),
+                    "official_idx_transport_cache": True,
+                    "broker_vendor_transport_cache": True,
                     "broker_provenance_gate": True,
                     "bandar_cost_display": "BROKER_DIRECT_ONLY",
                     "market_context": "CROSS_SECTIONAL_400",
@@ -230,8 +270,15 @@ if trigger_scan:
     if use_idx_official:
         status_box.caption("Loading official IDX foreign flow...")
         try:
-            if store is not None:
-                official_flow = load_cached_idx_official_flows(store, universe, lookback_calendar_days=55)
+            db_official = load_cached_idx_official_flows(store, universe, lookback_calendar_days=70) if store is not None else pd.DataFrame()
+            bundled_official = load_bundled_idx_official_flows(universe, lookback_calendar_days=100)
+            official_flow = merge_official_flow_frames(db_official, bundled_official)
+            if store is not None and not bundled_official.empty:
+                try:
+                    upsert_idx_official_flows(store, bundled_official)
+                except Exception as exc:
+                    st.caption(f"Bundled IDX cache could not be persisted: {exc}")
+
             cached_days = int(official_flow["trade_date"].nunique()) if not official_flow.empty else 0
             latest_price_dates = []
             for ticker in universe[:20]:
@@ -252,8 +299,7 @@ if trigger_scan:
                 if not fresh.empty:
                     if store is not None:
                         upsert_idx_official_flows(store, fresh)
-                    official_flow = pd.concat([official_flow, fresh], ignore_index=True) if not official_flow.empty else fresh
-                    official_flow = official_flow.drop_duplicates(["ticker", "trade_date", "source"], keep="last")
+                    official_flow = merge_official_flow_frames(official_flow, fresh)
             if not official_flow.empty:
                 official_stats = {
                     "days": int(official_flow["trade_date"].nunique()),
@@ -340,18 +386,26 @@ if trigger_scan:
 results = st.session_state.last_results
 errors = st.session_state.last_errors
 price_stats = st.session_state.last_price_stats
+broker_stats = st.session_state.last_broker_stats
 official_stats = st.session_state.last_official_stats
 outcome_stats = st.session_state.last_outcome_stats
 
 if isinstance(price_stats, dict):
     st.subheader("Data Integrity")
-    p1, p2, p3, p4, p5, p6 = st.columns(6)
+    p1, p2, p3, p4, p5, p6, p7, p8 = st.columns(8)
     p1.metric("DB OHLCV hits", int(price_stats.get("cache_hits", 0)))
     p2.metric("OHLCV fetched", int(price_stats.get("fetched_valid", 0)))
     p3.metric("OHLCV unavailable", int(price_stats.get("unavailable", 0)))
     p4.metric("IDX flow days", int((official_stats or {}).get("days", 0)))
     p5.metric("IDX flow tickers", int((official_stats or {}).get("tickers", 0)))
-    p6.metric("OOS seeded", int((outcome_stats or {}).get("seeded", 0)))
+    p6.metric("Broker days", int((broker_stats or {}).get("days", 0)))
+    p7.metric("Broker verified tickers", int((broker_stats or {}).get("verified_tickers", 0)))
+    p8.metric("OOS seeded", int((outcome_stats or {}).get("seeded", 0)))
+    if broker_stats:
+        st.caption(
+            f"Broker cache: {int(broker_stats.get('rows', 0))} rows • "
+            f"{int(broker_stats.get('tickers', 0))} tickers • freshest {broker_stats.get('freshest') or 'N/A'}"
+        )
     if outcome_stats:
         st.caption(
             f"OOS refresh mode: {outcome_stats.get('mode', 'N/A')} • "
@@ -371,9 +425,6 @@ if isinstance(results, pd.DataFrame) and not results.empty:
                 lambda value, key=name: (value or {}).get(key) if isinstance(value, dict) else None
             )
 
-    # User-facing bandar price is strictly evidence-gated. The internal engine may
-    # calculate a cost from any supplied broker rows for diagnostics, but the UI
-    # must not call it "harga bandar" unless the row is BROKER_DIRECT.
     direct_mask = display["evidence_tier"].eq("BROKER_DIRECT")
     display["bandar_price_est"] = pd.to_numeric(
         display.get("estimated_smart_money_cost"), errors="coerce"
