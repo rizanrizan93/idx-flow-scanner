@@ -18,10 +18,10 @@ from idx_flow_scanner.storage import SupabaseStore
 # single-ticker PostgREST requests. Small/ad-hoc universes keep the legacy path.
 streamlit_app.prepare_database_first_prices = prepare_large_universe_prices
 
-# The same short PostgREST timeout that protects OHLCV reads must not turn a
-# single ~400-row result upsert into a zombie RUNNING scan. Persist results in
-# small idempotent batches and explicitly fail the run if a batch raises.
-install_bounded_result_persistence(SupabaseStore)
+# Result writes use their own longer-lived Supabase client (the read/cache client
+# intentionally stays fast-fail). Keep each idempotent write payload small enough
+# for free-tier PostgREST while heartbeating persistence progress.
+install_bounded_result_persistence(SupabaseStore, batch_size=20)
 
 version_file = ROOT / "VERSION"
 if version_file.exists():
