@@ -26,9 +26,14 @@ from idx_flow_scanner.managed import (
     universe_signature,
 )
 from idx_flow_scanner.pipeline import scan_universe
+from idx_flow_scanner.providers.idx_official import (
+    fetch_idx_official_flow_history,
+    load_cached_idx_official_flows,
+    upsert_idx_official_flows,
+)
 from idx_flow_scanner.storage import SupabaseStore
 
-APP_VERSION = "0.1.4"
+APP_VERSION = "0.1.5"
 DEFAULT_UNIVERSE_PATH = ROOT / "data" / "universe" / "idx_400_syariah.csv"
 MANAGED_MIN_VALID_RATIO = 0.90
 
@@ -36,7 +41,7 @@ st.set_page_config(page_title="IDX Flow Scanner", page_icon="📡", layout="wide
 st.title("IDX Flow Scanner")
 st.caption(
     f"v{APP_VERSION} • clean-room bandarmology / broker-flow research engine • "
-    "database-first • managed 400-ticker mode"
+    "database-first • managed 400-ticker mode • free official IDX foreign-flow overlay"
 )
 
 
@@ -58,7 +63,7 @@ with st.sidebar:
     managed_auto = st.toggle(
         "Managed auto-run",
         value=True,
-        help="Dengan universe bawaan, scanner otomatis menjalankan scan bila belum ada run v0.1.4 yang valid/fresh.",
+        help="Dengan universe bawaan, scanner otomatis menjalankan scan bila belum ada run versi ini yang valid/fresh.",
     )
     universe_file = st.file_uploader(
         "Override universe CSV (opsional)",
@@ -72,12 +77,17 @@ with st.sidebar:
     )
     period = st.selectbox("OHLCV lookback", ["6mo", "1y", "2y"], index=1)
     use_database = st.checkbox("Database-first Supabase", value=True)
+    use_idx_official = st.checkbox(
+        "Official IDX foreign flow",
+        value=True,
+        help="Gratis. Mengambil ForeignBuy/ForeignSell market-wide dari endpoint resmi IDX, lalu menyimpan cache ke Supabase.",
+    )
     persist = st.checkbox("Persist hasil scan", value=True)
     run_manual = st.button("Run / Re-run sekarang", type="primary", width="stretch")
 
 st.info(
-    "Price/volume tidak dianggap data bandar langsung. Real-money eligibility tetap membutuhkan "
-    "broker evidence langsung, coverage cukup, freshness, dan guardrail."
+    "Price/volume tidak dianggap data bandar langsung. Official IDX foreign flow adalah evidence resmi "
+    "tambahan, tetapi BROKER_DIRECT tetap hanya diberikan jika broker-summary per saham benar-benar tersedia."
 )
 
 if "last_results" not in st.session_state:
@@ -85,6 +95,7 @@ if "last_results" not in st.session_state:
     st.session_state.last_errors = []
     st.session_state.last_run_id = None
     st.session_state.last_price_stats = None
+    st.session_state.last_official_stats = None
 
 if universe_file is None:
     universe = load_bundled_universe(DEFAULT_UNIVERSE_PATH)
@@ -185,6 +196,7 @@ if trigger_scan:
                     "universe_source": universe_source,
                     "universe_signature": signature,
                     "minimum_price_bars": config.minimum_price_bars,
+                    "official_idx_foreign_flow": bool(use_idx_official),
                 },
             )
             store.update_run_progress(run_id, 0, "OHLCV_PREP")
@@ -200,6 +212,48 @@ if trigger_scan:
         status=lambda text: status_box.caption(text),
     )
     st.session_state.last_price_stats = price_stats
+
+    official_flow = pd.DataFrame()
+    official_stats = {"days": 0, "tickers": 0, "freshest": None, "source": "DISABLED"}
+    if use_idx_official:
+        status_box.caption("Loading official IDX foreign flow...")
+        try:
+            if store is not None:
+                official_flow = load_cached_idx_official_flows(store, universe, lookback_calendar_days=55)
+            cached_days = int(official_flow["trade_date"].nunique()) if not official_flow.empty else 0
+            latest_price_dates = []
+            for ticker in universe[:20]:
+                frame = load_price(ticker)
+                if not frame.empty:
+                    latest_price_dates.append(pd.to_datetime(frame["date"], errors="coerce").max())
+            end_date = max([d for d in latest_price_dates if pd.notna(d)], default=pd.Timestamp.today())
+            freshest_cached = pd.to_datetime(official_flow["trade_date"], errors="coerce").max() if not official_flow.empty else pd.NaT
+            need_refresh = cached_days < 18 or pd.isna(freshest_cached) or freshest_cached.normalize() < pd.Timestamp(end_date).normalize()
+            if need_refresh:
+                status_box.caption(f"Refreshing official IDX foreign flow • cache {cached_days} trading days")
+                fresh = fetch_idx_official_flow_history(
+                    universe,
+                    end_date=pd.Timestamp(end_date).date(),
+                    target_trading_days=20,
+                    max_calendar_days=40,
+                )
+                if not fresh.empty:
+                    if store is not None:
+                        upsert_idx_official_flows(store, fresh)
+                    official_flow = pd.concat([official_flow, fresh], ignore_index=True) if not official_flow.empty else fresh
+                    official_flow = official_flow.drop_duplicates(["ticker", "trade_date", "source"], keep="last")
+            if not official_flow.empty:
+                official_stats = {
+                    "days": int(official_flow["trade_date"].nunique()),
+                    "tickers": int(official_flow["ticker"].nunique()),
+                    "freshest": str(pd.to_datetime(official_flow["trade_date"], errors="coerce").max().date()),
+                    "source": "IDX_OFFICIAL_STOCK_SUMMARY",
+                }
+        except Exception as exc:
+            st.warning(f"Official IDX flow unavailable; scan continues without it: {exc}")
+            official_flow = pd.DataFrame()
+            official_stats = {"days": 0, "tickers": 0, "freshest": None, "source": "UNAVAILABLE"}
+    st.session_state.last_official_stats = official_stats
 
     if store is not None and run_record_created:
         store.update_run_progress(run_id, 0, "SCORING")
@@ -217,6 +271,7 @@ if trigger_scan:
         config,
         progress,
         run_id=run_id,
+        official_flow_frame=official_flow,
     )
     st.session_state.last_results = results
     st.session_state.last_errors = errors
@@ -240,16 +295,20 @@ if trigger_scan:
                     "price_failures": int(price_stats.get("unavailable", 0)),
                 },
             )
+            try:
+                store.client.table("flow_scan_runs").update({
+                    "official_flow_days": int(official_stats.get("days", 0)),
+                    "official_flow_tickers": int(official_stats.get("tickers", 0)),
+                }).eq("id", run_id).execute()
+            except Exception:
+                pass
             if final_status == "FAILED":
                 st.error(
                     f"Run {run_id} FAILED integrity gate • valid {len(results)}/{len(universe)} "
                     f"({valid_ratio:.1%}) • errors {len(errors)}. Minimum valid ratio = {MANAGED_MIN_VALID_RATIO:.0%}."
                 )
             elif errors:
-                st.warning(
-                    f"Run completed and persisted • {len(results)}/{len(universe)} valid • "
-                    f"errors {len(errors)}"
-                )
+                st.warning(f"Run completed and persisted • {len(results)}/{len(universe)} valid • errors {len(errors)}")
             else:
                 st.success(f"Persisted to Supabase • run {run_id} • {len(results)}/{len(universe)} valid")
         except Exception as exc:
@@ -260,23 +319,31 @@ if trigger_scan:
 results = st.session_state.last_results
 errors = st.session_state.last_errors
 price_stats = st.session_state.last_price_stats
+official_stats = st.session_state.last_official_stats
 
 if isinstance(price_stats, dict):
-    st.subheader("OHLCV Integrity")
-    p1, p2, p3, p4 = st.columns(4)
-    p1.metric("DB cache hits", int(price_stats.get("cache_hits", 0)))
-    p2.metric("Fetched valid", int(price_stats.get("fetched_valid", 0)))
-    p3.metric("Persisted tickers", int(price_stats.get("persisted_tickers", 0)))
-    p4.metric("Unavailable", int(price_stats.get("unavailable", 0)))
+    st.subheader("Data Integrity")
+    p1, p2, p3, p4, p5 = st.columns(5)
+    p1.metric("DB OHLCV hits", int(price_stats.get("cache_hits", 0)))
+    p2.metric("OHLCV fetched", int(price_stats.get("fetched_valid", 0)))
+    p3.metric("OHLCV unavailable", int(price_stats.get("unavailable", 0)))
+    p4.metric("IDX flow days", int((official_stats or {}).get("days", 0)))
+    p5.metric("IDX flow tickers", int((official_stats or {}).get("tickers", 0)))
 
 if isinstance(results, pd.DataFrame) and not results.empty:
     st.subheader("Decision Priority")
     eligible = results[results["real_money_state"] == "ELIGIBLE"].copy()
-    c1, c2, c3, c4 = st.columns(4)
+    official_coverages = [
+        float(d.get("official_foreign_coverage_pct", 0) or 0)
+        for d in results.get("diagnostics", pd.Series(dtype=object))
+        if isinstance(d, dict)
+    ]
+    c1, c2, c3, c4, c5 = st.columns(5)
     c1.metric("Scanned valid", len(results))
     c2.metric("Real-money eligible", len(eligible))
     c3.metric("Broker-direct", int((results["evidence_tier"] == "BROKER_DIRECT").sum()))
-    c4.metric("Median evidence", f"{results['evidence_coverage_pct'].median():.0f}%")
+    c4.metric("Median broker evidence", f"{results['evidence_coverage_pct'].median():.0f}%")
+    c5.metric("Median IDX foreign", f"{pd.Series(official_coverages).median():.0f}%" if official_coverages else "0%")
 
     cols = [
         "ticker", "final_score", "phase", "action", "real_money_state",
