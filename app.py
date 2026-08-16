@@ -34,7 +34,7 @@ from idx_flow_scanner.providers.idx_official import (
 )
 from idx_flow_scanner.storage import SupabaseStore
 
-APP_VERSION = "0.2.0"
+APP_VERSION = "0.2.1"
 DEFAULT_UNIVERSE_PATH = ROOT / "data" / "universe" / "idx_400_syariah.csv"
 MANAGED_MIN_VALID_RATIO = 0.90
 
@@ -42,7 +42,7 @@ st.set_page_config(page_title="IDX Flow Scanner", page_icon="📡", layout="wide
 st.title("IDX Flow Scanner")
 st.caption(
     f"v{APP_VERSION} • clean-room bandarmology / accumulation engine • database-first • "
-    "managed 400-ticker mode • free IDX foreign-flow overlay • provenance-gated broker evidence • OOS memory"
+    "managed 400-ticker mode • free IDX foreign-flow overlay • provenance-gated broker evidence • verified bandar-cost display • OOS memory"
 )
 
 
@@ -91,8 +91,9 @@ with st.sidebar:
 
 st.info(
     "Evidence hierarchy: verified broker summary > official IDX foreign flow > OHLCV proxy. "
-    "OHLCV/foreign flow tidak pernah dipromosikan menjadi BROKER_DIRECT. Direct evidence juga harus lolos coverage, "
-    "history, broker quorum, buy/sell balance, dan verified provenance."
+    "Harga Bandar Est. hanya ditampilkan jika broker summary lolos BROKER_DIRECT. OHLCV/foreign flow tidak pernah "
+    "dipromosikan menjadi harga bandar. Direct evidence juga harus lolos coverage, history, broker quorum, buy/sell balance, "
+    "dan verified provenance."
 )
 
 if "last_results" not in st.session_state:
@@ -204,6 +205,7 @@ if trigger_scan:
                     "minimum_price_bars": config.minimum_price_bars,
                     "official_idx_foreign_flow": bool(use_idx_official),
                     "broker_provenance_gate": True,
+                    "bandar_cost_display": "BROKER_DIRECT_ONLY",
                     "market_context": "CROSS_SECTIONAL_400",
                     "price_integrity_gate": True,
                     "oos_outcome_memory": True,
@@ -369,6 +371,20 @@ if isinstance(results, pd.DataFrame) and not results.empty:
                 lambda value, key=name: (value or {}).get(key) if isinstance(value, dict) else None
             )
 
+    # User-facing bandar price is strictly evidence-gated. The internal engine may
+    # calculate a cost from any supplied broker rows for diagnostics, but the UI
+    # must not call it "harga bandar" unless the row is BROKER_DIRECT.
+    direct_mask = display["evidence_tier"].eq("BROKER_DIRECT")
+    display["bandar_price_est"] = pd.to_numeric(
+        display.get("estimated_smart_money_cost"), errors="coerce"
+    ).where(direct_mask)
+    display["bandar_vs_price_pct"] = pd.to_numeric(
+        display.get("premium_to_cost_pct"), errors="coerce"
+    ).where(direct_mask)
+    display["bandar_cost_position"] = display.get("cost_position", pd.Series(index=display.index, dtype=object)).where(
+        direct_mask, "UNVERIFIED"
+    )
+
     eligible = display[
         (display["real_money_state"] == "ELIGIBLE")
         & (display["evidence_tier"] == "BROKER_DIRECT")
@@ -391,19 +407,35 @@ if isinstance(results, pd.DataFrame) and not results.empty:
 
     cols = [
         "ticker", "final_score", "phase", "action", "real_money_state",
+        "bandar_price_est", "bandar_vs_price_pct", "bandar_cost_position",
         "evidence_tier", "evidence_coverage_pct", "broker_verified_source_pct",
         "accumulation_score", "operator_dominance_score", "persistence_20d",
-        "broker_cohort_stability", "cost_position", "foreign_institutional_score",
+        "broker_cohort_stability", "foreign_institutional_score",
         "official_foreign_coverage_pct", "market_context_score", "market_regime_label",
         "relative_strength_20d_pct", "price_data_quality_score", "distribution_risk",
-        "estimated_smart_money_cost", "premium_to_cost_pct",
         "entry_low", "entry_high", "invalidation", "tp1", "tp2",
     ]
     available_cols = [c for c in cols if c in display.columns]
+    column_config = {
+        "bandar_price_est": st.column_config.NumberColumn(
+            "Harga Bandar Est.",
+            help="Estimasi inventory cost cohort broker akumulator. Hanya ditampilkan untuk BROKER_DIRECT terverifikasi.",
+            format="Rp %.0f",
+        ),
+        "bandar_vs_price_pct": st.column_config.NumberColumn(
+            "Harga vs Bandar",
+            help="Premium/diskon harga terakhir terhadap Harga Bandar Est. Nilai positif = harga di atas cost bandar.",
+            format="%.1f%%",
+        ),
+        "bandar_cost_position": st.column_config.TextColumn(
+            "Posisi vs Cost Bandar",
+            help="UNDER_COST / NEAR_COST / HEALTHY_MARKUP / MARKUP / EXTENDED / OVEREXTENDED. UNVERIFIED jika bukan BROKER_DIRECT.",
+        ),
+    }
 
     st.subheader("1. Raw Research Priority")
-    st.caption("Seluruh kandidat termasuk PRICE_PROXY. Ranking ini untuk discovery, bukan izin eksekusi real-money.")
-    st.dataframe(display[available_cols], width="stretch", hide_index=True)
+    st.caption("Seluruh kandidat termasuk PRICE_PROXY. Harga bandar hanya terisi pada row BROKER_DIRECT.")
+    st.dataframe(display[available_cols], width="stretch", hide_index=True, column_config=column_config)
 
     st.subheader("2. Guarded Accumulation Watch")
     guarded_acc = display[
@@ -413,37 +445,51 @@ if isinstance(results, pd.DataFrame) and not results.empty:
     if guarded_acc.empty:
         st.info("Tidak ada kandidat guarded accumulation pada run ini.")
     else:
-        st.dataframe(guarded_acc[available_cols].head(20), width="stretch", hide_index=True)
+        st.dataframe(guarded_acc[available_cols].head(20), width="stretch", hide_index=True, column_config=column_config)
 
     st.subheader("3. Broker-Verified Production")
-    st.caption("Hanya BROKER_DIRECT + ELIGIBLE. Proxy OHLCV dan foreign flow tidak dapat masuk lane ini.")
+    st.caption("Hanya BROKER_DIRECT + ELIGIBLE. Lane ini menampilkan Harga Bandar Est. yang sudah lolos evidence/provenance gate.")
     production = eligible.sort_values(["final_score", "accumulation_score"], ascending=False)
     if production.empty:
-        st.info("Belum ada kandidat production-eligible. Ini expected jika direct broker evidence terverifikasi belum tersedia.")
+        st.info("Belum ada kandidat production-eligible. Harga bandar tidak akan dipaksakan dari OHLCV/foreign-flow proxy.")
     else:
-        st.dataframe(production[available_cols].head(20), width="stretch", hide_index=True)
+        st.dataframe(production[available_cols].head(20), width="stretch", hide_index=True, column_config=column_config)
 
     st.subheader("Distribution Warning")
     dist = display.sort_values("distribution_risk", ascending=False)
     dist_cols = [c for c in [
         "ticker", "distribution_risk", "phase", "action", "final_score", "evidence_tier",
+        "bandar_price_est", "bandar_vs_price_pct", "bandar_cost_position",
         "broker_verified_source_pct", "price_data_quality_score", "guardrail_reason"
     ] if c in dist.columns]
-    st.dataframe(dist[dist_cols].head(20), width="stretch", hide_index=True)
+    st.dataframe(dist[dist_cols].head(20), width="stretch", hide_index=True, column_config=column_config)
 
     st.subheader("Single Ticker Audit")
     selected = st.selectbox("Ticker", display["ticker"].tolist())
-    row = results[results["ticker"] == selected].iloc[0].to_dict()
-    a, b, c = st.columns(3)
+    row = display[display["ticker"] == selected].iloc[0].to_dict()
+    bandar_price = row.get("bandar_price_est")
+    bandar_delta = row.get("bandar_vs_price_pct")
+    is_direct = row.get("evidence_tier") == "BROKER_DIRECT"
+    a, b, c, d, e = st.columns(5)
     a.metric("Final Score", row["final_score"])
     b.metric("Phase", row["phase"])
     c.metric("State", row["real_money_state"])
+    d.metric(
+        "Harga Bandar Est.",
+        f"Rp {float(bandar_price):,.0f}" if is_direct and pd.notna(bandar_price) else "UNVERIFIED",
+    )
+    e.metric(
+        "Harga vs Bandar",
+        f"{float(bandar_delta):+.1f}%" if is_direct and pd.notna(bandar_delta) else "N/A",
+    )
+    if not is_direct:
+        st.caption("Harga bandar sengaja tidak ditampilkan: evidence belum BROKER_DIRECT terverifikasi.")
     st.write(row.get("guardrail_reason"))
     st.json(row.get("diagnostics", {}), expanded=False)
 
     st.download_button(
         "Download scan CSV",
-        data=results.drop(columns=["diagnostics", "components"], errors="ignore").to_csv(index=False).encode(),
+        data=display.drop(columns=["diagnostics", "components"], errors="ignore").to_csv(index=False).encode(),
         file_name=f"idx_flow_scan_{st.session_state.last_run_id}.csv",
         mime="text/csv",
     )
