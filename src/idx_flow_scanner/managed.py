@@ -126,8 +126,10 @@ def load_persisted_results(store: Any, run_id: str) -> pd.DataFrame:
         return frame
     component_names = (
         "accumulation_score", "operator_dominance_score", "cost_basis_score",
-        "retail_exhaustion_score", "supply_concentration_score",
-        "price_flow_divergence_score", "smc_execution_score", "risk_liquidity_score",
+        "retail_exhaustion_score", "foreign_institutional_score",
+        "supply_concentration_score", "price_flow_divergence_score",
+        "market_context_score", "smc_execution_score", "risk_liquidity_score",
+        "price_data_quality_score",
     )
     for name in component_names:
         frame[name] = frame["components"].map(lambda value: (value or {}).get(name) if isinstance(value, dict) else None)
