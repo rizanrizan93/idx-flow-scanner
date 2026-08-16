@@ -242,6 +242,50 @@ class SupabaseStore:
         except Exception:
             return pd.DataFrame()
 
+    def load_prices_bulk(
+        self,
+        tickers: Iterable[str],
+        *,
+        min_rows: int = 80,
+        limit: int = 450,
+        chunk_size: int = 20,
+        progress=None,
+    ) -> dict[str, pd.DataFrame]:
+        """Load the dedicated OHLCV cache in bounded multi-ticker RPC calls.
+
+        The database function applies the row limit per ticker, avoiding the
+        400-request cold path of ``load_prices`` while keeping response sizes
+        bounded. If the RPC is unavailable (for example during deployment race),
+        this method fails closed to an empty map so callers can use their existing
+        seed/fetch fallback without changing evidence semantics.
+        """
+        names=list(dict.fromkeys(canonical_ticker(t) for t in tickers if canonical_ticker(t)))
+        if not names:
+            return {}
+        out: dict[str, pd.DataFrame] = {}
+        step=max(1, min(int(chunk_size), 40))
+        try:
+            for start in range(0, len(names), step):
+                chunk=names[start:start+step]
+                resp=self.client.rpc("flow_load_price_cache", {
+                    "p_tickers": chunk,
+                    "p_limit": int(limit),
+                }).execute()
+                frame=pd.DataFrame(resp.data or [])
+                if not frame.empty:
+                    for ticker, group in frame.groupby("ticker", sort=False):
+                        t=canonical_ticker(ticker)
+                        normalized=normalize_price_frame(
+                            group.rename(columns={"trade_date":"date"}), t
+                        )
+                        if len(normalized) >= int(min_rows):
+                            out[t]=normalized.tail(int(limit)).reset_index(drop=True)
+                if progress:
+                    progress(min(start+len(chunk), len(names)), len(names), len(out))
+        except Exception:
+            return {}
+        return out
+
     def load_prices(self, ticker: str, min_rows: int = 80, limit: int = 450) -> pd.DataFrame:
         t=canonical_ticker(ticker)
         resp=(self.client.table("flow_daily_prices").select("trade_date,open,high,low,close,volume")

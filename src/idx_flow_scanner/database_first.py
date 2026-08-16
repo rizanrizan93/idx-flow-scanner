@@ -67,15 +67,42 @@ def prepare_database_first_prices(
     """Build one in-memory price map before scoring.
 
     Order of precedence: dedicated Supabase cache -> verified bundled GitHub
-    seed -> throttled Yahoo fetch. This keeps a new database usable without
-    generating a 400-request cold-start burst from a single Streamlit IP.
+    seed -> throttled Yahoo fetch. Supabase is read in bounded multi-ticker RPC
+    calls when available; the previous one-query-per-ticker path remains only as
+    a compatibility fallback for stores that do not expose ``load_prices_bulk``.
     """
     names = list(dict.fromkeys(canonical_ticker(t) for t in universe if canonical_ticker(t)))
     frames: dict[str, pd.DataFrame] = {}
     cache_hits = 0
     db_read_errors = 0
+    bulk_cache_used = False
 
-    if store is not None:
+    if store is not None and hasattr(store, "load_prices_bulk"):
+        try:
+            def bulk_progress(done: int, total: int, hits: int) -> None:
+                if status:
+                    status(f"Checking Supabase OHLCV cache • {done}/{total} • hits {hits}")
+
+            bulk = store.load_prices_bulk(
+                names,
+                min_rows=min_rows,
+                limit=450,
+                chunk_size=20,
+                progress=bulk_progress,
+            )
+            for ticker, frame in (bulk or {}).items():
+                if len(frame) >= min_rows:
+                    frames[canonical_ticker(ticker)] = frame
+            cache_hits = len(frames)
+            bulk_cache_used = True
+        except Exception:
+            db_read_errors += 1
+
+    # Compatibility fallback is intentionally skipped when the bulk RPC exists
+    # but returns an incomplete subset: bundled seed/Yahoo should fill the gaps
+    # without recreating a 400-request database burst. Older stores without the
+    # bulk method retain the legacy per-ticker reads.
+    if store is not None and not bulk_cache_used:
         for i, ticker in enumerate(names, 1):
             try:
                 cached = store.load_prices(ticker, min_rows=min_rows)
@@ -151,6 +178,7 @@ def prepare_database_first_prices(
         "universe": len(names),
         "cache_hits": cache_hits,
         "cache_misses": len(missing_after_db),
+        "bulk_cache_used": bulk_cache_used,
         "seed_hits": seed_hits,
         "seed_persisted": seed_persisted,
         "fetched_valid": fetched_valid,
