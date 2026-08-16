@@ -55,6 +55,56 @@ def load_bundled_price_seed(
     return out
 
 
+def _load_prices_per_ticker_json(
+    store: SupabaseStore,
+    names: list[str],
+    *,
+    min_rows: int,
+    limit: int = 320,
+    chunk_size: int = 40,
+    status: Callable[[str], None] | None = None,
+) -> dict[str, pd.DataFrame]:
+    """Load OHLCV as one PostgREST row per ticker, with ticker-day dedupe in SQL.
+
+    The older transport aggregated an entire chunk into one large JSON value and
+    included duplicate ticker-days from multiple provenance sources before Python
+    normalization. On Streamlit/Supabase free infrastructure that caused many
+    large request/heartbeat round-trips and could leave a managed scan stuck in
+    ``OHLCV_PREP``. The v0.3.7 RPC returns at most one row per ticker while the
+    database chooses the newest persisted provenance for each ticker-day.
+    """
+    out: dict[str, pd.DataFrame] = {}
+    step = max(1, min(int(chunk_size), 40))
+    for start in range(0, len(names), step):
+        chunk = names[start:start + step]
+        response = store.client.rpc(
+            "flow_load_price_cache_by_ticker",
+            {"p_tickers": chunk, "p_limit": int(limit)},
+        ).execute()
+        rows = response.data or []
+        if isinstance(rows, dict):
+            rows = [rows]
+        for item in rows if isinstance(rows, list) else []:
+            if not isinstance(item, dict):
+                continue
+            ticker = canonical_ticker(item.get("ticker"))
+            payload = item.get("payload")
+            if not ticker or not isinstance(payload, list) or not payload:
+                continue
+            frame = pd.DataFrame(payload)
+            try:
+                normalized = normalize_price_frame(frame.rename(columns={"trade_date": "date"}), ticker)
+            except Exception:
+                continue
+            if len(normalized) >= int(min_rows):
+                out[ticker] = normalized.tail(int(limit)).reset_index(drop=True)
+        if status:
+            status(
+                f"Checking Supabase OHLCV cache • {min(start + len(chunk), len(names))}/{len(names)} • hits {len(out)}"
+            )
+    return out
+
+
 def _load_prices_bulk_json(
     store: SupabaseStore,
     names: list[str],
@@ -64,14 +114,7 @@ def _load_prices_bulk_json(
     chunk_size: int = 20,
     status: Callable[[str], None] | None = None,
 ) -> dict[str, pd.DataFrame]:
-    """Load multi-ticker OHLCV through a single-row JSON RPC per chunk.
-
-    PostgREST applies its row cap to set-returning RPC results. The prior bulk
-    RPC could therefore truncate a 20-ticker response near 1,000 rows and make
-    healthy cached tickers look missing. The JSON projection returns one row
-    containing the per-ticker payload, so the Data API row cap cannot silently
-    truncate the cache cohort.
-    """
+    """Compatibility fallback for the v0.3.2 single-row JSON RPC."""
     out: dict[str, pd.DataFrame] = {}
     step = max(1, min(int(chunk_size), 40))
     for start in range(0, len(names), step):
@@ -95,7 +138,7 @@ def _load_prices_bulk_json(
                 if len(normalized) >= int(min_rows):
                     out[t] = normalized.tail(int(limit)).reset_index(drop=True)
         if status:
-            status(f"Checking Supabase OHLCV cache • {min(start + len(chunk), len(names))}/{len(names)} • hits {len(out)}")
+            status(f"Checking Supabase OHLCV cache fallback • {min(start + len(chunk), len(names))}/{len(names)} • hits {len(out)}")
     return out
 
 
@@ -111,9 +154,9 @@ def prepare_database_first_prices(
     """Build one in-memory price map before scoring.
 
     Order of precedence: dedicated Supabase cache -> verified bundled GitHub
-    seed -> throttled Yahoo fetch. Supabase is read in bounded multi-ticker RPC
-    calls when available; the previous one-query-per-ticker path remains only as
-    a compatibility fallback for stores that do not expose the JSON bulk RPC.
+    seed -> throttled Yahoo fetch. The preferred database transport returns one
+    PostgREST row per ticker and deduplicates ticker-days in SQL. Older JSON and
+    rowset RPCs remain compatibility fallbacks and never alter evidence semantics.
     """
     names = list(dict.fromkeys(canonical_ticker(t) for t in universe if canonical_ticker(t)))
     frames: dict[str, pd.DataFrame] = {}
@@ -123,6 +166,25 @@ def prepare_database_first_prices(
     bulk_cache_transport = "NONE"
 
     if store is not None:
+        try:
+            bulk = _load_prices_per_ticker_json(
+                store,
+                names,
+                min_rows=min_rows,
+                limit=320,
+                chunk_size=40,
+                status=status,
+            )
+            for ticker, frame in (bulk or {}).items():
+                if len(frame) >= min_rows:
+                    frames[canonical_ticker(ticker)] = frame
+            cache_hits = len(frames)
+            bulk_cache_used = True
+            bulk_cache_transport = "PER_TICKER_JSON_RPC"
+        except Exception:
+            db_read_errors += 1
+
+    if store is not None and not bulk_cache_used:
         try:
             bulk = _load_prices_bulk_json(
                 store,
@@ -137,7 +199,7 @@ def prepare_database_first_prices(
                     frames[canonical_ticker(ticker)] = frame
             cache_hits = len(frames)
             bulk_cache_used = True
-            bulk_cache_transport = "JSON_RPC"
+            bulk_cache_transport = "JSON_RPC_FALLBACK"
         except Exception:
             db_read_errors += 1
 
@@ -145,7 +207,7 @@ def prepare_database_first_prices(
         try:
             def bulk_progress(done: int, total: int, hits: int) -> None:
                 if status:
-                    status(f"Checking Supabase OHLCV cache fallback • {done}/{total} • hits {hits}")
+                    status(f"Checking Supabase OHLCV rowset fallback • {done}/{total} • hits {hits}")
 
             bulk = store.load_prices_bulk(
                 names,
@@ -174,7 +236,7 @@ def prepare_database_first_prices(
                 frames[ticker] = cached
                 cache_hits += 1
             if status and (i == 1 or i % 25 == 0 or i == len(names)):
-                status(f"Checking Supabase OHLCV cache • {i}/{len(names)} • hits {cache_hits}")
+                status(f"Checking Supabase OHLCV single fallback • {i}/{len(names)} • hits {cache_hits}")
 
     missing_after_db = [t for t in names if t not in frames]
     seed_hits = 0
@@ -196,15 +258,13 @@ def prepare_database_first_prices(
                     persist_errors += 1
         if status and seed_hits:
             status(
-                f"Bundled OHLCV seed • valid {seed_hits}/{len(missing_after_db)} • "
-                f"persisted {seed_persisted}"
+                f"Bundled OHLCV seed • valid {seed_hits}/{len(missing_after_db)} • persisted {seed_persisted}"
             )
 
     missing = [t for t in names if t not in frames]
     if status:
         status(
-            f"OHLCV local sources ready • DB {cache_hits} • seed {seed_hits} • "
-            f"fetching {len(missing)} missing"
+            f"OHLCV local sources ready • DB {cache_hits} • seed {seed_hits} • fetching {len(missing)} missing"
         )
 
     fetched_valid = 0
@@ -224,8 +284,7 @@ def prepare_database_first_prices(
                     persist_errors += 1
         if status:
             status(
-                f"Yahoo fetch completed • valid {fetched_valid}/{len(missing)} • "
-                f"persisted {fetched_persisted} • unavailable {len(missing) - fetched_valid}"
+                f"Yahoo fetch completed • valid {fetched_valid}/{len(missing)} • persisted {fetched_persisted} • unavailable {len(missing) - fetched_valid}"
             )
 
     failures = [t for t in names if t not in frames]
