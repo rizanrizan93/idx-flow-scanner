@@ -3,13 +3,15 @@ name: Warm Flow Evidence
 on:
   workflow_dispatch:
   schedule:
-    - cron: '40 12 * * 1-5'
+    - cron: '40 12 * * *'
   push:
     paths:
       - 'scripts/build_flow_evidence_cache.py'
       - 'src/idx_flow_scanner/providers/idx_official.py'
       - 'src/idx_flow_scanner/providers/zapi.py'
       - 'src/idx_flow_scanner/providers/goapi.py'
+      - 'src/idx_flow_scanner/providers/indexalpha.py'
+      - 'data/config/indexalpha_targets.json'
       - 'src/idx_flow_scanner/foreign_evidence.py'
       - '.github/workflows/warm-flow-evidence.yml'
 
@@ -37,6 +39,8 @@ jobs:
           ZAPI_KEY: ${{ secrets.ZAPI_KEY }}
           GOAPI_KEY: ${{ secrets.GOAPI_KEY }}
           GOAPI_DAILY_BUDGET: ${{ vars.GOAPI_DAILY_BUDGET || '5' }}
+          INDEX_ALPHA_KEY: ${{ secrets.INDEX_ALPHA_KEY }}
+          INDEX_ALPHA_DAILY_BUDGET: ${{ vars.INDEX_ALPHA_DAILY_BUDGET || '5' }}
           IDX_FOREIGN_TARGET_DAYS: '20'
           IDX_FOREIGN_MAX_CALENDAR_DAYS: '45'
           ZAPI_FOREIGN_TARGET_DAYS: '20'
@@ -55,6 +59,7 @@ jobs:
           test ! -f data/cache/idx_official_flow_60d.csv.gz || cp data/cache/idx_official_flow_60d.csv.gz /tmp/flow-evidence-cache/
           test ! -f data/cache/zapi_idx_foreign_60d.csv.gz || cp data/cache/zapi_idx_foreign_60d.csv.gz /tmp/flow-evidence-cache/
           test ! -f data/cache/goapi_broker_60d.csv.gz || cp data/cache/goapi_broker_60d.csv.gz /tmp/flow-evidence-cache/
+          test ! -f data/cache/indexalpha_broker_60d.csv.gz || cp data/cache/indexalpha_broker_60d.csv.gz /tmp/flow-evidence-cache/
 
           git fetch origin "$GITHUB_REF_NAME"
           git reset --hard "origin/$GITHUB_REF_NAME"
@@ -100,6 +105,7 @@ jobs:
               "idx_official_flow_60d.csv.gz",
               "zapi_idx_foreign_60d.csv.gz",
               "goapi_broker_60d.csv.gz",
+              "indexalpha_broker_60d.csv.gz",
           ):
               new_path = fresh / name
               old_path = cache / name
@@ -121,6 +127,7 @@ jobs:
           test ! -f data/cache/idx_official_flow_60d.csv.gz || git add data/cache/idx_official_flow_60d.csv.gz
           test ! -f data/cache/zapi_idx_foreign_60d.csv.gz || git add data/cache/zapi_idx_foreign_60d.csv.gz
           test ! -f data/cache/goapi_broker_60d.csv.gz || git add data/cache/goapi_broker_60d.csv.gz
+          test ! -f data/cache/indexalpha_broker_60d.csv.gz || git add data/cache/indexalpha_broker_60d.csv.gz
           if git diff --cached --quiet; then
             echo "Flow evidence cache materially unchanged; no commit and no Streamlit redeploy"
           else
