@@ -9,6 +9,7 @@ import pandas as pd
 
 DEFAULT_RESULT_BATCH_SIZE = 25
 DEFAULT_PERSIST_TIMEOUT_SECONDS = 30.0
+PERSISTENCE_GUARD_REVISION = "v3.15-truthful-hot-reload"
 
 
 def install_bounded_result_persistence(store_cls: type[Any], *, batch_size: int = DEFAULT_RESULT_BATCH_SIZE) -> None:
@@ -21,11 +22,14 @@ def install_bounded_result_persistence(store_cls: type[Any], *, batch_size: int 
     explicitly before re-raising so the managed gate never leaves a zombie RUNNING
     row and partial rows remain safe to upsert on the next run.
 
-    Terminal telemetry must report rows that actually completed persistence, not
-    rows that merely completed scoring. This distinction matters for managed-run
-    validity and evidence-coverage audits after a partial PostgREST failure.
+    Terminal telemetry reports rows that actually completed persistence, not rows
+    that merely completed scoring. The installer is revision-aware because
+    Streamlit can hot-reload source files while retaining an already monkeypatched
+    ``SupabaseStore`` class in the live Python process. A normal rerun with the same
+    revision is idempotent; a deployed implementation revision wraps the currently
+    active method again so the new fail-closed semantics take effect immediately.
     """
-    if getattr(store_cls, "_flow_bounded_result_persistence_installed", False):
+    if getattr(store_cls, "_flow_bounded_result_persistence_revision", None) == PERSISTENCE_GUARD_REVISION:
         return
 
     original_save_results = store_cls.save_results
@@ -106,4 +110,5 @@ def install_bounded_result_persistence(store_cls: type[Any], *, batch_size: int 
 
     store_cls.save_results = bounded_save_results
     store_cls._flow_bounded_result_persistence_installed = True
+    store_cls._flow_bounded_result_persistence_revision = PERSISTENCE_GUARD_REVISION
     store_cls._flow_result_persistence_batch_size = bounded_size
