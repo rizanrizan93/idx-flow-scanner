@@ -20,6 +20,10 @@ def install_bounded_result_persistence(store_cls: type[Any], *, batch_size: int 
     client and small idempotent batches. If any batch raises, fail the scan run
     explicitly before re-raising so the managed gate never leaves a zombie RUNNING
     row and partial rows remain safe to upsert on the next run.
+
+    Terminal telemetry must report rows that actually completed persistence, not
+    rows that merely completed scoring. This distinction matters for managed-run
+    validity and evidence-coverage audits after a partial PostgREST failure.
     """
     if getattr(store_cls, "_flow_bounded_result_persistence_installed", False):
         return
@@ -71,6 +75,7 @@ def install_bounded_result_persistence(store_cls: type[Any], *, batch_size: int 
             return original_save_results(store, run_id, frame)
 
         total = int(len(frame))
+        persisted_count = 0
         original_client = getattr(store, "client", None)
         write_client = _get_write_client(store)
         try:
@@ -83,14 +88,15 @@ def install_bounded_result_persistence(store_cls: type[Any], *, batch_size: int 
                 finally:
                     if original_client is not None:
                         store.client = original_client
-                _heartbeat(write_client or original_client, run_id, end, total)
+                persisted_count = end
+                _heartbeat(write_client or original_client, run_id, persisted_count, total)
         except Exception:
             if original_client is not None:
                 store.client = original_client
             try:
                 store.finish_run(
                     run_id,
-                    processed_count=total,
+                    processed_count=persisted_count,
                     error_count=1,
                     status="FAILED",
                 )
