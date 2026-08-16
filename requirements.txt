@@ -2,6 +2,7 @@ streamlit>=1.46,<2
 pandas>=2.2,<3
 numpy>=2.0,<3
 yfinance>=0.2.65,<1
+curl-cffi>=0.16,<1
 supabase>=2.18,<3
 python-dotenv>=1.0,<2
 pytest>=8.3,<9
