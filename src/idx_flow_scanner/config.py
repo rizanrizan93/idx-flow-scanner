@@ -34,6 +34,8 @@ class ScannerConfig:
     direct_broker_min_distinct_brokers: int = 6
     direct_broker_max_balance_error_pct: float = 10.0
     real_money_min_coverage_pct: float = 80.0
+    real_money_min_price_quality_score: float = 70.0
+    max_price_staleness_days: int = 3
     top_brokers: int = 5
     max_price_extension_from_cost_pct: float = 35.0
     weights: FlowWeights = field(default_factory=FlowWeights)
@@ -44,3 +46,7 @@ class ScannerConfig:
             raise ValueError("direct_broker_min_distinct_brokers must be >= 2")
         if not 0 <= self.direct_broker_max_balance_error_pct <= 100:
             raise ValueError("direct_broker_max_balance_error_pct must be between 0 and 100")
+        if not 0 <= self.real_money_min_price_quality_score <= 100:
+            raise ValueError("real_money_min_price_quality_score must be between 0 and 100")
+        if self.max_price_staleness_days < 0:
+            raise ValueError("max_price_staleness_days must be >= 0")
