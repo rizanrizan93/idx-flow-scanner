@@ -17,10 +17,13 @@ class ScanResult:
     operator_dominance_score: float
     cost_basis_score: float
     retail_exhaustion_score: float
+    foreign_institutional_score: float
     supply_concentration_score: float
     price_flow_divergence_score: float
+    market_context_score: float
     smc_execution_score: float
     risk_liquidity_score: float
+    price_data_quality_score: float
     distribution_risk: float
     estimated_smart_money_cost: float | None
     premium_to_cost_pct: float | None
