@@ -8,9 +8,12 @@ from .data import canonical_ticker
 
 DIRECT_IDX_SOURCE = "IDX_OFFICIAL_STOCK_SUMMARY"
 ZAPI_IDX_SOURCE = "ZAPI_IDX_FOREIGN_FLOW"
+ZAPI_STOCK_SUMMARY_SOURCE = "ZAPI_IDX_STOCK_SUMMARY"
+ZAPI_SOURCES = frozenset({ZAPI_IDX_SOURCE, ZAPI_STOCK_SUMMARY_SOURCE})
 SOURCE_PRIORITY = {
     DIRECT_IDX_SOURCE: 2,
     ZAPI_IDX_SOURCE: 1,
+    ZAPI_STOCK_SUMMARY_SOURCE: 1,
 }
 
 
@@ -43,7 +46,7 @@ def prepare_foreign_evidence(
         frame["source"] = frame.get("source", "UNKNOWN").fillna("UNKNOWN").astype(str)
 
     selected: list[pd.DataFrame] = []
-    counts = {DIRECT_IDX_SOURCE: 0, ZAPI_IDX_SOURCE: 0, "OTHER": 0, "NONE": 0}
+    counts = {DIRECT_IDX_SOURCE: 0, "ZAPI": 0, "OTHER": 0, "NONE": 0}
     coverage_values: list[float] = []
 
     for raw_ticker in universe:
@@ -70,13 +73,18 @@ def prepare_foreign_evidence(
         chosen["flow_unit"] = "SHARES"
         chosen["foreign_evidence_source"] = source
         selected.append(chosen)
-        counts[source if source in counts else "OTHER"] += 1
+        if source == DIRECT_IDX_SOURCE:
+            counts[DIRECT_IDX_SOURCE] += 1
+        elif source in ZAPI_SOURCES:
+            counts["ZAPI"] += 1
+        else:
+            counts["OTHER"] += 1
         coverage_values.append(float(coverage))
 
     out = pd.concat(selected, ignore_index=True) if selected else pd.DataFrame()
     stats = {
         "idx_direct_selected_tickers": counts[DIRECT_IDX_SOURCE],
-        "zapi_selected_tickers": counts[ZAPI_IDX_SOURCE],
+        "zapi_selected_tickers": counts["ZAPI"],
         "other_selected_tickers": counts["OTHER"],
         "foreign_unavailable_tickers": counts["NONE"],
         "median_selected_coverage_pct": float(pd.Series(coverage_values).median()) if coverage_values else 0.0,
