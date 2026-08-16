@@ -1,0 +1,20 @@
+{
+  "generated_at": "2026-08-16T20:09:39.951648+00:00",
+  "latest_trade_date": "2026-08-14",
+  "minimum_bars": 80,
+  "period": "1y",
+  "rejected": [
+    {
+      "bars": 1,
+      "ticker": "SCPI"
+    },
+    {
+      "bars": 20,
+      "ticker": "META"
+    }
+  ],
+  "source": "Yahoo Finance public chart/download endpoints",
+  "universe_count": 400,
+  "valid_ratio": 0.995,
+  "valid_tickers": 398
+}
