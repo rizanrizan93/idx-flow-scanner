@@ -34,11 +34,7 @@ def _records(frame: pd.DataFrame) -> list[dict]:
 
 
 def decode_legacy_ohlcv_compact(payload_compact: str, codec: str, ticker: str | None = None) -> pd.DataFrame:
-    """Decode the Super Scanner's compressed OHLCV cache without weakening evidence labels.
-
-    ZLIB_CSV_V1 is base64(zlib(csv)). The adapter is intentionally narrow: unknown
-    codecs and unusually large payloads are rejected rather than guessed.
-    """
+    """Decode the former Super Scanner compressed OHLCV cache when explicitly enabled."""
     if not payload_compact or str(codec or "").upper() != "ZLIB_CSV_V1":
         return pd.DataFrame()
     text = str(payload_compact).strip()
@@ -65,6 +61,7 @@ class SupabaseStore:
             raise RuntimeError("SUPABASE_URL and SUPABASE_SECRET_KEY are required")
         if self.secret_key.startswith("sb_publishable_"):
             raise RuntimeError("Backend writes require a secret/service-role key, not a publishable key")
+        self.enable_legacy_cache = str(os.getenv("FLOW_ENABLE_LEGACY_CACHE", "0")).strip().lower() in {"1", "true", "yes"}
         from supabase import create_client
         self.client = create_client(self.url, self.secret_key)
 
@@ -73,6 +70,17 @@ class SupabaseStore:
             "id": run_id, "status": "RUNNING", "universe_count": int(universe_count),
             "started_at": datetime.now(timezone.utc).isoformat(), "config": config,
         }).execute()
+
+    def update_run_progress(self, run_id: str, attempted_count: int, current_ticker: str) -> None:
+        """Best-effort heartbeat; compatible with databases before telemetry migration."""
+        try:
+            self.client.table("flow_scan_runs").update({
+                "attempted_count": int(attempted_count),
+                "current_ticker": canonical_ticker(current_ticker),
+                "heartbeat_at": datetime.now(timezone.utc).isoformat(),
+            }).eq("id", run_id).execute()
+        except Exception:
+            pass
 
     def save_results(self, run_id: str, frame: pd.DataFrame) -> None:
         if frame is None or frame.empty:
@@ -97,11 +105,35 @@ class SupabaseStore:
         for i in range(0, len(records), 500):
             self.client.table("flow_scan_results").upsert(records[i:i+500], on_conflict="run_id,ticker").execute()
 
-    def finish_run(self, run_id: str, processed_count: int, error_count: int) -> None:
-        self.client.table("flow_scan_runs").update({
-            "status": "COMPLETED", "processed_count": int(processed_count), "error_count": int(error_count),
+    def finish_run(
+        self,
+        run_id: str,
+        processed_count: int,
+        error_count: int,
+        *,
+        status: str = "COMPLETED",
+        attempted_count: int | None = None,
+        telemetry: dict[str, int] | None = None,
+    ) -> None:
+        base = {
+            "status": status,
+            "processed_count": int(processed_count),
+            "error_count": int(error_count),
             "completed_at": datetime.now(timezone.utc).isoformat(),
-        }).eq("id", run_id).execute()
+        }
+        extended = dict(base)
+        if attempted_count is not None:
+            extended["attempted_count"] = int(attempted_count)
+        extended["heartbeat_at"] = datetime.now(timezone.utc).isoformat()
+        extended["current_ticker"] = None
+        if telemetry:
+            for key in ("price_cache_hits", "price_fetched", "price_failures"):
+                if key in telemetry:
+                    extended[key] = int(telemetry[key])
+        try:
+            self.client.table("flow_scan_runs").update(extended).eq("id", run_id).execute()
+        except Exception:
+            self.client.table("flow_scan_runs").update(base).eq("id", run_id).execute()
 
     def upsert_broker_flows(self, frame: pd.DataFrame) -> int:
         b = normalize_broker_summary(frame)
@@ -144,10 +176,6 @@ class SupabaseStore:
         return len(rows)
 
     def _load_legacy_price_cache(self, ticker: str, min_rows: int, limit: int) -> pd.DataFrame:
-        """Read the existing Super Scanner cache when Flow shares that Supabase project.
-
-        This is a data-source compatibility path only. It never upgrades broker evidence.
-        """
         t=canonical_ticker(ticker)
         try:
             resp=(self.client.table("ohlcv_daily_cache")
@@ -163,7 +191,6 @@ class SupabaseStore:
             if len(frame) < min_rows:
                 return pd.DataFrame()
             frame=frame.tail(int(limit)).reset_index(drop=True)
-            # Warm-copy into Flow's normalized cache. Failure to warm must not block reads.
             try:
                 self.upsert_prices(t, frame, source="LEGACY_SUPER_CACHE")
             except Exception:
@@ -180,7 +207,9 @@ class SupabaseStore:
         if len(rows)>=min_rows:
             f=pd.DataFrame(rows).rename(columns={"trade_date":"date"})
             return normalize_price_frame(f,t)
-        return self._load_legacy_price_cache(t, min_rows=min_rows, limit=limit)
+        if self.enable_legacy_cache:
+            return self._load_legacy_price_cache(t, min_rows=min_rows, limit=limit)
+        return pd.DataFrame()
 
     def prune_history(self, *, scan_days: int = 45, broker_days: int = 150, price_days: int = 550) -> None:
         now=date.today()
