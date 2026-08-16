@@ -10,11 +10,18 @@ if str(SRC) not in sys.path:
 
 import idx_flow_scanner.streamlit_app as streamlit_app
 from idx_flow_scanner.large_universe_prices import prepare_large_universe_prices
+from idx_flow_scanner.persistence_guard import install_bounded_result_persistence
+from idx_flow_scanner.storage import SupabaseStore
 
 # The bundled 400-ticker production run uses a bounded DB transport that fails
 # directly to the local verified seed instead of cascading into hundreds of
 # single-ticker PostgREST requests. Small/ad-hoc universes keep the legacy path.
 streamlit_app.prepare_database_first_prices = prepare_large_universe_prices
+
+# The same short PostgREST timeout that protects OHLCV reads must not turn a
+# single ~400-row result upsert into a zombie RUNNING scan. Persist results in
+# small idempotent batches and explicitly fail the run if a batch raises.
+install_bounded_result_persistence(SupabaseStore)
 
 version_file = ROOT / "VERSION"
 if version_file.exists():
