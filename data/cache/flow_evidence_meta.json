@@ -6,7 +6,7 @@
     "status": "BLOCKED: IDX official TradingSummary access blocked with HTTP 403 (Cloudflare challenge)",
     "tickers": 0
   },
-  "generated_at": "2026-08-16T11:03:02.636751+00:00",
+  "generated_at": "2026-08-16T11:35:10.136012+00:00",
   "goapi_broker_direct": {
     "budget_requests": 5,
     "days": 0,
@@ -17,6 +17,28 @@
     "rows": 0,
     "status": "NO_TOKEN",
     "target_history_days": 20,
+    "tickers": 0,
+    "token_present": false,
+    "verified_tickers": 0
+  },
+  "indexalpha_broker_direct": {
+    "budget_requests": 5,
+    "contract": "STOCK_LEVEL_GROSS_BUY_SELL_EXACT_DAY_RG_ALL",
+    "days": 0,
+    "freshest": null,
+    "jobs_planned": 0,
+    "provider": "INDEX_ALPHA_BROKER_SUMMARY",
+    "requests_attempted": 0,
+    "rows": 0,
+    "status": "NO_TOKEN",
+    "target_history_days": 20,
+    "targets": [
+      "MMIX",
+      "PKPK",
+      "DAYA",
+      "MDLA",
+      "OMED"
+    ],
     "tickers": 0,
     "token_present": false,
     "verified_tickers": 0

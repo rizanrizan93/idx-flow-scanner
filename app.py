@@ -14,6 +14,7 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from idx_flow_scanner.config import ScannerConfig
+from idx_flow_scanner.broker_evidence import select_broker_evidence
 from idx_flow_scanner.data import normalize_broker_summary, parse_universe
 from idx_flow_scanner.database_first import prepare_database_first_prices
 from idx_flow_scanner.foreign_evidence import prepare_foreign_evidence
@@ -32,6 +33,7 @@ from idx_flow_scanner.providers.goapi import (
     load_bundled_goapi_broker_flows,
     merge_goapi_broker_frames,
 )
+from idx_flow_scanner.providers.indexalpha import load_bundled_indexalpha_broker_flows
 from idx_flow_scanner.providers.idx_official import (
     fetch_idx_official_flow_history,
     load_bundled_idx_official_flows,
@@ -56,7 +58,7 @@ st.title("IDX Flow Scanner")
 st.caption(
     f"v{APP_VERSION} • clean-room bandarmology / accumulation engine • database-first • "
     "managed 400-ticker mode • direct IDX + Zapi IDX-derived foreign shares • "
-    "optional GOAPI stock-level broker evidence • provenance-gated bandar cost • OOS memory"
+    "optional Index Alpha / GOAPI stock-level broker evidence • provenance-gated bandar cost • OOS memory"
 )
 
 
@@ -223,14 +225,18 @@ if trigger_scan:
                 db_broker = store.load_broker_flows(universe)
             except Exception as exc:
                 st.warning(f"Broker database read failed; continuing with bundled evidence/PRICE_PROXY: {exc}")
-        bundled_broker = load_bundled_goapi_broker_flows(universe)
+        bundled_goapi = load_bundled_goapi_broker_flows(universe)
+        bundled_indexalpha = load_bundled_indexalpha_broker_flows(universe)
+        bundled_broker = merge_goapi_broker_frames(bundled_goapi, bundled_indexalpha)
         broker = merge_goapi_broker_frames(db_broker, bundled_broker)
         if store is not None and not bundled_broker.empty:
             try:
                 store.upsert_broker_flows(bundled_broker)
             except Exception as exc:
-                st.caption(f"Bundled GOAPI broker cache could not be persisted: {exc}")
+                st.caption(f"Bundled verified broker cache could not be persisted: {exc}")
+    broker, broker_selector_stats = select_broker_evidence(broker)
     broker_stats = data_stats(broker)
+    broker_stats["provider_selection"] = broker_selector_stats
     st.session_state.last_broker_stats = broker_stats
 
     bar = st.progress(0.0, text="Preparing OHLCV...")
@@ -258,8 +264,10 @@ if trigger_scan:
                     "zapi_vendor_foreign_db": True,
                     "foreign_evidence_selector": "BEST_COVERAGE_DIRECT_IDX_TIE_BREAK",
                     "goapi_broker_transport_cache": True,
-                    "broker_contract": "STOCK_LEVEL_NET_SIDE",
+                    "indexalpha_broker_transport_cache": True,
+                    "broker_contract": "VERIFIED_STOCK_LEVEL_PROVIDER_ROWS",
                     "broker_provenance_gate": True,
+                    "broker_provider_selector": "ONE_SOURCE_PER_TICKER_DAY_VERIFIED_FIRST",
                     "bandar_cost_display": "BROKER_DIRECT_ONLY",
                     "market_context": "CROSS_SECTIONAL_400",
                     "price_integrity_gate": True,
