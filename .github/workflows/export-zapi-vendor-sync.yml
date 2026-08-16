@@ -1,0 +1,98 @@
+name: Export Zapi Vendor Sync
+
+on:
+  push:
+    branches:
+      - sync/zapi-vendor-db
+    paths:
+      - '.github/workflows/export-zapi-vendor-sync.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: sync/zapi-vendor-db
+      - name: Export verified share-unit Zapi rows as bounded JSON chunks
+        run: |
+          python - <<'PY'
+          from __future__ import annotations
+
+          import csv
+          import gzip
+          import json
+          from pathlib import Path
+
+          src = Path('data/cache/zapi_idx_foreign_60d.csv.gz')
+          outdir = Path('data/sync/zapi_vendor_foreign')
+          outdir.mkdir(parents=True, exist_ok=True)
+          for old in outdir.glob('chunk_*.json'):
+              old.unlink()
+
+          def num(value):
+              try:
+                  return float(value or 0)
+              except Exception:
+                  return 0.0
+
+          rows = []
+          with gzip.open(src, 'rt', encoding='utf-8', newline='') as fh:
+              for r in csv.DictReader(fh):
+                  source = str(r.get('source') or '').strip()
+                  if source not in {'ZAPI_IDX_FOREIGN_FLOW', 'ZAPI_IDX_STOCK_SUMMARY'}:
+                      continue
+                  buy = num(r.get('foreign_buy'))
+                  sell = num(r.get('foreign_sell'))
+                  rows.append({
+                      'ticker': str(r.get('ticker') or '').replace('.JK','').strip().upper(),
+                      'trade_date': str(r.get('trade_date') or '')[:10],
+                      'foreign_buy': buy,
+                      'foreign_sell': sell,
+                      'foreign_net': buy - sell,
+                      'volume': num(r.get('volume')),
+                      'traded_value': num(r.get('traded_value')),
+                      'flow_unit': 'SHARES',
+                      'market_type': 'ALL',
+                      'source': source,
+                      'source_verified': True,
+                      'source_url': (
+                          'https://api.zpi.web.id/v1/finance:idx/foreign-flow'
+                          if source == 'ZAPI_IDX_FOREIGN_FLOW'
+                          else 'https://api.zpi.web.id/v1/finance:idx/stock-summary'
+                      ),
+                      'provenance_state': 'VENDOR_AUTHENTICATED_IDX_DERIVED',
+                  })
+
+          rows.sort(key=lambda x: (x['ticker'], x['trade_date'], x['source']))
+          assert len(rows) == 8000, f'expected 8000 audited rows, got {len(rows)}'
+          assert len({r['ticker'] for r in rows}) == 400
+          assert len({r['trade_date'] for r in rows}) == 20
+
+          chunk_size = 1000
+          for i in range(0, len(rows), chunk_size):
+              path = outdir / f'chunk_{i // chunk_size:02d}.json'
+              path.write_text(json.dumps(rows[i:i+chunk_size], separators=(',', ':')), encoding='utf-8')
+          meta = {
+              'rows': len(rows),
+              'tickers': len({r['ticker'] for r in rows}),
+              'days': len({r['trade_date'] for r in rows}),
+              'oldest': min(r['trade_date'] for r in rows),
+              'freshest': max(r['trade_date'] for r in rows),
+              'chunks': len(list(outdir.glob('chunk_*.json'))),
+              'flow_unit': 'SHARES',
+              'source_verified': True,
+          }
+          (outdir / 'meta.json').write_text(json.dumps(meta, indent=2) + '\n', encoding='utf-8')
+          print(json.dumps(meta, sort_keys=True))
+          PY
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add data/sync/zapi_vendor_foreign
+          git commit -m "Export audited Zapi vendor sync chunks"
+          git push origin HEAD:sync/zapi-vendor-db
