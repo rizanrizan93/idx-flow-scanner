@@ -1,0 +1,10 @@
+{
+  "rows": 8000,
+  "tickers": 400,
+  "days": 20,
+  "oldest": "2026-07-20",
+  "freshest": "2026-08-14",
+  "chunks": 8,
+  "flow_unit": "SHARES",
+  "source_verified": true
+}
