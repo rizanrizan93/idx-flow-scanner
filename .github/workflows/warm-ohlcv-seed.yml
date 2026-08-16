@@ -1,0 +1,37 @@
+name: Warm OHLCV Seed
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'data/cache/REFRESH_REQUEST.txt'
+
+permissions:
+  contents: write
+
+jobs:
+  build-seed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Build 400-ticker OHLCV seed
+        env:
+          PYTHONPATH: src
+        run: python scripts/build_ohlcv_seed.py
+      - name: Commit verified seed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/cache/idx_400_ohlcv_1y.csv.gz data/cache/ohlcv_seed_meta.json
+          if git diff --cached --quiet; then
+            echo "Seed unchanged"
+          else
+            git commit -m "Refresh bundled 400-ticker OHLCV seed [skip ci]"
+            git push
+          fi
