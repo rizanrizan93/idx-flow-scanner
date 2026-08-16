@@ -110,6 +110,30 @@ def recent_runs(store: Any, limit: int = 20) -> list[dict[str, Any]]:
     return list(response.data or [])
 
 
+def load_persisted_results(store: Any, run_id: str) -> pd.DataFrame:
+    if not run_id:
+        return pd.DataFrame()
+    response = (
+        store.client.table("flow_scan_results")
+        .select("*")
+        .eq("run_id", run_id)
+        .order("final_score", desc=True)
+        .limit(500)
+        .execute()
+    )
+    frame = pd.DataFrame(response.data or [])
+    if frame.empty:
+        return frame
+    component_names = (
+        "accumulation_score", "operator_dominance_score", "cost_basis_score",
+        "retail_exhaustion_score", "supply_concentration_score",
+        "price_flow_divergence_score", "smc_execution_score", "risk_liquidity_score",
+    )
+    for name in component_names:
+        frame[name] = frame["components"].map(lambda value: (value or {}).get(name) if isinstance(value, dict) else None)
+    return frame
+
+
 def mark_stale_managed_runs(store: Any, *, max_age_minutes: int = 60) -> int:
     """Fail only clearly stale managed RUNNING rows; never touch fresh work."""
     rows = recent_runs(store, limit=50)
