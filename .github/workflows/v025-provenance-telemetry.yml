@@ -1,0 +1,82 @@
+name: Patch v0.2.5 Foreign Provenance Telemetry
+
+on:
+  push:
+    branches:
+      - release/v0.2.5-zapi-foreign
+    paths:
+      - '.github/workflows/v025-provenance-telemetry.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: release/v0.2.5-zapi-foreign
+      - name: Separate direct IDX from selected foreign telemetry
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          # Foreign feature diagnostics: preserve backward key but make its semantics direct-IDX only.
+          p = Path('src/idx_flow_scanner/engines/flow.py')
+          s = p.read_text(encoding='utf-8')
+          old_default = 'default = {"foreign_institutional_score":50.0,"official_foreign_coverage_pct":0.0,"foreign_net_5d":0.0,"foreign_net_20d":0.0,"foreign_persistence_20d":0.0,"foreign_intensity_20d":0.0}'
+          new_default = 'default = {"foreign_institutional_score":50.0,"foreign_evidence_coverage_pct":0.0,"official_foreign_coverage_pct":0.0,"foreign_evidence_source":"UNAVAILABLE","foreign_net_5d":0.0,"foreign_net_20d":0.0,"foreign_persistence_20d":0.0,"foreign_intensity_20d":0.0}'
+          if old_default not in s:
+              raise SystemExit('foreign default marker not found')
+          s = s.replace(old_default, new_default, 1)
+          old_line = '    f=flow.copy(); f["trade_date"]=pd.to_datetime(f["trade_date"],errors="coerce").dt.normalize(); f=f.dropna(subset=["trade_date"]).sort_values("trade_date")\n    if f.empty: return default\n'
+          new_line = '''    f=flow.copy(); f["trade_date"]=pd.to_datetime(f["trade_date"],errors="coerce").dt.normalize(); f=f.dropna(subset=["trade_date"]).sort_values("trade_date")\n    if f.empty: return default\n    source_col = "foreign_evidence_source" if "foreign_evidence_source" in f.columns else "source" if "source" in f.columns else None\n    foreign_source = str(f[source_col].dropna().iloc[-1]) if source_col and not f[source_col].dropna().empty else "UNKNOWN"\n'''
+          if old_line not in s:
+              raise SystemExit('foreign source marker not found')
+          s = s.replace(old_line, new_line, 1)
+          old_return = '    return {"foreign_institutional_score":score,"official_foreign_coverage_pct":coverage,"foreign_net_5d":net5,"foreign_net_20d":net20,"foreign_persistence_20d":persistence20,"foreign_intensity_20d":intensity20}'
+          new_return = '    return {"foreign_institutional_score":score,"foreign_evidence_coverage_pct":coverage,"official_foreign_coverage_pct":coverage if foreign_source=="IDX_OFFICIAL_STOCK_SUMMARY" else 0.0,"foreign_evidence_source":foreign_source,"foreign_net_5d":net5,"foreign_net_20d":net20,"foreign_persistence_20d":persistence20,"foreign_intensity_20d":intensity20}'
+          if old_return not in s:
+              raise SystemExit('foreign return marker not found')
+          p.write_text(s.replace(old_return, new_return, 1), encoding='utf-8')
+
+          # Persist both direct-IDX-only telemetry and selected verified foreign telemetry.
+          app = Path('app.py')
+          a = app.read_text(encoding='utf-8')
+          old_telemetry = '''            try:\n                selected_days = int(foreign_flow["trade_date"].nunique()) if not foreign_flow.empty else 0\n                selected_tickers = int(foreign_flow["ticker"].nunique()) if not foreign_flow.empty else 0\n                store.client.table("flow_scan_runs").update({\n                    "official_flow_days": selected_days,\n                    "official_flow_tickers": selected_tickers,\n                }).eq("id", run_id).execute()\n            except Exception:\n                pass\n'''
+          new_telemetry = '''            try:\n                selected_days = int(foreign_flow["trade_date"].nunique()) if not foreign_flow.empty else 0\n                selected_tickers = int(foreign_flow["ticker"].nunique()) if not foreign_flow.empty else 0\n                direct_selected = foreign_flow[foreign_flow["source"].eq("IDX_OFFICIAL_STOCK_SUMMARY")].copy() if not foreign_flow.empty and "source" in foreign_flow.columns else pd.DataFrame()\n                direct_days = int(direct_selected["trade_date"].nunique()) if not direct_selected.empty else 0\n                direct_tickers = int(direct_selected["ticker"].nunique()) if not direct_selected.empty else 0\n                source_col = "foreign_evidence_source" if not foreign_flow.empty and "foreign_evidence_source" in foreign_flow.columns else "source"\n                source_counts = foreign_flow.groupby(source_col, observed=True)["ticker"].nunique().astype(int).to_dict() if not foreign_flow.empty and source_col in foreign_flow.columns else {}\n                store.client.table("flow_scan_runs").update({\n                    "official_flow_days": direct_days,\n                    "official_flow_tickers": direct_tickers,\n                    "foreign_evidence_days": selected_days,\n                    "foreign_evidence_tickers": selected_tickers,\n                    "foreign_evidence_sources": source_counts,\n                }).eq("id", run_id).execute()\n            except Exception:\n                pass\n'''
+          if old_telemetry not in a:
+              raise SystemExit('run telemetry marker not found')
+          a = a.replace(old_telemetry, new_telemetry, 1)
+          a = a.replace(
+              '"official_foreign_coverage_pct", "market_regime_label", "relative_strength_20d_pct",',
+              '"foreign_evidence_coverage_pct", "foreign_evidence_source", "official_foreign_coverage_pct", "market_regime_label", "relative_strength_20d_pct",',
+              1,
+          )
+          a = a.replace(
+              'float(d.get("official_foreign_coverage_pct", 0) or 0)',
+              'float(d.get("foreign_evidence_coverage_pct", d.get("official_foreign_coverage_pct", 0)) or 0)',
+              1,
+          )
+          a = a.replace(
+              '"official_foreign_coverage_pct", "market_context_score", "market_regime_label",',
+              '"foreign_evidence_source", "foreign_evidence_coverage_pct", "official_foreign_coverage_pct", "market_context_score", "market_regime_label",',
+              1,
+          )
+          app.write_text(a, encoding='utf-8')
+
+          # Surface the new diagnostic keys in persisted ScanResult diagnostics.
+          pipe = Path('src/idx_flow_scanner/pipeline.py')
+          q = pipe.read_text(encoding='utf-8')
+          old_diag = '            "official_foreign_coverage_pct": ff.get("official_foreign_coverage_pct"),\n            "foreign_institutional_score": ff.get("foreign_institutional_score"),'
+          new_diag = '            "foreign_evidence_coverage_pct": ff.get("foreign_evidence_coverage_pct"),\n            "foreign_evidence_source": ff.get("foreign_evidence_source"),\n            "official_foreign_coverage_pct": ff.get("official_foreign_coverage_pct"),\n            "foreign_institutional_score": ff.get("foreign_institutional_score"),'
+          if old_diag not in q:
+              raise SystemExit('pipeline foreign diagnostics marker not found')
+          pipe.write_text(q.replace(old_diag, new_diag, 1), encoding='utf-8')
+          PY
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add app.py src/idx_flow_scanner/engines/flow.py src/idx_flow_scanner/pipeline.py
+          git commit -m "Separate direct IDX and vendor foreign telemetry"
+          git push origin HEAD:release/v0.2.5-zapi-foreign
