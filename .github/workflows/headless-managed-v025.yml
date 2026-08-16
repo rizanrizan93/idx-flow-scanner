@@ -1,0 +1,242 @@
+name: Headless Managed v0.2.5
+
+on:
+  push:
+    branches:
+      - run/headless-v025-foreign
+    paths:
+      - '.github/workflows/headless-managed-v025.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: run/headless-v025-foreign
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Run the same production scan engine from audited bundled caches
+        env:
+          PYTHONPATH: src
+        run: |
+          python - <<'PY'
+          from __future__ import annotations
+
+          import json
+          import math
+          import uuid
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          import numpy as np
+          import pandas as pd
+
+          from idx_flow_scanner.config import ScannerConfig
+          from idx_flow_scanner.database_first import load_bundled_price_seed
+          from idx_flow_scanner.foreign_evidence import prepare_foreign_evidence
+          from idx_flow_scanner.managed import load_bundled_universe, universe_signature
+          from idx_flow_scanner.outcomes import compute_signal_outcome
+          from idx_flow_scanner.pipeline import scan_universe
+          from idx_flow_scanner.providers.zapi import load_bundled_zapi_foreign_flows
+
+          ROOT = Path('.')
+          universe = load_bundled_universe(ROOT / 'data/universe/idx_400_syariah.csv')
+          config = ScannerConfig()
+          price_map = load_bundled_price_seed(min_rows=config.minimum_price_bars)
+
+          def load_price(ticker: str) -> pd.DataFrame:
+              return price_map.get(str(ticker).replace('.JK','').upper(), pd.DataFrame())
+
+          foreign_candidates = load_bundled_zapi_foreign_flows(
+              universe, lookback_calendar_days=120
+          )
+          foreign_flow, foreign_stats = prepare_foreign_evidence(
+              universe, foreign_candidates, load_price, lookback=20
+          )
+
+          run_id = str(uuid.uuid4())
+          def progress(i, total, ticker):
+              if i == 1 or i % 50 == 0 or i == total:
+                  print(f'scoring {i}/{total} {ticker}')
+
+          _, results, errors = scan_universe(
+              universe,
+              load_price,
+              pd.DataFrame(),
+              config,
+              progress,
+              run_id=run_id,
+              official_flow_frame=foreign_flow,
+          )
+
+          valid_ratio = len(results) / max(len(universe), 1)
+          if valid_ratio < 0.90:
+              raise SystemExit(f'integrity gate failed: {len(results)}/{len(universe)} valid')
+          direct_count = int(results['evidence_tier'].eq('BROKER_DIRECT').sum()) if not results.empty else 0
+          eligible_count = int(results['real_money_state'].eq('ELIGIBLE').sum()) if not results.empty else 0
+          if direct_count != 0 or eligible_count != 0:
+              raise SystemExit(
+                  f'broker evidence integrity violation: direct={direct_count} eligible={eligible_count}'
+              )
+
+          def clean(value):
+              if isinstance(value, dict):
+                  return {str(k): clean(v) for k, v in value.items()}
+              if isinstance(value, (list, tuple)):
+                  return [clean(v) for v in value]
+              if isinstance(value, pd.Timestamp):
+                  return value.isoformat()
+              if isinstance(value, np.generic):
+                  return clean(value.item())
+              if isinstance(value, float) and not math.isfinite(value):
+                  return None
+              try:
+                  if value is pd.NA:
+                      return None
+              except Exception:
+                  pass
+              return value
+
+          storage_rows = []
+          outcome_rows = []
+          for row in results.to_dict('records'):
+              storage_rows.append(clean({
+                  'run_id': run_id,
+                  'ticker': row['ticker'],
+                  'as_of_date': row['as_of_date'],
+                  'final_score': row['final_score'],
+                  'phase': row['phase'],
+                  'action': row['action'],
+                  'evidence_tier': row['evidence_tier'],
+                  'evidence_coverage_pct': row['evidence_coverage_pct'],
+                  'real_money_state': row['real_money_state'],
+                  'distribution_risk': row['distribution_risk'],
+                  'estimated_smart_money_cost': row.get('estimated_smart_money_cost'),
+                  'premium_to_cost_pct': row.get('premium_to_cost_pct'),
+                  'entry_low': row.get('entry_low'),
+                  'entry_high': row.get('entry_high'),
+                  'invalidation': row.get('invalidation'),
+                  'tp1': row.get('tp1'),
+                  'tp2': row.get('tp2'),
+                  'components': {k: row.get(k) for k in (
+                      'accumulation_score','operator_dominance_score','cost_basis_score',
+                      'retail_exhaustion_score','foreign_institutional_score',
+                      'supply_concentration_score','price_flow_divergence_score',
+                      'market_context_score','smc_execution_score','risk_liquidity_score',
+                      'price_data_quality_score'
+                  )},
+                  'diagnostics': row.get('diagnostics', {}),
+                  'guardrail_reason': row.get('guardrail_reason'),
+              }))
+
+              outcome = compute_signal_outcome(load_price(row['ticker']), row['as_of_date'])
+              outcome_rows.append(clean({
+                  'run_id': run_id,
+                  'ticker': row['ticker'],
+                  'as_of_date': str(row['as_of_date']),
+                  'phase': str(row.get('phase') or 'UNKNOWN'),
+                  'evidence_tier': str(row.get('evidence_tier') or 'PRICE_PROXY'),
+                  'final_score': float(row.get('final_score') or 0.0),
+                  'entry_close': outcome.entry_close,
+                  'return_5d': outcome.return_5d,
+                  'return_20d': outcome.return_20d,
+                  'return_60d': outcome.return_60d,
+                  'mfe_20d': outcome.mfe_20d,
+                  'mae_20d': outcome.mae_20d,
+                  'evaluated_through': outcome.evaluated_through,
+                  'evaluation_status': outcome.evaluation_status,
+                  'evaluation_note': outcome.evaluation_note,
+                  'evaluated_at': datetime.now(timezone.utc).isoformat()
+                      if outcome.evaluation_status != 'PENDING' else None,
+              }))
+
+          outdir = ROOT / 'data/run/headless_v025_foreign'
+          outdir.mkdir(parents=True, exist_ok=True)
+          for old in outdir.glob('*.json'):
+              old.unlink()
+
+          def write_chunks(prefix, rows, size=200):
+              count = 0
+              for i in range(0, len(rows), size):
+                  (outdir / f'{prefix}_{i // size:02d}.json').write_text(
+                      json.dumps(rows[i:i+size], separators=(',', ':'), allow_nan=False),
+                      encoding='utf-8',
+                  )
+                  count += 1
+              return count
+
+          result_chunks = write_chunks('results', storage_rows)
+          outcome_chunks = write_chunks('outcomes', outcome_rows)
+          error_tickers = [str(x.get('ticker')) for x in errors]
+          source_col = 'foreign_evidence_source' if 'foreign_evidence_source' in foreign_flow.columns else 'source'
+          source_counts = (
+              foreign_flow.groupby(source_col, observed=True)['ticker'].nunique().astype(int).to_dict()
+              if not foreign_flow.empty else {}
+          )
+          foreign_days = int(foreign_flow['trade_date'].nunique()) if not foreign_flow.empty else 0
+          foreign_tickers = int(foreign_flow['ticker'].nunique()) if not foreign_flow.empty else 0
+          direct_selected = (
+              foreign_flow[foreign_flow['source'].eq('IDX_OFFICIAL_STOCK_SUMMARY')]
+              if not foreign_flow.empty and 'source' in foreign_flow.columns else pd.DataFrame()
+          )
+          official_days = int(direct_selected['trade_date'].nunique()) if not direct_selected.empty else 0
+          official_tickers = int(direct_selected['ticker'].nunique()) if not direct_selected.empty else 0
+          foreign_cov = [
+              float((d or {}).get('foreign_evidence_coverage_pct', 0) or 0)
+              for d in results['diagnostics'] if isinstance(d, dict)
+          ] if 'diagnostics' in results.columns else []
+
+          meta = clean({
+              'run_id': run_id,
+              'status': 'COMPLETED',
+              'universe_count': len(universe),
+              'processed_count': len(results),
+              'error_count': len(errors),
+              'attempted_count': len(universe),
+              'valid_ratio': valid_ratio,
+              'error_tickers': error_tickers,
+              'version': '0.2.5',
+              'mode': 'managed',
+              'execution_transport': 'GITHUB_HEADLESS_AUDITED_CACHE',
+              'universe_source': 'BUNDLED_400_SYARIAH',
+              'universe_signature': universe_signature(universe),
+              'minimum_price_bars': config.minimum_price_bars,
+              'price_seed_tickers': len(price_map),
+              'foreign_cache_rows': len(foreign_candidates),
+              'foreign_cache_tickers': int(foreign_candidates['ticker'].nunique()) if not foreign_candidates.empty else 0,
+              'foreign_cache_days': int(foreign_candidates['trade_date'].nunique()) if not foreign_candidates.empty else 0,
+              'official_flow_days': official_days,
+              'official_flow_tickers': official_tickers,
+              'foreign_evidence_days': foreign_days,
+              'foreign_evidence_tickers': foreign_tickers,
+              'foreign_evidence_sources': source_counts,
+              'foreign_selector_stats': foreign_stats,
+              'median_foreign_evidence_coverage_pct': float(pd.Series(foreign_cov).median()) if foreign_cov else 0.0,
+              'broker_direct_count': direct_count,
+              'eligible_count': eligible_count,
+              'result_chunks': result_chunks,
+              'outcome_chunks': outcome_chunks,
+              'generated_at': datetime.now(timezone.utc).isoformat(),
+          })
+          (outdir / 'meta.json').write_text(json.dumps(meta, indent=2, allow_nan=False) + '\n', encoding='utf-8')
+          (outdir / 'errors.json').write_text(json.dumps(clean(errors), indent=2, allow_nan=False) + '\n', encoding='utf-8')
+          top20 = storage_rows[:20]
+          (outdir / 'top20.json').write_text(json.dumps(top20, indent=2, allow_nan=False) + '\n', encoding='utf-8')
+          print(json.dumps(meta, indent=2, sort_keys=True))
+          PY
+      - name: Commit audited headless run export
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add data/run/headless_v025_foreign
+          git commit -m "Export audited headless managed v0.2.5 run"
+          git push origin HEAD:run/headless-v025-foreign
