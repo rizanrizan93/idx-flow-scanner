@@ -6,7 +6,7 @@
     "status": "BLOCKED: IDX official TradingSummary access blocked with HTTP 403 (Cloudflare challenge)",
     "tickers": 0
   },
-  "generated_at": "2026-08-16T09:58:36.234214+00:00",
+  "generated_at": "2026-08-16T10:00:07.858852+00:00",
   "goapi_broker_direct": {
     "budget_requests": 5,
     "days": 0,
