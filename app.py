@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import json
 import os
 import sys
+import uuid
 from pathlib import Path
 
 import pandas as pd
@@ -14,10 +14,10 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from idx_flow_scanner.config import ScannerConfig
-from idx_flow_scanner.data import fetch_yfinance_prices, normalize_broker_summary, parse_universe
+from idx_flow_scanner.data import normalize_broker_summary, parse_universe
 from idx_flow_scanner.pipeline import scan_universe
 from idx_flow_scanner.storage import SupabaseStore
-from idx_flow_scanner.database_first import database_first_price_loader
+from idx_flow_scanner.database_first import prepare_database_first_prices
 
 st.set_page_config(page_title="IDX Flow Scanner", page_icon="📡", layout="wide")
 st.title("IDX Flow Scanner")
@@ -34,7 +34,7 @@ with st.sidebar:
     period = st.selectbox("OHLCV lookback", ["6mo", "1y", "2y"], index=1)
     use_database = st.checkbox("Database-first Supabase", value=True, help="Jika secret tersedia: baca cache/broker DB terlebih dulu, lalu backfill harga yang kurang.")
     persist = st.checkbox("Persist hasil scan", value=True)
-    run = st.button("Run Scan", type="primary", use_container_width=True)
+    run = st.button("Run Scan", type="primary", width="stretch")
 
 st.info(
     "Scanner tidak menganggap price/volume proxy sebagai data bandar langsung. "
@@ -45,6 +45,7 @@ if "last_results" not in st.session_state:
     st.session_state.last_results = None
     st.session_state.last_errors = []
     st.session_state.last_run_id = None
+    st.session_state.last_price_stats = None
 
 if run:
     if universe_file is None:
@@ -63,7 +64,8 @@ if run:
             supabase_key = st.secrets.get("SUPABASE_SECRET_KEY", os.getenv("SUPABASE_SECRET_KEY"))
             if supabase_url and supabase_key:
                 store = SupabaseStore(supabase_url, supabase_key)
-        except Exception:
+        except Exception as exc:
+            st.warning(f"Supabase connection unavailable; scan will continue without persistence: {exc}")
             store = None
 
     if broker_file is not None:
@@ -83,34 +85,91 @@ if run:
     else:
         broker = pd.DataFrame()
 
-    bar = st.progress(0.0, text="Starting...")
-    status = st.empty()
+    bar = st.progress(0.0, text="Preparing OHLCV...")
+    status_box = st.empty()
+    run_id = str(uuid.uuid4())
+    run_record_created = False
 
-    load_price = database_first_price_loader(store, period=period)
+    if persist and store is not None:
+        try:
+            store.create_run(run_id, len(universe), {"period": period, "version": "0.1.2"})
+            run_record_created = True
+        except Exception as exc:
+            st.warning(f"Could not create RUNNING record in Supabase: {exc}")
+
+    load_price, price_stats = prepare_database_first_prices(
+        universe,
+        store,
+        period=period,
+        status=lambda text: status_box.caption(text),
+    )
+    st.session_state.last_price_stats = price_stats
+
+    config = ScannerConfig()
 
     def progress(i: int, total: int, ticker: str) -> None:
         bar.progress(i / max(total, 1), text=f"{i}/{total} • {ticker}")
-        status.caption(f"Processing {ticker}")
+        status_box.caption(f"Scoring {ticker} • {i}/{total}")
+        if store is not None and run_record_created and (i == 1 or i % 25 == 0 or i == total):
+            store.update_run_progress(run_id, i, ticker)
 
-    config = ScannerConfig()
-    run_id, results, errors = scan_universe(universe, load_price, broker, config, progress)
+    _, results, errors = scan_universe(
+        universe,
+        load_price,
+        broker,
+        config,
+        progress,
+        run_id=run_id,
+    )
     st.session_state.last_results = results
     st.session_state.last_errors = errors
     st.session_state.last_run_id = run_id
 
-    if persist and store is not None:
+    final_status = "FAILED" if results.empty else "COMPLETED"
+    if persist and store is not None and run_record_created:
         try:
-            store.create_run(run_id, len(universe), {"period": period, "version": "0.1.1"})
             store.save_results(run_id, results)
-            store.finish_run(run_id, len(results), len(errors))
-            st.success(f"Persisted to Supabase • run {run_id}")
+            store.finish_run(
+                run_id,
+                len(results),
+                len(errors),
+                status=final_status,
+                attempted_count=len(universe),
+                telemetry={
+                    "price_cache_hits": int(price_stats.get("cache_hits", 0)),
+                    "price_fetched": int(price_stats.get("fetched_valid", 0)),
+                    "price_failures": int(price_stats.get("unavailable", 0)),
+                },
+            )
+            if results.empty:
+                st.error(
+                    f"Run {run_id} recorded as FAILED • 0 valid results • {len(errors)} ticker errors. "
+                    "This is not a valid scan result."
+                )
+            elif errors:
+                st.warning(
+                    f"Persisted partial scan • run {run_id} • valid {len(results)}/{len(universe)} • "
+                    f"errors {len(errors)}"
+                )
+            else:
+                st.success(f"Persisted to Supabase • run {run_id} • {len(results)}/{len(universe)} valid")
         except Exception as exc:
             st.warning(f"Scan selesai, persistence gagal: {exc}")
     elif persist:
-        st.warning("Scan selesai, tetapi Supabase secrets belum tersedia sehingga hasil belum dipersist.")
+        st.warning("Scan selesai, tetapi Supabase RUNNING record tidak tersedia sehingga hasil belum dipersist secara terverifikasi.")
 
 results = st.session_state.last_results
 errors = st.session_state.last_errors
+price_stats = st.session_state.last_price_stats
+
+if isinstance(price_stats, dict):
+    st.subheader("OHLCV Integrity")
+    p1, p2, p3, p4 = st.columns(4)
+    p1.metric("DB cache hits", int(price_stats.get("cache_hits", 0)))
+    p2.metric("Fetched valid", int(price_stats.get("fetched_valid", 0)))
+    p3.metric("Persisted tickers", int(price_stats.get("persisted_tickers", 0)))
+    p4.metric("Unavailable", int(price_stats.get("unavailable", 0)))
+
 if isinstance(results, pd.DataFrame) and not results.empty:
     st.subheader("Decision Priority")
     eligible = results[results["real_money_state"] == "ELIGIBLE"].copy()
@@ -127,15 +186,15 @@ if isinstance(results, pd.DataFrame) and not results.empty:
         "estimated_smart_money_cost", "premium_to_cost_pct",
         "entry_low", "entry_high", "invalidation", "tp1", "tp2",
     ]
-    st.dataframe(results[cols], use_container_width=True, hide_index=True)
+    st.dataframe(results[cols], width="stretch", hide_index=True)
 
     st.subheader("Top Silent Accumulation")
     silent = results[results["phase"].isin(["ACCUMULATION", "EARLY_MARKUP"])].sort_values("final_score", ascending=False)
-    st.dataframe(silent[cols].head(20), use_container_width=True, hide_index=True)
+    st.dataframe(silent[cols].head(20), width="stretch", hide_index=True)
 
     st.subheader("Distribution Warning")
     dist = results.sort_values("distribution_risk", ascending=False)
-    st.dataframe(dist[["ticker", "distribution_risk", "phase", "action", "final_score", "guardrail_reason"]].head(20), use_container_width=True, hide_index=True)
+    st.dataframe(dist[["ticker", "distribution_risk", "phase", "action", "final_score", "guardrail_reason"]].head(20), width="stretch", hide_index=True)
 
     st.subheader("Single Ticker Audit")
     selected = st.selectbox("Ticker", results["ticker"].tolist())
@@ -155,5 +214,13 @@ if isinstance(results, pd.DataFrame) and not results.empty:
     )
 
 if errors:
-    with st.expander(f"Errors ({len(errors)})"):
-        st.dataframe(pd.DataFrame(errors), use_container_width=True, hide_index=True)
+    err = pd.DataFrame(errors)
+    if not err.empty:
+        err["category"] = err["error"].map(
+            lambda text: "OHLCV_UNAVAILABLE" if "insufficient price history" in str(text).lower() else str(text)[:120]
+        )
+        summary = err.groupby("category", dropna=False).size().reset_index(name="count").sort_values("count", ascending=False)
+        with st.expander(f"Ticker failures ({len(errors)})", expanded=not isinstance(results, pd.DataFrame) or results.empty):
+            st.caption("A ticker failure is not counted as a valid scan result.")
+            st.dataframe(summary, width="stretch", hide_index=True)
+            st.dataframe(err[["ticker", "error"]].head(100), width="stretch", hide_index=True)
