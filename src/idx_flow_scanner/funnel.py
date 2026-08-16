@@ -46,8 +46,10 @@ def select_guarded_top5(
 
     This is deliberately fail-closed. Broker data must not influence this ranking;
     the input is expected to come from ``scan_universe(..., broker_frame=empty)``.
-    Candidates must pass price-quality, distribution, decision-floor and foreign-
-    evidence gates before any scarce broker request is spent on them.
+    Candidates must pass price-quality, distribution and foreign-evidence gates
+    before any scarce broker request is spent on them. There is intentionally no
+    absolute score floor here: among healthy candidates, the best ``top_n`` rows
+    are always sent to final broker verification.
     """
     config = config or ScannerConfig()
     if results is None or results.empty or top_n <= 0:
@@ -70,27 +72,27 @@ def select_guarded_top5(
         lambda d: _int_or_default(_diagnostics(d).get("price_staleness_days", 999), 999)
     )
 
-    score = _numeric(work.get("final_score", pd.Series(index=work.index, dtype=float)))
     dist = _numeric(work.get("distribution_risk", pd.Series(index=work.index, dtype=float)), 100.0)
     quality = _numeric(work.get("price_data_quality_score", pd.Series(index=work.index, dtype=float)))
     foreign_cov = _numeric(work["foreign_evidence_coverage_pct"])
     phase = work.get("phase", pd.Series("UNKNOWN", index=work.index)).fillna("UNKNOWN").astype(str)
     action = work.get("action", pd.Series("RESEARCH_ONLY", index=work.index)).fillna("RESEARCH_ONLY").astype(str)
+    evidence_tier = work.get("evidence_tier", pd.Series("PRICE_PROXY", index=work.index)).fillna("UNKNOWN").astype(str)
 
     gate = (
-        score.ge(65.0)
-        & dist.lt(70.0)
+        dist.lt(70.0)
         & quality.ge(float(config.real_money_min_price_quality_score))
         & work["price_staleness_days"].le(int(config.max_price_staleness_days))
         & foreign_cov.ge(float(minimum_foreign_coverage_pct))
         & phase.ne("DISTRIBUTION")
         & action.ne("REDUCE_AVOID")
+        & evidence_tier.eq("PRICE_PROXY")
     )
     finalists = work.loc[gate].copy()
     if finalists.empty:
         return finalists
 
-    for col in ("accumulation_score", "foreign_institutional_score", "smc_execution_score"):
+    for col in ("final_score", "accumulation_score", "foreign_institutional_score", "smc_execution_score"):
         if col not in finalists.columns:
             finalists[col] = 0.0
     finalists = finalists.sort_values(
