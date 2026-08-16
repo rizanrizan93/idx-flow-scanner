@@ -137,15 +137,17 @@ def load_persisted_results(store: Any, run_id: str) -> pd.DataFrame:
 
 
 def mark_stale_managed_runs(store: Any, *, max_age_minutes: int = 60) -> int:
-    """Fail only clearly stale managed RUNNING rows; never touch fresh work."""
-    rows = recent_runs(store, limit=50)
+    """Fail clearly stale RUNNING rows from either managed or manual scans.
+
+    Manual runs used to accumulate indefinitely because only managed rows were
+    cleaned. The function name is kept for compatibility with the Streamlit app,
+    but stale-run hygiene now covers every scanner run while preserving fresh work.
+    """
+    rows = recent_runs(store, limit=100)
     cutoff = datetime.now(timezone.utc) - timedelta(minutes=max_age_minutes)
     changed = 0
     for run in rows:
         if str(run.get("status") or "").upper() != "RUNNING":
-            continue
-        cfg = run.get("config") or {}
-        if not isinstance(cfg, dict) or cfg.get("mode") != "managed":
             continue
         heartbeat = _parse_time(run.get("heartbeat_at")) or _parse_time(run.get("started_at"))
         if heartbeat is None or heartbeat >= cutoff:
