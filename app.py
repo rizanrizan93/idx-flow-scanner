@@ -15,30 +15,69 @@ if str(SRC) not in sys.path:
 
 from idx_flow_scanner.config import ScannerConfig
 from idx_flow_scanner.data import normalize_broker_summary, parse_universe
+from idx_flow_scanner.database_first import prepare_database_first_prices
+from idx_flow_scanner.managed import (
+    ManagedDecision,
+    decide_managed_run,
+    load_bundled_universe,
+    load_persisted_results,
+    mark_stale_managed_runs,
+    recent_runs,
+    universe_signature,
+)
 from idx_flow_scanner.pipeline import scan_universe
 from idx_flow_scanner.storage import SupabaseStore
-from idx_flow_scanner.database_first import prepare_database_first_prices
+
+APP_VERSION = "0.1.3"
+DEFAULT_UNIVERSE_PATH = ROOT / "data" / "universe" / "idx_400_syariah.csv"
+MANAGED_MIN_VALID_RATIO = 0.90
 
 st.set_page_config(page_title="IDX Flow Scanner", page_icon="📡", layout="wide")
 st.title("IDX Flow Scanner")
-st.caption("Clean-room bandarmology / broker-flow research engine • direct evidence first • SMC/ICT execution overlay")
+st.caption(
+    f"v{APP_VERSION} • clean-room bandarmology / broker-flow research engine • "
+    "database-first • managed 400-ticker mode"
+)
+
+
+def connect_store(enabled: bool) -> tuple[SupabaseStore | None, str | None]:
+    if not enabled:
+        return None, None
+    try:
+        supabase_url = st.secrets.get("SUPABASE_URL", os.getenv("SUPABASE_URL"))
+        supabase_key = st.secrets.get("SUPABASE_SECRET_KEY", os.getenv("SUPABASE_SECRET_KEY"))
+        if not supabase_url or not supabase_key:
+            return None, "SUPABASE_URL / SUPABASE_SECRET_KEY belum tersedia"
+        return SupabaseStore(supabase_url, supabase_key), None
+    except Exception as exc:
+        return None, str(exc)
+
 
 with st.sidebar:
-    st.header("Input")
-    universe_file = st.file_uploader("Universe CSV", type=["csv"], help="Kolom ticker. Contoh tersedia di data/templates.")
-    broker_file = st.file_uploader(
-        "Broker Summary CSV",
+    st.header("Managed Scan")
+    managed_auto = st.toggle(
+        "Managed auto-run",
+        value=True,
+        help="Dengan universe bawaan, scanner otomatis menjalankan scan bila belum ada run v0.1.3 yang valid/fresh.",
+    )
+    universe_file = st.file_uploader(
+        "Override universe CSV (opsional)",
         type=["csv"],
-        help="Direct broker evidence. Tanpa file ini hasil otomatis berstatus PRICE_PROXY / RESEARCH_ONLY.",
+        help="Kosongkan untuk memakai universe syariah 400 ticker bawaan.",
+    )
+    broker_file = st.file_uploader(
+        "Broker Summary CSV (opsional)",
+        type=["csv"],
+        help="Direct broker evidence. Tanpa data broker asli hasil tetap PRICE_PROXY / GUARDED.",
     )
     period = st.selectbox("OHLCV lookback", ["6mo", "1y", "2y"], index=1)
-    use_database = st.checkbox("Database-first Supabase", value=True, help="Jika secret tersedia: baca cache/broker DB terlebih dulu, lalu backfill harga yang kurang.")
+    use_database = st.checkbox("Database-first Supabase", value=True)
     persist = st.checkbox("Persist hasil scan", value=True)
-    run = st.button("Run Scan", type="primary", width="stretch")
+    run_manual = st.button("Run / Re-run sekarang", type="primary", width="stretch")
 
 st.info(
-    "Scanner tidak menganggap price/volume proxy sebagai data bandar langsung. "
-    "Eligibility real-money membutuhkan broker evidence yang cukup dan lolos guardrail."
+    "Price/volume tidak dianggap data bandar langsung. Real-money eligibility tetap membutuhkan "
+    "broker evidence langsung, coverage cukup, freshness, dan guardrail."
 )
 
 if "last_results" not in st.session_state:
@@ -47,27 +86,69 @@ if "last_results" not in st.session_state:
     st.session_state.last_run_id = None
     st.session_state.last_price_stats = None
 
-if run:
-    if universe_file is None:
-        st.error("Upload universe CSV terlebih dahulu.")
-        st.stop()
+if universe_file is None:
+    universe = load_bundled_universe(DEFAULT_UNIVERSE_PATH)
+    universe_source = "BUNDLED_400_SYARIAH"
+else:
     universe_df = pd.read_csv(universe_file)
     universe = parse_universe(universe_df)
-    if not universe:
-        st.error("Universe tidak berisi ticker yang valid.")
-        st.stop()
+    universe_source = "USER_UPLOAD"
 
-    store = None
-    if use_database:
-        try:
-            supabase_url = st.secrets.get("SUPABASE_URL", os.getenv("SUPABASE_URL"))
-            supabase_key = st.secrets.get("SUPABASE_SECRET_KEY", os.getenv("SUPABASE_SECRET_KEY"))
-            if supabase_url and supabase_key:
-                store = SupabaseStore(supabase_url, supabase_key)
-        except Exception as exc:
-            st.warning(f"Supabase connection unavailable; scan will continue without persistence: {exc}")
-            store = None
+if not universe:
+    st.error("Universe tidak berisi ticker yang valid.")
+    st.stop()
 
+signature = universe_signature(universe)
+store, store_error = connect_store(use_database)
+if store_error:
+    st.warning(f"Supabase belum siap: {store_error}")
+
+managed_decision = ManagedDecision(False, "managed mode disabled")
+if managed_auto and universe_source == "BUNDLED_400_SYARIAH" and persist and store is not None:
+    try:
+        mark_stale_managed_runs(store, max_age_minutes=60)
+        runs = recent_runs(store, limit=25)
+        managed_decision = decide_managed_run(
+            runs,
+            version=APP_VERSION,
+            universe_count=len(universe),
+            signature=signature,
+            min_success_ratio=MANAGED_MIN_VALID_RATIO,
+        )
+    except Exception as exc:
+        managed_decision = ManagedDecision(False, f"managed gate unavailable: {exc}")
+
+m1, m2, m3 = st.columns(3)
+m1.metric("Universe", len(universe))
+m2.metric("Mode", "MANAGED" if universe_source == "BUNDLED_400_SYARIAH" else "CUSTOM")
+m3.metric("DB", "CONNECTED" if store is not None else "UNAVAILABLE")
+
+if managed_auto and universe_source == "BUNDLED_400_SYARIAH":
+    if managed_decision.should_run:
+        st.info(f"Managed engine: {managed_decision.reason}. Scan akan dijalankan otomatis.")
+    else:
+        st.caption(f"Managed engine: {managed_decision.reason}")
+
+if (
+    st.session_state.last_results is None
+    and store is not None
+    and managed_decision.blocking_run_id
+    and "valid" in managed_decision.reason
+):
+    try:
+        persisted = load_persisted_results(store, managed_decision.blocking_run_id)
+        if not persisted.empty:
+            st.session_state.last_results = persisted
+            st.session_state.last_errors = []
+            st.session_state.last_run_id = managed_decision.blocking_run_id
+    except Exception:
+        pass
+
+trigger_scan = bool(run_manual or managed_decision.should_run)
+if trigger_scan and universe_source != "BUNDLED_400_SYARIAH" and managed_decision.should_run:
+    trigger_scan = bool(run_manual)
+
+if trigger_scan:
     if broker_file is not None:
         try:
             broker = normalize_broker_summary(pd.read_csv(broker_file))
@@ -80,7 +161,7 @@ if run:
         try:
             broker = store.load_broker_flows(universe)
         except Exception as exc:
-            st.warning(f"Broker database read failed; continuing as proxy: {exc}")
+            st.warning(f"Broker database read failed; continuing as PRICE_PROXY: {exc}")
             broker = pd.DataFrame()
     else:
         broker = pd.DataFrame()
@@ -89,10 +170,24 @@ if run:
     status_box = st.empty()
     run_id = str(uuid.uuid4())
     run_record_created = False
+    config = ScannerConfig()
+    run_mode = "managed" if universe_source == "BUNDLED_400_SYARIAH" and managed_auto and not run_manual else "manual"
 
     if persist and store is not None:
         try:
-            store.create_run(run_id, len(universe), {"period": period, "version": "0.1.2"})
+            store.create_run(
+                run_id,
+                len(universe),
+                {
+                    "period": period,
+                    "version": APP_VERSION,
+                    "mode": run_mode,
+                    "universe_source": universe_source,
+                    "universe_signature": signature,
+                    "minimum_price_bars": config.minimum_price_bars,
+                },
+            )
+            store.update_run_progress(run_id, 0, "OHLCV_PREP")
             run_record_created = True
         except Exception as exc:
             st.warning(f"Could not create RUNNING record in Supabase: {exc}")
@@ -101,16 +196,18 @@ if run:
         universe,
         store,
         period=period,
+        min_rows=config.minimum_price_bars,
         status=lambda text: status_box.caption(text),
     )
     st.session_state.last_price_stats = price_stats
 
-    config = ScannerConfig()
+    if store is not None and run_record_created:
+        store.update_run_progress(run_id, 0, "SCORING")
 
     def progress(i: int, total: int, ticker: str) -> None:
         bar.progress(i / max(total, 1), text=f"{i}/{total} • {ticker}")
         status_box.caption(f"Scoring {ticker} • {i}/{total}")
-        if store is not None and run_record_created and (i == 1 or i % 25 == 0 or i == total):
+        if store is not None and run_record_created and (i == 1 or i % 20 == 0 or i == total):
             store.update_run_progress(run_id, i, ticker)
 
     _, results, errors = scan_universe(
@@ -125,7 +222,9 @@ if run:
     st.session_state.last_errors = errors
     st.session_state.last_run_id = run_id
 
-    final_status = "FAILED" if results.empty else "COMPLETED"
+    valid_ratio = len(results) / max(len(universe), 1)
+    final_status = "COMPLETED" if valid_ratio >= MANAGED_MIN_VALID_RATIO else "FAILED"
+
     if persist and store is not None and run_record_created:
         try:
             store.save_results(run_id, results)
@@ -141,14 +240,14 @@ if run:
                     "price_failures": int(price_stats.get("unavailable", 0)),
                 },
             )
-            if results.empty:
+            if final_status == "FAILED":
                 st.error(
-                    f"Run {run_id} recorded as FAILED • 0 valid results • {len(errors)} ticker errors. "
-                    "This is not a valid scan result."
+                    f"Run {run_id} FAILED integrity gate • valid {len(results)}/{len(universe)} "
+                    f"({valid_ratio:.1%}) • errors {len(errors)}. Minimum valid ratio = {MANAGED_MIN_VALID_RATIO:.0%}."
                 )
             elif errors:
                 st.warning(
-                    f"Persisted partial scan • run {run_id} • valid {len(results)}/{len(universe)} • "
+                    f"Run completed and persisted • {len(results)}/{len(universe)} valid • "
                     f"errors {len(errors)}"
                 )
             else:
@@ -156,7 +255,7 @@ if run:
         except Exception as exc:
             st.warning(f"Scan selesai, persistence gagal: {exc}")
     elif persist:
-        st.warning("Scan selesai, tetapi Supabase RUNNING record tidak tersedia sehingga hasil belum dipersist secara terverifikasi.")
+        st.warning("Scan selesai, tetapi Supabase RUNNING record tidak tersedia sehingga persistence belum terverifikasi.")
 
 results = st.session_state.last_results
 errors = st.session_state.last_errors
@@ -174,7 +273,7 @@ if isinstance(results, pd.DataFrame) and not results.empty:
     st.subheader("Decision Priority")
     eligible = results[results["real_money_state"] == "ELIGIBLE"].copy()
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Scanned", len(results))
+    c1.metric("Scanned valid", len(results))
     c2.metric("Real-money eligible", len(eligible))
     c3.metric("Broker-direct", int((results["evidence_tier"] == "BROKER_DIRECT").sum()))
     c4.metric("Median evidence", f"{results['evidence_coverage_pct'].median():.0f}%")
@@ -186,15 +285,17 @@ if isinstance(results, pd.DataFrame) and not results.empty:
         "estimated_smart_money_cost", "premium_to_cost_pct",
         "entry_low", "entry_high", "invalidation", "tp1", "tp2",
     ]
-    st.dataframe(results[cols], width="stretch", hide_index=True)
+    available_cols = [c for c in cols if c in results.columns]
+    st.dataframe(results[available_cols], width="stretch", hide_index=True)
 
     st.subheader("Top Silent Accumulation")
     silent = results[results["phase"].isin(["ACCUMULATION", "EARLY_MARKUP"])].sort_values("final_score", ascending=False)
-    st.dataframe(silent[cols].head(20), width="stretch", hide_index=True)
+    st.dataframe(silent[available_cols].head(20), width="stretch", hide_index=True)
 
     st.subheader("Distribution Warning")
     dist = results.sort_values("distribution_risk", ascending=False)
-    st.dataframe(dist[["ticker", "distribution_risk", "phase", "action", "final_score", "guardrail_reason"]].head(20), width="stretch", hide_index=True)
+    dist_cols = [c for c in ["ticker", "distribution_risk", "phase", "action", "final_score", "guardrail_reason"] if c in dist.columns]
+    st.dataframe(dist[dist_cols].head(20), width="stretch", hide_index=True)
 
     st.subheader("Single Ticker Audit")
     selected = st.selectbox("Ticker", results["ticker"].tolist())
@@ -203,12 +304,12 @@ if isinstance(results, pd.DataFrame) and not results.empty:
     a.metric("Final Score", row["final_score"])
     b.metric("Phase", row["phase"])
     c.metric("State", row["real_money_state"])
-    st.write(row["guardrail_reason"])
+    st.write(row.get("guardrail_reason"))
     st.json(row.get("diagnostics", {}), expanded=False)
 
     st.download_button(
         "Download scan CSV",
-        data=results.drop(columns=["diagnostics"], errors="ignore").to_csv(index=False).encode(),
+        data=results.drop(columns=["diagnostics", "components"], errors="ignore").to_csv(index=False).encode(),
         file_name=f"idx_flow_scan_{st.session_state.last_run_id}.csv",
         mime="text/csv",
     )
@@ -221,6 +322,6 @@ if errors:
         )
         summary = err.groupby("category", dropna=False).size().reset_index(name="count").sort_values("count", ascending=False)
         with st.expander(f"Ticker failures ({len(errors)})", expanded=not isinstance(results, pd.DataFrame) or results.empty):
-            st.caption("A ticker failure is not counted as a valid scan result.")
+            st.caption("Ticker failure tidak dihitung sebagai hasil scan valid.")
             st.dataframe(summary, width="stretch", hide_index=True)
             st.dataframe(err[["ticker", "error"]].head(100), width="stretch", hide_index=True)
