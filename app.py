@@ -42,7 +42,7 @@ from idx_flow_scanner.providers.idx_official import (
 from idx_flow_scanner.providers.zapi import load_bundled_zapi_foreign_flows
 from idx_flow_scanner.storage import SupabaseStore
 
-APP_VERSION = "0.2.4"
+APP_VERSION = "0.2.5"
 DEFAULT_UNIVERSE_PATH = ROOT / "data" / "universe" / "idx_400_syariah.csv"
 MANAGED_MIN_VALID_RATIO = 0.90
 
@@ -51,7 +51,7 @@ st.title("IDX Flow Scanner")
 st.caption(
     f"v{APP_VERSION} • clean-room bandarmology / accumulation engine • database-first • "
     "managed 400-ticker mode • direct IDX + Zapi IDX-derived foreign shares • "
-    "GOAPI stock-level broker evidence • provenance-gated bandar cost • OOS memory"
+    "optional GOAPI stock-level broker evidence • provenance-gated bandar cost • OOS memory"
 )
 
 
