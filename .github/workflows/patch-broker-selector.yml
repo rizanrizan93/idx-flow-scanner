@@ -1,0 +1,46 @@
+name: Patch Broker Selector
+
+on:
+  push:
+    branches:
+      - feature/indexalpha-free-broker
+    paths:
+      - '.github/workflows/patch-broker-selector.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/indexalpha-free-broker
+      - name: Apply one-provider-per-ticker-day broker selection
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('app.py')
+          s=p.read_text(encoding='utf-8')
+          old='from idx_flow_scanner.config import ScannerConfig\n'
+          new='from idx_flow_scanner.config import ScannerConfig\nfrom idx_flow_scanner.broker_evidence import select_broker_evidence\n'
+          if new not in s:
+              if old not in s: raise SystemExit('config import marker missing')
+              s=s.replace(old,new,1)
+          old2='''    broker_stats = data_stats(broker)\n    st.session_state.last_broker_stats = broker_stats\n'''
+          new2='''    broker, broker_selector_stats = select_broker_evidence(broker)\n    broker_stats = data_stats(broker)\n    broker_stats["provider_selection"] = broker_selector_stats\n    st.session_state.last_broker_stats = broker_stats\n'''
+          if old2 not in s: raise SystemExit('broker stats marker missing')
+          s=s.replace(old2,new2,1)
+          s=s.replace(
+              '"broker_provenance_gate": True,',
+              '"broker_provenance_gate": True,\n                    "broker_provider_selector": "ONE_SOURCE_PER_TICKER_DAY_VERIFIED_FIRST",',
+              1,
+          )
+          p.write_text(s,encoding='utf-8')
+          PY
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add app.py
+          git commit -m "Prevent cross-provider broker double counting"
+          git push origin HEAD:feature/indexalpha-free-broker
