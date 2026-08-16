@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Callable
 
 import pandas as pd
 
-from .data import canonical_ticker, fetch_yfinance_prices, fetch_yfinance_prices_batch
+from .data import canonical_ticker, fetch_yfinance_prices, fetch_yfinance_prices_batch, normalize_price_frame
 from .storage import SupabaseStore
 
 
@@ -18,6 +19,42 @@ class DataLoadState:
     broker_days: int
 
 
+def _default_seed_path() -> Path:
+    return Path(__file__).resolve().parents[2] / "data" / "cache" / "idx_400_ohlcv_1y.csv.gz"
+
+
+def load_bundled_price_seed(
+    path: Path | None = None,
+    *,
+    min_rows: int = 80,
+) -> dict[str, pd.DataFrame]:
+    """Load the verified GitHub-built OHLCV seed, if present.
+
+    The seed is only a cold-start transport cache. It does not change the
+    evidence tier and never creates broker/direct evidence.
+    """
+    seed_path = path or _default_seed_path()
+    if not seed_path.exists():
+        return {}
+    try:
+        raw = pd.read_csv(seed_path)
+    except Exception:
+        return {}
+    required = {"ticker", "date", "open", "high", "low", "close", "volume"}
+    if not required.issubset({str(c).strip().lower() for c in raw.columns}):
+        return {}
+    raw.columns = [str(c).strip().lower() for c in raw.columns]
+    out: dict[str, pd.DataFrame] = {}
+    for ticker, group in raw.groupby(raw["ticker"].map(canonical_ticker), sort=False):
+        try:
+            frame = normalize_price_frame(group.drop(columns=["ticker"], errors="ignore"), ticker)
+        except Exception:
+            continue
+        if len(frame) >= int(min_rows):
+            out[canonical_ticker(ticker)] = frame
+    return out
+
+
 def prepare_database_first_prices(
     universe: list[str],
     store: SupabaseStore | None,
@@ -25,13 +62,13 @@ def prepare_database_first_prices(
     *,
     min_rows: int = 80,
     status: Callable[[str], None] | None = None,
+    seed_path: Path | None = None,
 ) -> tuple[Callable[[str], pd.DataFrame], dict[str, object]]:
     """Build one in-memory price map before scoring.
 
-    Cold-start behaviour matters on Streamlit: a per-ticker Yahoo fallback turns a
-    400-name scan into a burst of 400 external requests. We first reuse Supabase,
-    then fetch only missing names through the throttled batch adapter, persist valid
-    frames, and finally scan from memory. Missing data remains an explicit failure.
+    Order of precedence: dedicated Supabase cache -> verified bundled GitHub
+    seed -> throttled Yahoo fetch. This keeps a new database usable without
+    generating a 400-request cold-start burst from a single Streamlit IP.
     """
     names = list(dict.fromkeys(canonical_ticker(t) for t in universe if canonical_ticker(t)))
     frames: dict[str, pd.DataFrame] = {}
@@ -51,13 +88,41 @@ def prepare_database_first_prices(
             if status and (i == 1 or i % 25 == 0 or i == len(names)):
                 status(f"Checking Supabase OHLCV cache • {i}/{len(names)} • hits {cache_hits}")
 
+    missing_after_db = [t for t in names if t not in frames]
+    seed_hits = 0
+    seed_persisted = 0
+    persist_errors = 0
+
+    # The bundled seed is generated as a 1-year cache. It is safe for the
+    # default 1y and shorter views; 2y explicitly requests a longer history.
+    if missing_after_db and str(period).lower() in {"6mo", "1y"}:
+        seed_map = load_bundled_price_seed(seed_path, min_rows=min_rows)
+        for ticker in missing_after_db:
+            frame = seed_map.get(ticker, pd.DataFrame())
+            if len(frame) < min_rows:
+                continue
+            frames[ticker] = frame
+            seed_hits += 1
+            if store is not None:
+                try:
+                    seed_persisted += int(store.upsert_prices(ticker, frame, source="BUNDLED_GITHUB_SEED") > 0)
+                except Exception:
+                    persist_errors += 1
+        if status and seed_hits:
+            status(
+                f"Bundled OHLCV seed • valid {seed_hits}/{len(missing_after_db)} • "
+                f"persisted {seed_persisted}"
+            )
+
     missing = [t for t in names if t not in frames]
     if status:
-        status(f"OHLCV cache ready • {cache_hits}/{len(names)} hit • fetching {len(missing)} missing")
+        status(
+            f"OHLCV local sources ready • DB {cache_hits} • seed {seed_hits} • "
+            f"fetching {len(missing)} missing"
+        )
 
     fetched_valid = 0
-    persisted = 0
-    persist_errors = 0
+    fetched_persisted = 0
     if missing:
         fresh_map = fetch_yfinance_prices_batch(missing, period=period)
         for ticker in missing:
@@ -68,13 +133,13 @@ def prepare_database_first_prices(
             fetched_valid += 1
             if store is not None:
                 try:
-                    persisted += int(store.upsert_prices(ticker, frame, source="YFINANCE_BATCH") > 0)
+                    fetched_persisted += int(store.upsert_prices(ticker, frame, source="YFINANCE_BATCH") > 0)
                 except Exception:
                     persist_errors += 1
         if status:
             status(
-                f"Yahoo batch completed • valid {fetched_valid}/{len(missing)} • "
-                f"persisted {persisted} • unavailable {len(missing) - fetched_valid}"
+                f"Yahoo fetch completed • valid {fetched_valid}/{len(missing)} • "
+                f"persisted {fetched_persisted} • unavailable {len(missing) - fetched_valid}"
             )
 
     failures = [t for t in names if t not in frames]
@@ -85,9 +150,12 @@ def prepare_database_first_prices(
     stats: dict[str, object] = {
         "universe": len(names),
         "cache_hits": cache_hits,
-        "cache_misses": len(missing),
+        "cache_misses": len(missing_after_db),
+        "seed_hits": seed_hits,
+        "seed_persisted": seed_persisted,
         "fetched_valid": fetched_valid,
-        "persisted_tickers": persisted,
+        "fetched_persisted": fetched_persisted,
+        "persisted_tickers": seed_persisted + fetched_persisted,
         "db_read_errors": db_read_errors,
         "persist_errors": persist_errors,
         "unavailable": len(failures),
