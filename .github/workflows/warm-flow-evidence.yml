@@ -8,9 +8,9 @@ on:
     paths:
       - 'scripts/build_flow_evidence_cache.py'
       - 'src/idx_flow_scanner/providers/idx_official.py'
-      - 'src/idx_flow_scanner/providers/indexalpha.py'
+      - 'src/idx_flow_scanner/providers/zapi.py'
+      - 'src/idx_flow_scanner/providers/goapi.py'
       - 'src/idx_flow_scanner/foreign_evidence.py'
-      - 'src/idx_flow_scanner/vendor_foreign_storage.py'
       - '.github/workflows/warm-flow-evidence.yml'
 
 permissions:
@@ -23,7 +23,7 @@ concurrency:
 jobs:
   refresh-evidence:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -31,13 +31,16 @@ jobs:
           python-version: '3.12'
           cache: pip
       - run: pip install -r requirements.txt
-      - name: Refresh official foreign and vendor flow evidence caches
+      - name: Refresh audited foreign and broker evidence caches
         env:
           PYTHONPATH: src
-          INDEXALPHA_KEY: ${{ secrets.INDEXALPHA_KEY }}
-          INDEXALPHA_DAILY_BUDGET: ${{ vars.INDEXALPHA_DAILY_BUDGET || '5' }}
+          ZAPI_KEY: ${{ secrets.ZAPI_KEY }}
+          GOAPI_KEY: ${{ secrets.GOAPI_KEY }}
+          GOAPI_DAILY_BUDGET: ${{ vars.GOAPI_DAILY_BUDGET || '5' }}
           IDX_FOREIGN_TARGET_DAYS: '20'
           IDX_FOREIGN_MAX_CALENDAR_DAYS: '45'
+          ZAPI_FOREIGN_TARGET_DAYS: '20'
+          ZAPI_FOREIGN_MAX_CALENDAR_DAYS: '45'
           IDX_REQUEST_DELAY_SECONDS: '1.0'
         run: python scripts/build_flow_evidence_cache.py
       - name: Commit audited evidence cache
@@ -46,16 +49,12 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          # Preserve only generated evidence artifacts, then synchronize the
-          # disposable runner to the newest branch head before restoring them.
-          # This prevents generated metadata from conflicting with concurrent
-          # code commits while never rewriting developer-authored files.
           rm -rf /tmp/flow-evidence-cache
           mkdir -p /tmp/flow-evidence-cache
           cp data/cache/flow_evidence_meta.json /tmp/flow-evidence-cache/
           test ! -f data/cache/idx_official_flow_60d.csv.gz || cp data/cache/idx_official_flow_60d.csv.gz /tmp/flow-evidence-cache/
-          test ! -f data/cache/indexalpha_broker_60d.csv.gz || cp data/cache/indexalpha_broker_60d.csv.gz /tmp/flow-evidence-cache/
-          test ! -f data/cache/indexalpha_foreign_60d.csv.gz || cp data/cache/indexalpha_foreign_60d.csv.gz /tmp/flow-evidence-cache/
+          test ! -f data/cache/zapi_idx_foreign_60d.csv.gz || cp data/cache/zapi_idx_foreign_60d.csv.gz /tmp/flow-evidence-cache/
+          test ! -f data/cache/goapi_broker_60d.csv.gz || cp data/cache/goapi_broker_60d.csv.gz /tmp/flow-evidence-cache/
 
           git fetch origin "$GITHUB_REF_NAME"
           git reset --hard "origin/$GITHUB_REF_NAME"
@@ -64,8 +63,8 @@ jobs:
 
           git add data/cache/flow_evidence_meta.json
           test ! -f data/cache/idx_official_flow_60d.csv.gz || git add data/cache/idx_official_flow_60d.csv.gz
-          test ! -f data/cache/indexalpha_broker_60d.csv.gz || git add data/cache/indexalpha_broker_60d.csv.gz
-          test ! -f data/cache/indexalpha_foreign_60d.csv.gz || git add data/cache/indexalpha_foreign_60d.csv.gz
+          test ! -f data/cache/zapi_idx_foreign_60d.csv.gz || git add data/cache/zapi_idx_foreign_60d.csv.gz
+          test ! -f data/cache/goapi_broker_60d.csv.gz || git add data/cache/goapi_broker_60d.csv.gz
           if git diff --cached --quiet; then
             echo "Flow evidence cache unchanged"
           else
