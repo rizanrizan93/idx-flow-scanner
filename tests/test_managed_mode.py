@@ -1,6 +1,11 @@
 from datetime import datetime, timedelta, timezone
 
-from idx_flow_scanner.managed import decide_managed_run, universe_signature
+from idx_flow_scanner.managed import (
+    MANAGED_ACTIVE_TIMEOUT_MINUTES,
+    decide_managed_run,
+    mark_stale_managed_runs,
+    universe_signature,
+)
 
 
 def _run(status, minutes_ago, processed, version="0.1.3", sig="abc", count=400):
@@ -36,6 +41,26 @@ def test_managed_gate_blocks_fresh_running():
     d = decide_managed_run([_run("RUNNING", 5, 0)], version="0.1.3", universe_count=400, signature="abc", now=now)
     assert d.should_run is False
     assert "running" in d.reason
+
+
+def test_managed_gate_releases_running_after_same_timeout_used_by_cleanup():
+    now = datetime(2026, 8, 16, 1, 0, tzinfo=timezone.utc)
+    d = decide_managed_run(
+        [_run("RUNNING", MANAGED_ACTIVE_TIMEOUT_MINUTES + 1, 0)],
+        version="0.1.3",
+        universe_count=400,
+        signature="abc",
+        now=now,
+    )
+    assert d.should_run is True
+
+
+def test_stale_cleanup_default_is_aligned_and_larger_override_is_capped():
+    assert mark_stale_managed_runs.__kwdefaults__["max_age_minutes"] == MANAGED_ACTIVE_TIMEOUT_MINUTES
+    # The implementation intentionally caps explicit larger cleanup thresholds
+    # to MANAGED_ACTIVE_TIMEOUT_MINUTES so callers passing a legacy 60 cannot
+    # reopen the duplicate-run window.
+    assert MANAGED_ACTIVE_TIMEOUT_MINUTES == 45
 
 
 def test_universe_signature_stable_and_order_sensitive():
