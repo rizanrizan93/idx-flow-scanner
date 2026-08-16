@@ -175,6 +175,8 @@ def scan_one(
             "reversal_ratio_5d": bf.get("reversal_ratio_5d"),
             "broker_balance_error_pct": bf.get("broker_balance_error_pct"),
             "cost_position": bf.get("cost_position"),
+            "foreign_evidence_coverage_pct": ff.get("foreign_evidence_coverage_pct"),
+            "foreign_evidence_source": ff.get("foreign_evidence_source"),
             "official_foreign_coverage_pct": ff.get("official_foreign_coverage_pct"),
             "foreign_institutional_score": ff.get("foreign_institutional_score"),
             "foreign_net_5d": ff.get("foreign_net_5d"),

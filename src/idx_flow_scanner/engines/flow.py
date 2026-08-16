@@ -176,10 +176,12 @@ def compute_official_foreign_features(flow: pd.DataFrame, price: pd.DataFrame, l
     IDX ``ForeignBuy``/``ForeignSell`` are shares. Therefore foreign intensity is
     net foreign shares divided by total traded shares, never divided by traded IDR.
     """
-    default = {"foreign_institutional_score":50.0,"official_foreign_coverage_pct":0.0,"foreign_net_5d":0.0,"foreign_net_20d":0.0,"foreign_persistence_20d":0.0,"foreign_intensity_20d":0.0}
+    default = {"foreign_institutional_score":50.0,"foreign_evidence_coverage_pct":0.0,"official_foreign_coverage_pct":0.0,"foreign_evidence_source":"UNAVAILABLE","foreign_net_5d":0.0,"foreign_net_20d":0.0,"foreign_persistence_20d":0.0,"foreign_intensity_20d":0.0}
     if flow is None or flow.empty or price is None or price.empty: return default
     f=flow.copy(); f["trade_date"]=pd.to_datetime(f["trade_date"],errors="coerce").dt.normalize(); f=f.dropna(subset=["trade_date"]).sort_values("trade_date")
     if f.empty: return default
+    source_col = "foreign_evidence_source" if "foreign_evidence_source" in f.columns else "source" if "source" in f.columns else None
+    foreign_source = str(f[source_col].dropna().iloc[-1]) if source_col and not f[source_col].dropna().empty else "UNKNOWN"
     px_days=pd.DatetimeIndex(pd.to_datetime(price["date"],errors="coerce").dropna().unique())[-lookback:]
     coverage=100.0*len(px_days.intersection(pd.DatetimeIndex(f["trade_date"].unique())))/max(len(px_days),1)
     if "volume" not in f.columns:
@@ -190,7 +192,7 @@ def compute_official_foreign_features(flow: pd.DataFrame, price: pd.DataFrame, l
     volume20=float(d20["volume"].sum()) if not d20.empty else 0.0; intensity20=net20/max(volume20,1.0)
     persistence20=float((d20["foreign_net"]>0).mean()) if len(d20) else 0.0
     score=_clip_score(0.58*_sigmoid_score(intensity20,0.035)+42.0*persistence20); confidence=float(np.clip(coverage/80.0,0.0,1.0)); score=50.0+confidence*(score-50.0)
-    return {"foreign_institutional_score":score,"official_foreign_coverage_pct":coverage,"foreign_net_5d":net5,"foreign_net_20d":net20,"foreign_persistence_20d":persistence20,"foreign_intensity_20d":intensity20}
+    return {"foreign_institutional_score":score,"foreign_evidence_coverage_pct":coverage,"official_foreign_coverage_pct":coverage if foreign_source=="IDX_OFFICIAL_STOCK_SUMMARY" else 0.0,"foreign_evidence_source":foreign_source,"foreign_net_5d":net5,"foreign_net_20d":net20,"foreign_persistence_20d":persistence20,"foreign_intensity_20d":intensity20}
 
 
 def compute_price_flow_features(price: pd.DataFrame, broker_features: dict[str, object]) -> dict[str, float]:

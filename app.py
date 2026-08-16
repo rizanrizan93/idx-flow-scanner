@@ -40,9 +40,14 @@ from idx_flow_scanner.providers.idx_official import (
     upsert_idx_official_flows,
 )
 from idx_flow_scanner.providers.zapi import load_bundled_zapi_foreign_flows
+from idx_flow_scanner.vendor_foreign_store import (
+    ZAPI_VENDOR_SOURCES,
+    load_zapi_vendor_foreign_flows,
+    upsert_zapi_vendor_foreign_flows,
+)
 from idx_flow_scanner.storage import SupabaseStore
 
-APP_VERSION = "0.2.4"
+APP_VERSION = "0.2.5"
 DEFAULT_UNIVERSE_PATH = ROOT / "data" / "universe" / "idx_400_syariah.csv"
 MANAGED_MIN_VALID_RATIO = 0.90
 
@@ -51,7 +56,7 @@ st.title("IDX Flow Scanner")
 st.caption(
     f"v{APP_VERSION} • clean-room bandarmology / accumulation engine • database-first • "
     "managed 400-ticker mode • direct IDX + Zapi IDX-derived foreign shares • "
-    "GOAPI stock-level broker evidence • provenance-gated bandar cost • OOS memory"
+    "optional GOAPI stock-level broker evidence • provenance-gated bandar cost • OOS memory"
 )
 
 
@@ -250,6 +255,7 @@ if trigger_scan:
                     "foreign_flow_enabled": bool(use_foreign),
                     "direct_idx_transport_cache": True,
                     "zapi_idx_foreign_transport_cache": True,
+                    "zapi_vendor_foreign_db": True,
                     "foreign_evidence_selector": "BEST_COVERAGE_DIRECT_IDX_TIE_BREAK",
                     "goapi_broker_transport_cache": True,
                     "broker_contract": "STOCK_LEVEL_NET_SIDE",
@@ -290,17 +296,22 @@ if trigger_scan:
         status_box.caption("Loading share-unit foreign flow evidence...")
         try:
             db_flow = load_cached_idx_official_flows(store, universe, lookback_calendar_days=120) if store is not None else pd.DataFrame()
+            db_vendor_flow = load_zapi_vendor_foreign_flows(store, universe, lookback_calendar_days=120) if store is not None else pd.DataFrame()
             bundled_direct = load_bundled_idx_official_flows(universe, lookback_calendar_days=120)
             bundled_zapi = load_bundled_zapi_foreign_flows(universe, lookback_calendar_days=120)
-            foreign_candidates = merge_official_flow_frames(db_flow, bundled_direct, bundled_zapi)
+            foreign_candidates = merge_official_flow_frames(db_flow, db_vendor_flow, bundled_direct, bundled_zapi)
 
             if store is not None:
-                for transport in (bundled_direct, bundled_zapi):
-                    if transport is not None and not transport.empty:
-                        try:
-                            upsert_idx_official_flows(store, transport)
-                        except Exception as exc:
-                            st.caption(f"Foreign transport cache could not be persisted: {exc}")
+                if bundled_direct is not None and not bundled_direct.empty:
+                    try:
+                        upsert_idx_official_flows(store, bundled_direct)
+                    except Exception as exc:
+                        st.caption(f"Direct IDX cache could not be persisted: {exc}")
+                if bundled_zapi is not None and not bundled_zapi.empty:
+                    try:
+                        upsert_zapi_vendor_foreign_flows(store, bundled_zapi)
+                    except Exception as exc:
+                        st.caption(f"Zapi vendor cache could not be persisted: {exc}")
 
             latest_price_dates = []
             for ticker in universe[:20]:
@@ -331,7 +342,7 @@ if trigger_scan:
                 foreign_candidates["source"].eq("IDX_OFFICIAL_STOCK_SUMMARY")
             ].copy() if not foreign_candidates.empty and "source" in foreign_candidates.columns else pd.DataFrame()
             zapi_rows = foreign_candidates[
-                foreign_candidates["source"].eq("ZAPI_IDX_FOREIGN_FLOW")
+                foreign_candidates["source"].isin(ZAPI_VENDOR_SOURCES)
             ].copy() if not foreign_candidates.empty and "source" in foreign_candidates.columns else pd.DataFrame()
             direct_idx_stats = {**data_stats(direct_rows), "source": "IDX_OFFICIAL_STOCK_SUMMARY"}
             zapi_stats = {**data_stats(zapi_rows), "source": "ZAPI_IDX_FOREIGN_FLOW"}
@@ -402,9 +413,17 @@ if trigger_scan:
             try:
                 selected_days = int(foreign_flow["trade_date"].nunique()) if not foreign_flow.empty else 0
                 selected_tickers = int(foreign_flow["ticker"].nunique()) if not foreign_flow.empty else 0
+                direct_selected = foreign_flow[foreign_flow["source"].eq("IDX_OFFICIAL_STOCK_SUMMARY")].copy() if not foreign_flow.empty and "source" in foreign_flow.columns else pd.DataFrame()
+                direct_days = int(direct_selected["trade_date"].nunique()) if not direct_selected.empty else 0
+                direct_tickers = int(direct_selected["ticker"].nunique()) if not direct_selected.empty else 0
+                source_col = "foreign_evidence_source" if not foreign_flow.empty and "foreign_evidence_source" in foreign_flow.columns else "source"
+                source_counts = foreign_flow.groupby(source_col, observed=True)["ticker"].nunique().astype(int).to_dict() if not foreign_flow.empty and source_col in foreign_flow.columns else {}
                 store.client.table("flow_scan_runs").update({
-                    "official_flow_days": selected_days,
-                    "official_flow_tickers": selected_tickers,
+                    "official_flow_days": direct_days,
+                    "official_flow_tickers": direct_tickers,
+                    "foreign_evidence_days": selected_days,
+                    "foreign_evidence_tickers": selected_tickers,
+                    "foreign_evidence_sources": source_counts,
                 }).eq("id", run_id).execute()
             except Exception:
                 pass
@@ -471,7 +490,7 @@ if isinstance(results, pd.DataFrame) and not results.empty:
     if "diagnostics" in display.columns:
         for name in (
             "broker_verified_source_pct", "persistence_20d", "broker_cohort_stability", "cost_position",
-            "official_foreign_coverage_pct", "market_regime_label", "relative_strength_20d_pct",
+            "foreign_evidence_coverage_pct", "foreign_evidence_source", "official_foreign_coverage_pct", "market_regime_label", "relative_strength_20d_pct",
         ):
             display[name] = display["diagnostics"].map(
                 lambda value, key=name: (value or {}).get(key) if isinstance(value, dict) else None
@@ -494,7 +513,7 @@ if isinstance(results, pd.DataFrame) and not results.empty:
     ].copy()
     broker_direct = display[display["evidence_tier"] == "BROKER_DIRECT"].copy()
     foreign_coverages = [
-        float(d.get("official_foreign_coverage_pct", 0) or 0)
+        float(d.get("foreign_evidence_coverage_pct", d.get("official_foreign_coverage_pct", 0)) or 0)
         for d in results.get("diagnostics", pd.Series(dtype=object))
         if isinstance(d, dict)
     ]
@@ -514,7 +533,7 @@ if isinstance(results, pd.DataFrame) and not results.empty:
         "evidence_tier", "evidence_coverage_pct", "broker_verified_source_pct",
         "accumulation_score", "operator_dominance_score", "persistence_20d",
         "broker_cohort_stability", "foreign_institutional_score",
-        "official_foreign_coverage_pct", "market_context_score", "market_regime_label",
+        "foreign_evidence_source", "foreign_evidence_coverage_pct", "official_foreign_coverage_pct", "market_context_score", "market_regime_label",
         "relative_strength_20d_pct", "price_data_quality_score", "distribution_risk",
         "entry_low", "entry_high", "invalidation", "tp1", "tp2",
     ]

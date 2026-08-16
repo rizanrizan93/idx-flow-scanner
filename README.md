@@ -94,7 +94,7 @@ Initial research weights (subject to walk-forward/OOS calibration):
 - operator dominance 15%
 - cost-basis advantage 10%
 - retail exhaustion 10%
-- foreign institutional 10% (neutral 50 until a verified provider is wired)
+- foreign institutional 10% (direct IDX when available; otherwise audited Zapi IDX-derived share flow; neutral only when verified flow is unavailable)
 - supply concentration 8%
 - price-flow divergence 7%
 - market/sector regime 5% (neutral 50 until verified provider is wired)
@@ -102,6 +102,14 @@ Initial research weights (subject to walk-forward/OOS calibration):
 - risk/liquidity 5%
 
 Weights are explicitly **not** claimed to reproduce any proprietary formula. Before real-money use, thresholds and weights must be walk-forward calibrated on historical direct broker data, with out-of-sample evaluation and transaction-cost/slippage assumptions.
+
+## v0.2.5 foreign evidence
+
+- Bundled Zapi IDX-derived foreign-flow cache covers the managed 400-ticker universe for 20 trading days.
+- Zapi rows persist in `flow_vendor_foreign_flows`, never in the direct-IDX `flow_official_stock_flows` table.
+- Foreign buy/sell/net remain share-unit evidence and are never promoted to broker-direct evidence or bandar cost.
+- Direct IDX HTTP remains preferred on equal coverage, but cloud 403/Cloudflare failures fail closed.
+- GOAPI is optional; the scanner remains fully operational in PRICE_PROXY/GUARDED mode when stock-level broker evidence is absent.
 
 ## Next production gates
 
