@@ -1,0 +1,11 @@
+{
+  "tickers":398,
+  "rows":97167,
+  "freshest":"2026-08-14",
+  "oldest":"2025-08-14",
+  "missing":[
+    "SCPI",
+    "META"
+  ],
+  "source":"YAHOO_BATCH_CHART_GITHUB_RUNNER"
+}
