@@ -63,7 +63,6 @@ def scan_one(
         raise ValueError(f"{ticker}: insufficient price history ({len(price)} bars)")
 
     bf = compute_broker_features(broker, price, config)
-    pf = compute_price_flow_features(price, bf)
     ff = compute_official_foreign_features(official_flow, price)
     sf = compute_smc_features(price)
     qf = compute_price_quality_features(price, reference_date=reference_date)
@@ -79,6 +78,10 @@ def scan_one(
         and broker_balance_error <= config.direct_broker_max_balance_error_pct
         and verified_source_pct >= config.direct_broker_min_verified_source_pct
     )
+
+    # Broker evidence that has not passed the direct integrity gate must have
+    # zero alpha influence. Pending rows remain visible only in diagnostics.
+    pf = compute_price_flow_features(price, bf if direct else {})
 
     features = {**bf, **pf, **ff, **sf, **market_features, **qf, "direct_broker": direct}
     evidence_tier = "BROKER_DIRECT" if direct else "PRICE_PROXY"
@@ -149,8 +152,16 @@ def scan_one(
         risk_liquidity_score=round(float(pf["risk_liquidity_score"]), 2),
         price_data_quality_score=round(price_quality, 2),
         distribution_risk=round(effective_distribution, 2),
-        estimated_smart_money_cost=round(float(bf["estimated_smart_money_cost"]), 4) if bf["estimated_smart_money_cost"] else None,
-        premium_to_cost_pct=round(float(bf["premium_to_cost_pct"]), 2) if bf["premium_to_cost_pct"] is not None else None,
+        estimated_smart_money_cost=(
+            round(float(bf["estimated_smart_money_cost"]), 4)
+            if direct and bf["estimated_smart_money_cost"]
+            else None
+        ),
+        premium_to_cost_pct=(
+            round(float(bf["premium_to_cost_pct"]), 2)
+            if direct and bf["premium_to_cost_pct"] is not None
+            else None
+        ),
         entry_low=round(float(sf["entry_low"]), 2) if sf["entry_low"] is not None else None,
         entry_high=round(float(sf["entry_high"]), 2) if sf["entry_high"] is not None else None,
         invalidation=round(float(sf["invalidation"]), 2) if sf["invalidation"] is not None else None,
@@ -162,6 +173,7 @@ def scan_one(
             "broker_days": bf["broker_days"],
             "distinct_brokers": distinct_brokers,
             "broker_verified_source_pct": verified_source_pct,
+            "broker_alpha_applied": direct,
             "net_value_5d": bf["net_value_5d"],
             "net_value_20d": bf["net_value_20d"],
             "net_value_60d": bf["net_value_60d"],
@@ -214,6 +226,7 @@ def scan_one(
             "liquidity_sweep": sf["liquidity_sweep"],
             "fvg_low": sf["fvg_low"],
             "fvg_high": sf["fvg_high"],
+            "execution_geometry_valid": sf.get("execution_geometry_valid"),
         },
     )
 
