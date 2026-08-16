@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-import time
 from pathlib import Path
 from typing import Iterable
 
@@ -48,16 +47,14 @@ def _broker_rows_for_ticker(ticker: str, trade_date: str, items: object, *, mark
             value = pd.to_numeric(item.get(key), errors="coerce")
             return float(value) if pd.notna(value) else 0.0
 
-        buy_volume = num("buy_volume")
-        sell_volume = num("sell_volume")
         rows.append({
             "ticker": canonical_ticker(ticker),
             "trade_date": trade_date,
             "broker_code": code,
             "buy_value": num("buy_value"),
             "sell_value": num("sell_value"),
-            "buy_volume": buy_volume,
-            "sell_volume": sell_volume,
+            "buy_volume": num("buy_volume"),
+            "sell_volume": num("sell_volume"),
             "buy_avg": num("buy_avg"),
             "sell_avg": num("sell_avg"),
             "market_type": "REGULAR" if str(market).upper() == "RG" else str(market).upper(),
@@ -173,9 +170,9 @@ def choose_broker_refresh_tickers(
     *,
     budget_units: int,
 ) -> list[str]:
-    """Round-robin missing/stalest tickers so tiny free quotas are never wasted."""
+    """Round-robin missing/stalest tickers so limited quotas are never wasted."""
     names = list(dict.fromkeys(canonical_ticker(t) for t in universe if canonical_ticker(t)))
-    budget = max(0, min(int(budget_units), 50))
+    budget = max(0, int(budget_units))
     if budget == 0:
         return []
     if existing is None or existing.empty or "ticker" not in existing.columns:
