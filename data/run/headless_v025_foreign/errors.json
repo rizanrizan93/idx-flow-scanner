@@ -1,0 +1,10 @@
+[
+  {
+    "ticker": "SCPI",
+    "error": "SCPI: insufficient price history (0 bars)"
+  },
+  {
+    "ticker": "META",
+    "error": "META: insufficient price history (0 bars)"
+  }
+]

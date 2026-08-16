@@ -1,0 +1,43 @@
+{
+  "run_id": "d3cd3374-3b5f-4bfa-92be-05470e3752b1",
+  "status": "COMPLETED",
+  "universe_count": 400,
+  "processed_count": 398,
+  "error_count": 2,
+  "attempted_count": 400,
+  "valid_ratio": 0.995,
+  "error_tickers": [
+    "SCPI",
+    "META"
+  ],
+  "version": "0.2.5",
+  "mode": "managed",
+  "execution_transport": "GITHUB_HEADLESS_AUDITED_CACHE",
+  "universe_source": "BUNDLED_400_SYARIAH",
+  "universe_signature": "3255b18b7e88da96",
+  "minimum_price_bars": 80,
+  "price_seed_tickers": 398,
+  "foreign_cache_rows": 8000,
+  "foreign_cache_tickers": 400,
+  "foreign_cache_days": 20,
+  "official_flow_days": 0,
+  "official_flow_tickers": 0,
+  "foreign_evidence_days": 20,
+  "foreign_evidence_tickers": 398,
+  "foreign_evidence_sources": {
+    "ZAPI_IDX_FOREIGN_FLOW": 398
+  },
+  "foreign_selector_stats": {
+    "idx_direct_selected_tickers": 0,
+    "zapi_selected_tickers": 398,
+    "other_selected_tickers": 0,
+    "foreign_unavailable_tickers": 2,
+    "median_selected_coverage_pct": 100.0
+  },
+  "median_foreign_evidence_coverage_pct": 100.0,
+  "broker_direct_count": 0,
+  "eligible_count": 0,
+  "result_chunks": 2,
+  "outcome_chunks": 2,
+  "generated_at": "2026-08-16T11:24:09.421097+00:00"
+}
