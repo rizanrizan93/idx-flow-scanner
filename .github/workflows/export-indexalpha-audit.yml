@@ -1,0 +1,73 @@
+name: Export Index Alpha Day1 Audit
+
+on:
+  push:
+    branches:
+      - audit/indexalpha-day1
+    paths:
+      - '.github/workflows/export-indexalpha-audit.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit/indexalpha-day1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install pandas
+      - name: Export broker cache to auditable JSON
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          import pandas as pd
+
+          src = Path('data/cache/indexalpha_broker_60d.csv.gz')
+          if not src.exists():
+              raise SystemExit('indexalpha broker cache missing')
+          df = pd.read_csv(src)
+          for c in ['trade_date']:
+              if c in df.columns:
+                  df[c] = pd.to_datetime(df[c], errors='coerce').dt.date.astype('string')
+          numeric = ['buy_value','sell_value','buy_volume','sell_volume','buy_avg','sell_avg']
+          for c in numeric:
+              if c in df.columns:
+                  df[c] = pd.to_numeric(df[c], errors='coerce')
+
+          rows = df.where(pd.notna(df), None).to_dict('records')
+          Path('data/audit').mkdir(parents=True, exist_ok=True)
+          Path('data/audit/indexalpha_day1_rows.json').write_text(json.dumps(rows, separators=(',',':')) + '\n', encoding='utf-8')
+
+          stats=[]
+          for ticker,g in df.groupby('ticker'):
+              buy=float(pd.to_numeric(g['buy_value'],errors='coerce').fillna(0).sum())
+              sell=float(pd.to_numeric(g['sell_value'],errors='coerce').fillna(0).sum())
+              denom=max((buy+sell)/2.0,1.0)
+              stats.append({
+                  'ticker':str(ticker),
+                  'rows':int(len(g)),
+                  'brokers':int(g['broker_code'].nunique()),
+                  'days':int(pd.to_datetime(g['trade_date'],errors='coerce').nunique()),
+                  'buy_value':buy,
+                  'sell_value':sell,
+                  'balance_error_pct':100.0*abs(buy-sell)/denom,
+                  'verified_rows':int(g.get('source_verified',pd.Series(False,index=g.index)).astype(str).str.lower().isin(['true','1','yes','verified']).sum()),
+                  'source_values':sorted(set(map(str,g.get('source',pd.Series(dtype=str)).dropna().unique()))),
+              })
+          payload={'rows':int(len(df)),'tickers':int(df['ticker'].nunique()),'days':int(pd.to_datetime(df['trade_date'],errors='coerce').nunique()),'per_ticker':stats}
+          Path('data/audit/indexalpha_day1_stats.json').write_text(json.dumps(payload,indent=2,sort_keys=True)+'\n', encoding='utf-8')
+          print(json.dumps(payload,indent=2,sort_keys=True))
+          PY
+      - name: Commit audit export
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add data/audit/indexalpha_day1_rows.json data/audit/indexalpha_day1_stats.json
+          git commit -m 'Export Index Alpha day1 audit rows'
+          git push origin HEAD:audit/indexalpha-day1
