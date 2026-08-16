@@ -61,8 +61,24 @@ class SupabaseStore:
         if self.secret_key.startswith("sb_publishable_"):
             raise RuntimeError("Backend writes require a secret/service-role key, not a publishable key")
         self.enable_legacy_cache = str(os.getenv("FLOW_ENABLE_LEGACY_CACHE", "0")).strip().lower() in {"1", "true", "yes"}
+        # A database cache is an acceleration layer, not a reason to freeze a managed scan.
+        # Supabase officially supports a PostgREST client timeout via ClientOptions. Keep it
+        # short enough that a stalled Data API/RPC request fails into the existing seed/Yahoo
+        # fallback instead of leaving OHLCV_PREP without a heartbeat for tens of minutes.
+        timeout_seconds = float(os.getenv("FLOW_SUPABASE_POSTGREST_TIMEOUT_SECONDS", "10"))
+        timeout_seconds = min(max(timeout_seconds, 3.0), 30.0)
         from supabase import create_client
-        self.client = create_client(self.url, self.secret_key)
+        from supabase.client import ClientOptions
+        self.client = create_client(
+            self.url,
+            self.secret_key,
+            options=ClientOptions(
+                postgrest_client_timeout=timeout_seconds,
+                storage_client_timeout=timeout_seconds,
+                schema="public",
+            ),
+        )
+        self.postgrest_timeout_seconds = timeout_seconds
 
     def create_run(self, run_id: str, universe_count: int, config: dict) -> None:
         self.client.table("flow_scan_runs").upsert({
