@@ -47,7 +47,7 @@ from idx_flow_scanner.vendor_foreign_store import (
 )
 from idx_flow_scanner.storage import SupabaseStore
 
-APP_VERSION = "0.2.5"
+APP_VERSION = "0.2.6"
 DEFAULT_UNIVERSE_PATH = ROOT / "data" / "universe" / "idx_400_syariah.csv"
 MANAGED_MIN_VALID_RATIO = 0.90
 
@@ -263,6 +263,7 @@ if trigger_scan:
                     "bandar_cost_display": "BROKER_DIRECT_ONLY",
                     "market_context": "CROSS_SECTIONAL_400",
                     "price_integrity_gate": True,
+                    "bulk_price_cache_rpc": True,
                     "oos_outcome_memory": True,
                 },
             )
@@ -271,12 +272,17 @@ if trigger_scan:
         except Exception as exc:
             st.warning(f"Could not create RUNNING record in Supabase: {exc}")
 
+    def price_status(text: str) -> None:
+        status_box.caption(text)
+        if store is not None and run_record_created:
+            store.update_run_progress(run_id, 0, "OHLCV_PREP")
+
     load_price, price_stats = prepare_database_first_prices(
         universe,
         store,
         period=period,
         min_rows=config.minimum_price_bars,
-        status=lambda text: status_box.caption(text),
+        status=price_status,
     )
     st.session_state.last_price_stats = price_stats
 
