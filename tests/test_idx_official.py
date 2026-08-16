@@ -3,7 +3,11 @@ from __future__ import annotations
 import pandas as pd
 
 from idx_flow_scanner.engines.flow import compute_official_foreign_features
-from idx_flow_scanner.providers.idx_official import normalize_idx_stock_summary_payload
+from idx_flow_scanner.providers.idx_official import (
+    IdxOfficialAccessBlocked,
+    fetch_idx_official_flow_history,
+    normalize_idx_stock_summary_payload,
+)
 
 
 def test_idx_stock_summary_normalization_and_foreign_score():
@@ -44,3 +48,25 @@ def test_idx_stock_summary_normalization_and_foreign_score():
     feat = compute_official_foreign_features(flow, price)
     assert feat["official_foreign_coverage_pct"] == 100.0
     assert feat["foreign_institutional_score"] > 70
+
+
+def test_official_history_stops_after_cloud_access_block(monkeypatch):
+    calls = []
+
+    def blocked(day, **kwargs):
+        calls.append(day)
+        raise IdxOfficialAccessBlocked("cloudflare 403")
+
+    monkeypatch.setattr(
+        "idx_flow_scanner.providers.idx_official.fetch_idx_stock_summary",
+        blocked,
+    )
+    out = fetch_idx_official_flow_history(
+        ["ELSA", "OMED"],
+        end_date="2026-08-14",
+        target_trading_days=20,
+        max_calendar_days=40,
+        request_delay_seconds=0,
+    )
+    assert out.empty
+    assert len(calls) == 1
