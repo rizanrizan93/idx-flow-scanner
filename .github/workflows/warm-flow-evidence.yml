@@ -81,6 +81,16 @@ jobs:
           dst.write_text(out.to_json(orient='records', double_precision=15) + '\n', encoding='utf-8')
           print(f'Wrote {len(out)} verified broker rows to {dst}')
           PY
+      - name: Publish provider telemetry without repository mutation
+        if: always()
+        run: |
+          {
+            echo '## Flow evidence provider telemetry'
+            echo
+            echo '```json'
+            cat data/cache/flow_evidence_meta.json 2>/dev/null || echo '{"status":"meta_unavailable"}'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Commit audited evidence cache
         run: |
           set -euo pipefail
@@ -100,37 +110,19 @@ jobs:
           git reset --hard "origin/$GITHUB_REF_NAME"
           mkdir -p data/cache
 
-          # Do not let timestamp-only JSON changes or gzip header/serialization noise create a
-          # repository commit. A no-op cache commit can redeploy Streamlit while a managed scan
-          # is running, leaving a RUNNING row orphaned in OHLCV_PREP.
+          # Provider-status telemetry is written to the Actions summary above. Only a semantic
+          # evidence-data change may mutate main. This prevents quota/status-only metadata from
+          # redeploying Streamlit and interrupting an in-flight managed 400-ticker scan.
           python - <<'PY'
           from __future__ import annotations
 
           import gzip
-          import json
           import shutil
           from pathlib import Path
 
           cache = Path("data/cache")
           fresh = Path("/tmp/flow-evidence-cache")
-
-          new_meta = fresh / "flow_evidence_meta.json"
-          old_meta = cache / "flow_evidence_meta.json"
-          if new_meta.exists():
-              material_changed = True
-              if old_meta.exists():
-                  try:
-                      new_obj = json.loads(new_meta.read_text(encoding="utf-8"))
-                      old_obj = json.loads(old_meta.read_text(encoding="utf-8"))
-                      new_obj.pop("generated_at", None)
-                      old_obj.pop("generated_at", None)
-                      material_changed = new_obj != old_obj
-                  except Exception:
-                      material_changed = True
-              if material_changed:
-                  shutil.copy2(new_meta, old_meta)
-              else:
-                  print("flow_evidence_meta.json: material evidence unchanged; preserving tracked generated_at")
+          evidence_changed = False
 
           def uncompressed_bytes(path: Path) -> bytes:
               with gzip.open(path, "rb") as handle:
@@ -166,6 +158,7 @@ jobs:
                   print(f"{name}: uncompressed evidence unchanged; preserving tracked gzip")
               else:
                   shutil.copy2(new_path, old_path)
+                  evidence_changed = True
 
           new_indexalpha_gz = fresh / "indexalpha_broker_60d.csv.gz"
           old_indexalpha_gz = cache / "indexalpha_broker_60d.csv.gz"
@@ -183,12 +176,22 @@ jobs:
                       print("indexalpha_broker_60d.csv.gz: uncompressed evidence unchanged; preserving tracked gzip")
                   else:
                       shutil.copy2(new_indexalpha_gz, old_indexalpha_gz)
+                      evidence_changed = True
 
           if new_json.exists():
               if indexalpha_semantically_same:
                   print("indexalpha_broker_60d.json: evidence unchanged; preserving tracked mirror")
               else:
                   shutil.copy2(new_json, old_json)
+                  evidence_changed = True
+
+          new_meta = fresh / "flow_evidence_meta.json"
+          old_meta = cache / "flow_evidence_meta.json"
+          if evidence_changed and new_meta.exists():
+              shutil.copy2(new_meta, old_meta)
+              print("flow_evidence_meta.json: included because evidence data changed")
+          elif new_meta.exists():
+              print("flow_evidence_meta.json: telemetry-only change kept in Actions summary; tracked metadata preserved")
           PY
 
           git add data/cache/flow_evidence_meta.json
@@ -198,7 +201,7 @@ jobs:
           test ! -f data/cache/indexalpha_broker_60d.csv.gz || git add data/cache/indexalpha_broker_60d.csv.gz
           test ! -f data/cache/indexalpha_broker_60d.json || git add data/cache/indexalpha_broker_60d.json
           if git diff --cached --quiet; then
-            echo "Flow evidence cache materially unchanged; no commit and no Streamlit redeploy"
+            echo "Flow evidence data unchanged; no repository commit and no Streamlit redeploy"
           else
             git commit -m "Refresh audited flow evidence cache"
             git push origin HEAD:"$GITHUB_REF_NAME"
