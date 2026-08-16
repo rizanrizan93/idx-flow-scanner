@@ -41,23 +41,27 @@ jobs:
                   with urllib.request.urlopen(req, timeout=20) as response:
                       status = response.status
                       body = json.loads(response.read().decode('utf-8'))
-                  rows = body.get('data') if isinstance(body, dict) else None
+                  outer_data = body.get('data') if isinstance(body, dict) else None
+                  inner = outer_data if isinstance(outer_data, dict) else body
+                  rows = inner.get('data') if isinstance(inner, dict) else outer_data
                   first = rows[0] if isinstance(rows, list) and rows and isinstance(rows[0], dict) else None
                   safe = {
                       'case': name,
                       'http_status': status,
                       'top_keys': sorted(body.keys())[:30] if isinstance(body, dict) else [],
-                      'data_type': type(rows).__name__,
-                      'data_len': len(rows) if isinstance(rows, list) else None,
+                      'outer_data_type': type(outer_data).__name__,
+                      'inner_keys': sorted(inner.keys())[:30] if isinstance(inner, dict) else [],
+                      'rows_type': type(rows).__name__,
+                      'rows_len': len(rows) if isinstance(rows, list) else None,
                       'first_row_keys': sorted(first.keys())[:40] if first else [],
-                      'dataset': body.get('dataset') if isinstance(body, dict) else None,
-                      'provider': body.get('provider') if isinstance(body, dict) else None,
-                      'date': body.get('date') if isinstance(body, dict) else None,
-                      'unit': body.get('unit') if isinstance(body, dict) else None,
-                      'total': body.get('total') if isinstance(body, dict) else None,
-                      'recordsTotal': body.get('recordsTotal') if isinstance(body, dict) else None,
-                      'recordsFiltered': body.get('recordsFiltered') if isinstance(body, dict) else None,
-                      'message': str((body.get('message') or body.get('error') or ''))[:200] if isinstance(body, dict) else None,
+                      'dataset': inner.get('dataset') if isinstance(inner, dict) else None,
+                      'provider': inner.get('provider') if isinstance(inner, dict) else None,
+                      'date': inner.get('date') if isinstance(inner, dict) else None,
+                      'unit': inner.get('unit') if isinstance(inner, dict) else None,
+                      'total': inner.get('total') if isinstance(inner, dict) else None,
+                      'recordsTotal': inner.get('recordsTotal') if isinstance(inner, dict) else None,
+                      'recordsFiltered': inner.get('recordsFiltered') if isinstance(inner, dict) else None,
+                      'message': str((inner.get('message') or inner.get('error') or ''))[:200] if isinstance(inner, dict) else None,
                   }
                   print(json.dumps(safe, sort_keys=True))
               except urllib.error.HTTPError as exc:
