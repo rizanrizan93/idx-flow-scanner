@@ -42,6 +42,26 @@ def test_missing_signal_date_does_not_slide_entry_forward():
     assert out.evaluation_status == "PENDING"
 
 
+def test_forward_split_like_gap_is_excluded_from_oos_returns():
+    price = _prices()
+    signal_i = 10
+    split_i = signal_i + 3
+    prev_close = float(price.loc[split_i - 1, "close"])
+    split_open = prev_close * 0.5
+    price.loc[split_i, ["open", "high", "low", "close"]] = [split_open, split_open * 1.02, split_open * 0.98, split_open * 1.01]
+
+    out = compute_signal_outcome(price, price.loc[signal_i, "date"])
+
+    assert out.entry_close == float(price.loc[signal_i, "close"])
+    assert out.evaluation_status == "EXCLUDED"
+    assert out.evaluation_note == "CORPORATE_ACTION_LIKE_GAP_IN_FORWARD_WINDOW"
+    assert out.return_5d is None
+    assert out.return_20d is None
+    assert out.return_60d is None
+    assert out.mfe_20d is None
+    assert out.mae_20d is None
+
+
 class _FakeTable:
     def __init__(self, rows, writes):
         self.rows = rows
@@ -96,5 +116,6 @@ def test_refresh_pages_all_open_rows_and_loads_price_once_per_ticker():
     assert stats["checked"] == 3
     assert stats["updated"] == 3
     assert stats["complete"] == 3
+    assert stats["excluded"] == 0
     assert calls == ["AAA","BBB"]
     assert len(store.client.writes) == 3
