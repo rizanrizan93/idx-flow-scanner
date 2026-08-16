@@ -1,0 +1,90 @@
+name: Zapi Broker Raw Diagnostic
+
+on:
+  push:
+    branches:
+      - diag/zapi-broker-raw
+    paths:
+      - '.github/workflows/zapi-broker-raw-diagnostic.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Probe stock-level broker paths safely
+        env:
+          ZAPI_KEY: ${{ secrets.ZAPI_KEY }}
+        run: |
+          python - <<'PY'
+          import hashlib, json, os, urllib.parse, urllib.request, urllib.error
+
+          key = (os.getenv('ZAPI_KEY') or '').strip()
+          print(json.dumps({'token_present': bool(key)}))
+          if not key:
+              raise SystemExit(2)
+
+          base = 'https://api.zpi.web.id/v1/finance:idx/raw'
+          cases = [
+              ('broker_base', 'TradingSummary/GetBrokerSummary', 'length=3&start=0&date=20260814'),
+              ('broker_code', 'TradingSummary/GetBrokerSummary', 'length=3&start=0&date=20260814&code=BBCA'),
+              ('broker_stockCode', 'TradingSummary/GetBrokerSummary', 'length=3&start=0&date=20260814&stockCode=BBCA'),
+              ('broker_StockCode', 'TradingSummary/GetBrokerSummary', 'length=3&start=0&date=20260814&StockCode=BBCA'),
+              ('broker_kodeEmiten', 'TradingSummary/GetBrokerSummary', 'length=3&start=0&date=20260814&kodeEmiten=BBCA'),
+              ('broker_symbol', 'TradingSummary/GetBrokerSummary', 'length=3&start=0&date=20260814&symbol=BBCA'),
+              ('by_stock_1', 'TradingSummary/GetBrokerSummaryByStock', 'length=3&start=0&date=20260814&code=BBCA'),
+              ('by_stock_2', 'TradingSummary/GetStockBrokerSummary', 'length=3&start=0&date=20260814&code=BBCA'),
+              ('by_stock_3', 'TradingSummary/GetBrokerStockSummary', 'length=3&start=0&date=20260814&code=BBCA'),
+              ('by_stock_4', 'TradingSummary/GetBrokerSummaryStock', 'length=3&start=0&date=20260814&code=BBCA'),
+              ('by_stock_5', 'TradingSummary/GetBrokerSummaryDetail', 'length=3&start=0&date=20260814&code=BBCA'),
+              ('by_stock_6', 'TradingSummary/GetBrokerSummaryByCode', 'length=3&start=0&date=20260814&code=BBCA'),
+              ('stockdata_1', 'StockData/GetBrokerSummary', 'length=3&start=0&date=20260814&code=BBCA'),
+              ('stockdata_2', 'StockData/GetBrokerSummaryByStock', 'length=3&start=0&date=20260814&code=BBCA'),
+          ]
+
+          def unwrap(body):
+              if isinstance(body, dict) and isinstance(body.get('data'), dict):
+                  inner = body['data']
+                  if any(k in inner for k in ('data','recordsTotal','recordsFiltered','message','error')):
+                      return inner
+              return body
+
+          for name, path, query in cases:
+              url = base + '?' + urllib.parse.urlencode({'path': path, 'query': query})
+              req = urllib.request.Request(url, headers={'Accept':'application/json','x-api-key':key,'User-Agent':'Mozilla/5.0'})
+              try:
+                  with urllib.request.urlopen(req, timeout=20) as resp:
+                      status = resp.status
+                      body = json.loads(resp.read().decode('utf-8'))
+                  inner = unwrap(body)
+                  rows = inner.get('data') if isinstance(inner, dict) else None
+                  first = rows[0] if isinstance(rows, list) and rows and isinstance(rows[0], dict) else None
+                  keys = sorted(first.keys()) if first else []
+                  signature = hashlib.sha256(json.dumps(rows, sort_keys=True, default=str).encode()).hexdigest()[:12] if isinstance(rows, list) else None
+                  lower = {str(k).lower() for k in keys}
+                  safe = {
+                      'case': name,
+                      'http_status': status,
+                      'rows_len': len(rows) if isinstance(rows, list) else None,
+                      'recordsTotal': inner.get('recordsTotal') if isinstance(inner, dict) else None,
+                      'recordsFiltered': inner.get('recordsFiltered') if isinstance(inner, dict) else None,
+                      'first_row_keys': keys[:50],
+                      'has_stock_field': bool(lower & {'stockcode','code','symbol','kodeemiten','ticker'}),
+                      'has_buy_sell': any('buy' in x for x in lower) and any('sell' in x for x in lower),
+                      'has_avg_price': any(('avg' in x or 'average' in x) and ('price' in x or x.endswith('avg')) for x in lower),
+                      'row_signature': signature,
+                      'message': str((inner.get('message') or inner.get('error') or ''))[:160] if isinstance(inner, dict) else '',
+                  }
+                  print(json.dumps(safe, sort_keys=True))
+              except urllib.error.HTTPError as exc:
+                  raw = ''
+                  try: raw = exc.read().decode('utf-8', errors='ignore')[:200]
+                  except Exception: pass
+                  print(json.dumps({'case': name, 'http_status': exc.code, 'error':'HTTPError', 'body_hint': raw[:120]}))
+              except Exception as exc:
+                  print(json.dumps({'case': name, 'error': type(exc).__name__, 'message': str(exc)[:160]}))
+          PY
