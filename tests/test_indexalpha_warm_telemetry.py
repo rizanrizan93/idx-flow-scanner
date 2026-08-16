@@ -1,9 +1,18 @@
 from __future__ import annotations
 
+import importlib.util
+from pathlib import Path
+
 import pandas as pd
 
 from idx_flow_scanner.providers.indexalpha import IndexAlphaUnavailable
-from scripts.build_flow_evidence_cache import _run_indexalpha_jobs
+
+_SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "build_flow_evidence_cache.py"
+_SPEC = importlib.util.spec_from_file_location("build_flow_evidence_cache", _SCRIPT)
+assert _SPEC is not None and _SPEC.loader is not None
+_MODULE = importlib.util.module_from_spec(_SPEC)
+_SPEC.loader.exec_module(_MODULE)
+_run_indexalpha_jobs = _MODULE._run_indexalpha_jobs
 
 
 def test_plan_limit_counts_real_request_without_marking_key_invalid():
