@@ -6,7 +6,7 @@
     "status": "BLOCKED: IDX official TradingSummary access blocked with HTTP 403 (Cloudflare challenge)",
     "tickers": 0
   },
-  "generated_at": "2026-08-16T09:31:02.820008+00:00",
+  "generated_at": "2026-08-16T09:34:59.898774+00:00",
   "goapi_broker_direct": {
     "budget_requests": 5,
     "days": 0,
@@ -34,7 +34,7 @@
     "flow_unit": "SHARES",
     "freshest": null,
     "rows": 0,
-    "status": "NO_DATA",
+    "status": "UNAVAILABLE: Zapi returned no usable IDX rows; safe_probe={\"foreign_doc_date\": {\"data_len\": null, \"data_type\": \"dict\", \"dataset\": null, \"date\": null, \"first_row_keys\": [], \"message\": null, \"provider\": null, \"records_filtered\": null, \"records_total\": null, \"top_keys\": [\"data\", \"project\", \"timestamp\"], \"total\": null, \"unit\": null}, \"foreign_latest\": {\"data_len\": null, \"data_type\": \"dict\", \"dataset\": null, \"date\": null, \"first_row_keys\": [], \"message\": null, \"provider\": null, \"records_filtered\": null, \"records_total\": null, \"top_keys\": [\"data\", \"project\", \"timestamp\"], \"total\": null, \"unit\": null}, \"status\": \"OK\", \"stock_doc_date\": {\"data_len\": null, \"data_type\": \"dict\", \"dataset\": null, \"date\": null, \"first_row_keys\": [], \"message\": null, \"provider\": null, \"records_filtered\": null, \"records_total\": null, \"top_keys\": [\"data\", \"project\", \"timestamp\"], \"total\": null, \"unit\": null}, \"stock_latest\": {\"data_len\": null, \"data_type\": \"dict\", \"dataset\": null, \"date\": null, \"first_row_keys\": [], \"message\": null, \"provider\": null, \"records_filtered\": null, \"records_total\": null, \"top_keys\": [\"data\", \"project\", \"timestamp\"], \"total\": null, \"unit\": null}}",
     "tickers": 0,
     "token_present": true
   }
