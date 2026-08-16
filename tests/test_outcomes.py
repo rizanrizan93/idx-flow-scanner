@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import numpy as np
 import pandas as pd
 
-from idx_flow_scanner.outcomes import compute_signal_outcome
+from idx_flow_scanner.outcomes import compute_signal_outcome, refresh_pending_outcomes
 
 
 def _prices(periods: int = 90) -> pd.DataFrame:
@@ -38,3 +40,61 @@ def test_missing_signal_date_does_not_slide_entry_forward():
     assert out.entry_close is None
     assert out.return_5d is None
     assert out.evaluation_status == "PENDING"
+
+
+class _FakeTable:
+    def __init__(self, rows, writes):
+        self.rows = rows
+        self.writes = writes
+        self.start = 0
+        self.end = len(rows) - 1
+
+    def select(self, *_args, **_kwargs): return self
+    def in_(self, *_args, **_kwargs): return self
+    def order(self, *_args, **_kwargs): return self
+    def range(self, start, end):
+        self.start, self.end = int(start), int(end)
+        return self
+    def execute(self):
+        return SimpleNamespace(data=self.rows[self.start:self.end + 1])
+    def upsert(self, payload, **_kwargs):
+        self.writes.extend(payload)
+        return _FakeWrite()
+
+
+class _FakeWrite:
+    def execute(self): return SimpleNamespace(data=[])
+
+
+class _FakeClient:
+    def __init__(self, rows):
+        self.rows = rows
+        self.writes = []
+    def table(self, _name): return _FakeTable(self.rows, self.writes)
+
+
+class _FakeStore:
+    def __init__(self, rows): self.client = _FakeClient(rows)
+
+
+def test_refresh_pages_all_open_rows_and_loads_price_once_per_ticker():
+    price = _prices()
+    d10 = price["date"].iloc[10].date().isoformat()
+    d11 = price["date"].iloc[11].date().isoformat()
+    rows = [
+        {"run_id":"00000000-0000-0000-0000-000000000001","ticker":"AAA","as_of_date":d10,"evaluation_status":"PENDING","evaluated_through":None},
+        {"run_id":"00000000-0000-0000-0000-000000000002","ticker":"AAA","as_of_date":d11,"evaluation_status":"PENDING","evaluated_through":None},
+        {"run_id":"00000000-0000-0000-0000-000000000003","ticker":"BBB","as_of_date":d10,"evaluation_status":"PENDING","evaluated_through":None},
+    ]
+    store = _FakeStore(rows)
+    calls = []
+    def loader(ticker):
+        calls.append(ticker)
+        return price
+
+    stats = refresh_pending_outcomes(store, ["AAA","BBB"], loader, page_size=2, max_rows=10)
+    assert stats["checked"] == 3
+    assert stats["updated"] == 3
+    assert stats["complete"] == 3
+    assert calls == ["AAA","BBB"]
+    assert len(store.client.writes) == 3
