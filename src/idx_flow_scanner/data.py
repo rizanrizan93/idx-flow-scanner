@@ -53,7 +53,10 @@ def normalize_price_frame(frame: pd.DataFrame, ticker: str | None = None) -> pd.
         out.columns = [c[0] if isinstance(c, tuple) else c for c in out.columns]
     out = out.reset_index()
     out.columns = [str(c).strip().lower().replace(" ", "_") for c in out.columns]
-    date_col = next((c for c in ("date", "datetime", "index", "timestamp") if c in out.columns), None)
+    # Prefer an explicit timestamp/datetime column over the synthetic numeric
+    # index created by reset_index(). Otherwise Unix timestamps can collapse
+    # to 1970-01-01 and silently deduplicate valid bars.
+    date_col = next((c for c in ("date", "datetime", "timestamp", "index") if c in out.columns), None)
     if date_col is None:
         raise ValueError("Price frame requires a date/datetime/index column")
     out = out.rename(columns={"adj_close": "close"})
