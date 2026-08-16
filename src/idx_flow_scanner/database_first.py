@@ -55,6 +55,50 @@ def load_bundled_price_seed(
     return out
 
 
+def _load_prices_bulk_json(
+    store: SupabaseStore,
+    names: list[str],
+    *,
+    min_rows: int,
+    limit: int = 450,
+    chunk_size: int = 20,
+    status: Callable[[str], None] | None = None,
+) -> dict[str, pd.DataFrame]:
+    """Load multi-ticker OHLCV through a single-row JSON RPC per chunk.
+
+    PostgREST applies its row cap to set-returning RPC results. The prior bulk
+    RPC could therefore truncate a 20-ticker response near 1,000 rows and make
+    healthy cached tickers look missing. The JSON projection returns one row
+    containing the per-ticker payload, so the Data API row cap cannot silently
+    truncate the cache cohort.
+    """
+    out: dict[str, pd.DataFrame] = {}
+    step = max(1, min(int(chunk_size), 40))
+    for start in range(0, len(names), step):
+        chunk = names[start:start + step]
+        response = store.client.rpc(
+            "flow_load_price_cache_json",
+            {"p_tickers": chunk, "p_limit": int(limit)},
+        ).execute()
+        data = response.data or []
+        payload = []
+        if isinstance(data, list) and data:
+            first = data[0]
+            payload = first.get("payload", []) if isinstance(first, dict) else []
+        elif isinstance(data, dict):
+            payload = data.get("payload", [])
+        frame = pd.DataFrame(payload or [])
+        if not frame.empty:
+            for ticker, group in frame.groupby("ticker", sort=False):
+                t = canonical_ticker(ticker)
+                normalized = normalize_price_frame(group.rename(columns={"trade_date": "date"}), t)
+                if len(normalized) >= int(min_rows):
+                    out[t] = normalized.tail(int(limit)).reset_index(drop=True)
+        if status:
+            status(f"Checking Supabase OHLCV cache • {min(start + len(chunk), len(names))}/{len(names)} • hits {len(out)}")
+    return out
+
+
 def prepare_database_first_prices(
     universe: list[str],
     store: SupabaseStore | None,
@@ -69,25 +113,45 @@ def prepare_database_first_prices(
     Order of precedence: dedicated Supabase cache -> verified bundled GitHub
     seed -> throttled Yahoo fetch. Supabase is read in bounded multi-ticker RPC
     calls when available; the previous one-query-per-ticker path remains only as
-    a compatibility fallback for stores that do not expose ``load_prices_bulk``.
+    a compatibility fallback for stores that do not expose the JSON bulk RPC.
     """
     names = list(dict.fromkeys(canonical_ticker(t) for t in universe if canonical_ticker(t)))
     frames: dict[str, pd.DataFrame] = {}
     cache_hits = 0
     db_read_errors = 0
     bulk_cache_used = False
+    bulk_cache_transport = "NONE"
 
-    if store is not None and hasattr(store, "load_prices_bulk"):
+    if store is not None:
+        try:
+            bulk = _load_prices_bulk_json(
+                store,
+                names,
+                min_rows=min_rows,
+                limit=450,
+                chunk_size=20,
+                status=status,
+            )
+            for ticker, frame in (bulk or {}).items():
+                if len(frame) >= min_rows:
+                    frames[canonical_ticker(ticker)] = frame
+            cache_hits = len(frames)
+            bulk_cache_used = True
+            bulk_cache_transport = "JSON_RPC"
+        except Exception:
+            db_read_errors += 1
+
+    if store is not None and not bulk_cache_used and hasattr(store, "load_prices_bulk"):
         try:
             def bulk_progress(done: int, total: int, hits: int) -> None:
                 if status:
-                    status(f"Checking Supabase OHLCV cache • {done}/{total} • hits {hits}")
+                    status(f"Checking Supabase OHLCV cache fallback • {done}/{total} • hits {hits}")
 
             bulk = store.load_prices_bulk(
                 names,
                 min_rows=min_rows,
                 limit=450,
-                chunk_size=20,
+                chunk_size=4,
                 progress=bulk_progress,
             )
             for ticker, frame in (bulk or {}).items():
@@ -95,13 +159,10 @@ def prepare_database_first_prices(
                     frames[canonical_ticker(ticker)] = frame
             cache_hits = len(frames)
             bulk_cache_used = True
+            bulk_cache_transport = "ROWSET_RPC_FALLBACK"
         except Exception:
             db_read_errors += 1
 
-    # Compatibility fallback is intentionally skipped when the bulk RPC exists
-    # but returns an incomplete subset: bundled seed/Yahoo should fill the gaps
-    # without recreating a 400-request database burst. Older stores without the
-    # bulk method retain the legacy per-ticker reads.
     if store is not None and not bulk_cache_used:
         for i, ticker in enumerate(names, 1):
             try:
@@ -120,8 +181,6 @@ def prepare_database_first_prices(
     seed_persisted = 0
     persist_errors = 0
 
-    # The bundled seed is generated as a 1-year cache. It is safe for the
-    # default 1y and shorter views; 2y explicitly requests a longer history.
     if missing_after_db and str(period).lower() in {"6mo", "1y"}:
         seed_map = load_bundled_price_seed(seed_path, min_rows=min_rows)
         for ticker in missing_after_db:
@@ -179,6 +238,7 @@ def prepare_database_first_prices(
         "cache_hits": cache_hits,
         "cache_misses": len(missing_after_db),
         "bulk_cache_used": bulk_cache_used,
+        "bulk_cache_transport": bulk_cache_transport,
         "seed_hits": seed_hits,
         "seed_persisted": seed_persisted,
         "fetched_valid": fetched_valid,
