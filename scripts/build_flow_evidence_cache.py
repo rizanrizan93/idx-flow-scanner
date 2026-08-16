@@ -23,6 +23,16 @@ from idx_flow_scanner.providers.goapi import (
     merge_goapi_broker_frames,
     write_goapi_broker_cache,
 )
+from idx_flow_scanner.providers.indexalpha import (
+    IndexAlphaQuotaExhausted,
+    IndexAlphaUnavailable,
+    choose_indexalpha_daily_jobs,
+    fetch_indexalpha_broker_summary,
+    load_bundled_indexalpha_broker_flows,
+    load_indexalpha_targets,
+    merge_indexalpha_broker_frames,
+    write_indexalpha_broker_cache,
+)
 from idx_flow_scanner.providers.idx_official import (
     IdxOfficialAccessBlocked,
     fetch_idx_market_broker_summary,
@@ -43,6 +53,7 @@ CACHE_DIR = ROOT / "data" / "cache"
 DIRECT_IDX_CACHE = CACHE_DIR / "idx_official_flow_60d.csv.gz"
 ZAPI_FOREIGN_CACHE = CACHE_DIR / "zapi_idx_foreign_60d.csv.gz"
 GOAPI_BROKER_CACHE = CACHE_DIR / "goapi_broker_60d.csv.gz"
+INDEX_ALPHA_BROKER_CACHE = CACHE_DIR / "indexalpha_broker_60d.csv.gz"
 META_PATH = CACHE_DIR / "flow_evidence_meta.json"
 
 
@@ -97,6 +108,7 @@ def main() -> int:
         "zapi_idx_foreign": {},
         "official_market_broker_health": {},
         "goapi_broker_direct": {},
+        "indexalpha_broker_direct": {},
     }
 
     # Tier 1: direct public IDX TradingSummary. This remains the preferred source
@@ -242,6 +254,67 @@ def main() -> int:
         "verified_tickers": verified_tickers,
         "target_history_days": len(trade_dates),
         **_stats(merged_broker),
+    }
+
+    # Free permanent stock-level broker path: Index Alpha. The public free plan
+    # allows five requests/day, so we pin a five-ticker cohort and request one
+    # exact trading day per ticker. A range aggregate is never expanded into
+    # fabricated daily evidence. Existing direct-evidence gates remain unchanged.
+    existing_indexalpha = load_bundled_indexalpha_broker_flows(
+        universe, INDEX_ALPHA_BROKER_CACHE, lookback_calendar_days=180
+    )
+    indexalpha_targets = [t for t in load_indexalpha_targets() if t in set(universe)]
+    indexalpha_key_present = bool(str(os.getenv("INDEX_ALPHA_KEY") or "").strip())
+    indexalpha_budget = max(0, int(os.getenv("INDEX_ALPHA_DAILY_BUDGET", "5") or "5"))
+    indexalpha_jobs = choose_indexalpha_daily_jobs(
+        indexalpha_targets, existing_indexalpha, trade_dates, budget_requests=indexalpha_budget
+    ) if indexalpha_key_present else []
+    indexalpha_status = (
+        "NO_TOKEN" if not indexalpha_key_present else
+        "NO_BUDGET" if indexalpha_budget == 0 else "UNCHANGED"
+    )
+    indexalpha_parts: list[pd.DataFrame] = []
+    indexalpha_attempted = 0
+    for ticker, day in indexalpha_jobs:
+        try:
+            frame = fetch_indexalpha_broker_summary(
+                ticker, day, investor="all", market="RG"
+            )
+            indexalpha_attempted += 1
+            if not frame.empty:
+                indexalpha_parts.append(frame)
+            indexalpha_status = "UPDATED"
+        except IndexAlphaQuotaExhausted as exc:
+            indexalpha_status = f"QUOTA_EXHAUSTED: {exc}"
+            break
+        except IndexAlphaUnavailable as exc:
+            indexalpha_status = f"UNAVAILABLE: {exc}"
+            break
+        except Exception as exc:
+            indexalpha_status = f"ERROR: {type(exc).__name__}: {exc}"
+            break
+
+    fresh_indexalpha = pd.concat(indexalpha_parts, ignore_index=True) if indexalpha_parts else pd.DataFrame()
+    merged_indexalpha = merge_indexalpha_broker_frames(existing_indexalpha, fresh_indexalpha)
+    if not merged_indexalpha.empty:
+        write_indexalpha_broker_cache(merged_indexalpha, INDEX_ALPHA_BROKER_CACHE)
+    indexalpha_verified_tickers = 0
+    if not merged_indexalpha.empty and "source_verified" in merged_indexalpha.columns:
+        raw = merged_indexalpha["source_verified"]
+        verified = raw if pd.api.types.is_bool_dtype(raw) else raw.astype(str).str.lower().isin({"1", "true", "yes", "verified"})
+        indexalpha_verified_tickers = int(merged_indexalpha.loc[verified.fillna(False), "ticker"].nunique())
+    meta["indexalpha_broker_direct"] = {
+        "status": indexalpha_status,
+        "provider": "INDEX_ALPHA_BROKER_SUMMARY",
+        "contract": "STOCK_LEVEL_GROSS_BUY_SELL_EXACT_DAY_RG_ALL",
+        "token_present": indexalpha_key_present,
+        "budget_requests": indexalpha_budget,
+        "requests_attempted": indexalpha_attempted,
+        "jobs_planned": len(indexalpha_jobs),
+        "targets": indexalpha_targets,
+        "verified_tickers": indexalpha_verified_tickers,
+        "target_history_days": len(trade_dates),
+        **_stats(merged_indexalpha),
     }
 
     CACHE_DIR.mkdir(parents=True, exist_ok=True)

@@ -103,6 +103,15 @@ Initial research weights (subject to walk-forward/OOS calibration):
 
 Weights are explicitly **not** claimed to reproduce any proprietary formula. Before real-money use, thresholds and weights must be walk-forward calibrated on historical direct broker data, with out-of-sample evaluation and transaction-cost/slippage assumptions.
 
+## Free-tier stock-level broker evidence
+
+- Index Alpha is an optional Bearer-token provider for stock-level broker summary.
+- The free policy is pinned to five tickers and at most five exact-day requests per day.
+- Production requests always use `from == to`; a multi-day aggregate is never expanded into synthetic daily rows.
+- Cached rows carry `INDEX_ALPHA_BROKER_SUMMARY`, verified vendor provenance, and regular-market (`RG`) scope.
+- The existing gate still requires at least 10 broker days, 70% 20D coverage, six brokers, <=10% buy/sell balance error, and >=95% verified provenance before `BROKER_DIRECT`.
+- Without `INDEX_ALPHA_KEY`, the provider is a no-op and scanner behavior stays PRICE_PROXY/GUARDED.
+
 ## v0.2.5 foreign evidence
 
 - Bundled Zapi IDX-derived foreign-flow cache covers the managed 400-ticker universe for 20 trading days.
