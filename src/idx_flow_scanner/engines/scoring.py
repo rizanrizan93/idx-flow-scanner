@@ -12,12 +12,23 @@ def phase_from_features(features: dict[str, object]) -> str:
     premium = features.get("premium_to_cost_pct")
     premium = float(premium) if premium is not None and np.isfinite(premium) else None
     price20 = float(features.get("price_return_20d", 0) or 0)
-
+    stability = float(features.get("broker_cohort_stability", 0.0) or 0.0)
+    quality = float(features.get("accumulation_quality_score", acc) or acc)
     if dist >= 65:
         return "DISTRIBUTION"
-    if acc >= 70 and (premium is None or premium <= 12) and price20 <= 12:
+    if direct:
+        if acc >= 72 and quality >= 68 and stability >= 0.45 and (premium is None or premium <= 12) and price20 <= 12:
+            return "ACCUMULATION"
+        if acc >= 62 and quality >= 58 and (premium is None or premium <= 25) and 0 < price20 <= 22:
+            return "EARLY_MARKUP"
+        if acc >= 48 and price20 > 8:
+            return "MARKUP"
+        if acc < 32 and price20 < -8:
+            return "MARKDOWN"
+        return "NEUTRAL"
+    if acc >= 70 and price20 <= 12:
         return "ACCUMULATION"
-    if acc >= 60 and (premium is None or premium <= 25) and price20 > 0:
+    if acc >= 60 and price20 > 0:
         return "EARLY_MARKUP"
     if acc >= 45 and price20 > 8:
         return "MARKUP"
@@ -71,6 +82,10 @@ def final_score(features: dict[str, object], config: ScannerConfig) -> float:
     }
     score = sum(parts[k] * getattr(w, k) for k in parts)
     score -= max(0.0, distribution - 55.0) * 0.22
-    if not direct:
+    if direct:
+        quality = float(features.get("accumulation_quality_score", 50.0) or 50.0)
+        stability = float(features.get("broker_cohort_stability", 0.0) or 0.0)
+        score += float(np.clip((quality - 50.0) * 0.04 + (stability - 0.5) * 4.0, -3.0, 3.0))
+    else:
         score = 50.0 + 0.88 * (score - 50.0)
     return float(np.clip(score, 0, 100))
