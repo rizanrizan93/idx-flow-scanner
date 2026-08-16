@@ -57,7 +57,7 @@ class _Store:
         raise AssertionError("single ticker fallback must not run")
 
 
-def test_per_ticker_rpc_is_preferred_and_batches_40(monkeypatch):
+def test_per_ticker_rpc_is_preferred_and_uses_bounded_batches(monkeypatch):
     store = _Store()
     universe = [f"T{i:03d}" for i in range(85)]
 
@@ -69,10 +69,12 @@ def test_per_ticker_rpc_is_preferred_and_batches_40(monkeypatch):
     loader, stats = prepare_database_first_prices(universe, store, min_rows=80)
 
     assert stats["bulk_cache_used"] is True
-    assert stats["bulk_cache_transport"] == "PER_TICKER_JSON_RPC"
+    assert stats["bulk_cache_transport"] == "PER_TICKER_JSON_RPC_BOUNDED"
     assert stats["cache_hits"] == 85
     assert stats["unavailable"] == 0
     assert store.legacy_calls == 0
-    assert [len(params["p_tickers"]) for _, params in store.client.calls] == [40, 40, 5]
+    batch_sizes = [len(params["p_tickers"]) for _, params in store.client.calls]
+    assert batch_sizes == [8] * 10 + [5]
+    assert all(params["p_limit"] == 120 for _, params in store.client.calls)
     assert all(name == "flow_load_price_cache_by_ticker" for name, _ in store.client.calls)
     assert len(loader("T084")) == 90
