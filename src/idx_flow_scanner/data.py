@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from dataclasses import dataclass
 from datetime import date
 from io import BytesIO
@@ -74,20 +75,98 @@ def normalize_price_frame(frame: pd.DataFrame, ticker: str | None = None) -> pd.
     return out[[c for c in ["ticker", "date", "open", "high", "low", "close", "volume"] if c in out.columns]].sort_values("date").reset_index(drop=True)
 
 
-def fetch_yfinance_prices(ticker: str, period: str = "1y") -> pd.DataFrame:
+def _extract_yfinance_symbol(raw: pd.DataFrame, yahoo_symbol: str, ticker: str) -> pd.DataFrame:
+    """Extract one symbol from yfinance.download output across yfinance column layouts."""
+    if raw is None or raw.empty:
+        return pd.DataFrame()
+    frame = raw
+    if isinstance(raw.columns, pd.MultiIndex):
+        level0 = [str(v).upper() for v in raw.columns.get_level_values(0)]
+        level1 = [str(v).upper() for v in raw.columns.get_level_values(1)]
+        symbol = yahoo_symbol.upper()
+        if symbol in level0:
+            frame = raw.xs(yahoo_symbol, axis=1, level=0, drop_level=True)
+        elif symbol in level1:
+            frame = raw.xs(yahoo_symbol, axis=1, level=1, drop_level=True)
+        else:
+            return pd.DataFrame()
+    try:
+        return normalize_price_frame(frame, ticker)
+    except Exception:
+        return pd.DataFrame()
+
+
+def fetch_yfinance_prices_batch(
+    tickers: Iterable[str],
+    period: str = "1y",
+    *,
+    chunk_size: int = 25,
+    retries: int = 3,
+    inter_chunk_delay_seconds: float = 1.5,
+    retry_backoff_seconds: float = 6.0,
+) -> dict[str, pd.DataFrame]:
+    """Fetch OHLCV with bounded concurrency/backoff instead of 400 burst requests.
+
+    A cold database can require hundreds of symbols. Calling yf.download once per ticker
+    from a shared Streamlit IP quickly triggers Yahoo throttling. This routine batches
+    symbols, limits worker concurrency, retries only missing names, and deliberately
+    cools down between attempts. It never fabricates missing bars.
+    """
     import yfinance as yf
 
+    names = list(dict.fromkeys(canonical_ticker(t) for t in tickers if canonical_ticker(t)))
+    results: dict[str, pd.DataFrame] = {}
+    pending = names[:]
+    chunk_size = max(1, int(chunk_size))
+    retries = max(1, int(retries))
+
+    for attempt in range(retries):
+        if not pending:
+            break
+        attempt_names = pending[:]
+        for start in range(0, len(attempt_names), chunk_size):
+            chunk = attempt_names[start:start + chunk_size]
+            yahoo_symbols = [f"{t}.JK" for t in chunk]
+            try:
+                raw = yf.download(
+                    yahoo_symbols,
+                    period=period,
+                    interval="1d",
+                    auto_adjust=False,
+                    progress=False,
+                    group_by="ticker",
+                    threads=min(4, len(chunk)) if len(chunk) > 1 else False,
+                    timeout=25,
+                )
+            except Exception:
+                raw = pd.DataFrame()
+
+            for ticker, yahoo_symbol in zip(chunk, yahoo_symbols):
+                frame = _extract_yfinance_symbol(raw, yahoo_symbol, ticker)
+                if not frame.empty:
+                    results[ticker] = frame
+
+            if inter_chunk_delay_seconds > 0 and start + chunk_size < len(attempt_names):
+                time.sleep(float(inter_chunk_delay_seconds))
+
+        pending = [t for t in names if t not in results]
+        if pending and attempt + 1 < retries:
+            time.sleep(float(retry_backoff_seconds) * (2 ** attempt))
+
+    return results
+
+
+def fetch_yfinance_prices(ticker: str, period: str = "1y") -> pd.DataFrame:
     symbol = canonical_ticker(ticker)
-    raw = yf.download(
-        f"{symbol}.JK",
+    result = fetch_yfinance_prices_batch(
+        [symbol],
         period=period,
-        interval="1d",
-        auto_adjust=False,
-        progress=False,
-        threads=False,
-        timeout=15,
+        chunk_size=1,
+        retries=2,
+        inter_chunk_delay_seconds=0.0,
+        retry_backoff_seconds=4.0,
     )
-    return normalize_price_frame(raw, symbol)
+    return result.get(symbol, pd.DataFrame())
 
 
 def parse_universe(frame: pd.DataFrame) -> list[str]:
