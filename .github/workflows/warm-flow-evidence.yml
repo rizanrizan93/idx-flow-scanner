@@ -101,9 +101,9 @@ jobs:
           git reset --hard "origin/$GITHUB_REF_NAME"
           mkdir -p data/cache
 
-          # Do not let timestamp-only JSON changes or gzip header mtimes create a
-          # repository commit. A no-op cache commit can redeploy Streamlit while a
-          # managed scan is running, leaving a RUNNING row orphaned in OHLCV_PREP.
+          # Do not let timestamp-only JSON changes or gzip header/serialization noise create a
+          # repository commit. A no-op cache commit can redeploy Streamlit while a managed scan
+          # is running, leaving a RUNNING row orphaned in OHLCV_PREP.
           python - <<'PY'
           from __future__ import annotations
 
@@ -137,11 +137,21 @@ jobs:
               with gzip.open(path, "rb") as handle:
                   return handle.read()
 
+          # The stable Index Alpha JSON mirror is the canonical semantic projection used by
+          # Supabase pull-sync. If it is unchanged, preserve the tracked gzip even when pandas
+          # rewrites equivalent CSV float formatting or compression metadata differently.
+          new_json = fresh / "indexalpha_broker_60d.json"
+          old_json = cache / "indexalpha_broker_60d.json"
+          indexalpha_semantically_same = (
+              new_json.exists()
+              and old_json.exists()
+              and new_json.read_bytes() == old_json.read_bytes()
+          )
+
           for name in (
               "idx_official_flow_60d.csv.gz",
               "zapi_idx_foreign_60d.csv.gz",
               "goapi_broker_60d.csv.gz",
-              "indexalpha_broker_60d.csv.gz",
           ):
               new_path = fresh / name
               old_path = cache / name
@@ -158,11 +168,25 @@ jobs:
               else:
                   shutil.copy2(new_path, old_path)
 
-          new_json = fresh / "indexalpha_broker_60d.json"
-          old_json = cache / "indexalpha_broker_60d.json"
+          new_indexalpha_gz = fresh / "indexalpha_broker_60d.csv.gz"
+          old_indexalpha_gz = cache / "indexalpha_broker_60d.csv.gz"
+          if new_indexalpha_gz.exists():
+              if indexalpha_semantically_same:
+                  print("indexalpha_broker_60d.csv.gz: semantic evidence unchanged; preserving tracked gzip")
+              else:
+                  same_bytes = False
+                  if old_indexalpha_gz.exists():
+                      try:
+                          same_bytes = uncompressed_bytes(new_indexalpha_gz) == uncompressed_bytes(old_indexalpha_gz)
+                      except Exception:
+                          same_bytes = False
+                  if same_bytes:
+                      print("indexalpha_broker_60d.csv.gz: uncompressed evidence unchanged; preserving tracked gzip")
+                  else:
+                      shutil.copy2(new_indexalpha_gz, old_indexalpha_gz)
+
           if new_json.exists():
-              same = old_json.exists() and new_json.read_bytes() == old_json.read_bytes()
-              if same:
+              if indexalpha_semantically_same:
                   print("indexalpha_broker_60d.json: evidence unchanged; preserving tracked mirror")
               else:
                   shutil.copy2(new_json, old_json)
