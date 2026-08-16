@@ -36,9 +36,9 @@ def _idx_headers(referer: str) -> dict[str, str]:
             "Chrome/120.0.0.0 Safari/537.36"
         ),
         "Referer": referer,
-        "sec-ch-ua": '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+        "sec-ch-ua": '\"Not_A Brand\";v=\"8\", \"Chromium\";v=\"120\", \"Google Chrome\";v=\"120\"',
         "sec-ch-ua-mobile": "?0",
-        "sec-ch-ua-platform": '"Windows"',
+        "sec-ch-ua-platform": '\"Windows\"',
     }
 
 
@@ -305,14 +305,26 @@ def load_cached_idx_official_flows(store: Any, universe: Iterable[str], lookback
 
 
 def upsert_idx_official_flows(store: Any, frame: pd.DataFrame) -> int:
+    """Persist only direct IDX stock-summary rows in the official table.
+
+    Vendor-derived foreign flow must never be written into
+    ``flow_official_stock_flows``. The app may pass a merged transport frame, so
+    this helper enforces provenance at the storage boundary and fails closed for
+    every non-IDX source.
+    """
     if store is None or frame is None or frame.empty:
+        return 0
+    clean = frame.copy()
+    if "source" not in clean.columns:
+        return 0
+    clean = clean[clean["source"].astype(str).eq("IDX_OFFICIAL_STOCK_SUMMARY")].copy()
+    if clean.empty:
         return 0
     cols = [
         "ticker", "trade_date", "foreign_buy", "foreign_sell", "foreign_net",
         "traded_value", "volume", "frequency", "bid", "offer", "bid_volume",
         "offer_volume", "listed_shares", "tradable_shares", "source",
     ]
-    clean = frame.copy()
     for c in cols:
         if c not in clean.columns:
             clean[c] = None
