@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 from datetime import date, timedelta
 from pathlib import Path
@@ -55,6 +56,47 @@ def _get_json(url: str, params: dict[str, object], api_key: str, timeout: float)
     if not isinstance(payload, dict):
         raise ZapiUnavailable("Zapi returned a non-object response")
     return payload
+
+
+def _payload_shape(payload: dict) -> dict[str, object]:
+    """Return non-sensitive response metadata only; never values or credentials."""
+    rows = payload.get("data")
+    first = rows[0] if isinstance(rows, list) and rows and isinstance(rows[0], dict) else None
+    safe_message = payload.get("message") or payload.get("error")
+    return {
+        "top_keys": sorted(str(k) for k in payload.keys())[:30],
+        "data_type": type(rows).__name__,
+        "data_len": len(rows) if isinstance(rows, list) else None,
+        "first_row_keys": sorted(str(k) for k in first.keys())[:40] if first else [],
+        "dataset": str(payload.get("dataset") or "")[:80] or None,
+        "provider": str(payload.get("provider") or "")[:80] or None,
+        "date": str(payload.get("date") or "")[:40] or None,
+        "unit": str(payload.get("unit") or "")[:40] or None,
+        "total": payload.get("total"),
+        "records_total": payload.get("recordsTotal"),
+        "records_filtered": payload.get("recordsFiltered"),
+        "message": str(safe_message)[:200] if safe_message else None,
+    }
+
+
+def probe_zapi_idx(api_key: str | None = None, timeout: float = 20.0) -> dict[str, object]:
+    """Probe documented endpoints without exposing row values or the API key."""
+    key = _key(api_key)
+    if not key:
+        return {"status": "NO_TOKEN"}
+    probes: dict[str, object] = {"status": "OK"}
+    cases = (
+        ("foreign_latest", ZAPI_FOREIGN_FLOW_URL, {"sort": "code", "length": 1, "start": 0}),
+        ("foreign_doc_date", ZAPI_FOREIGN_FLOW_URL, {"date": "2026-07-31", "sort": "code", "length": 1, "start": 0}),
+        ("stock_latest", ZAPI_STOCK_SUMMARY_URL, {"length": 1, "start": 0}),
+        ("stock_doc_date", ZAPI_STOCK_SUMMARY_URL, {"date": "2026-06-12", "length": 1, "start": 0}),
+    )
+    for name, url, params in cases:
+        try:
+            probes[name] = _payload_shape(_get_json(url, params, key, timeout))
+        except Exception as exc:
+            probes[name] = {"error": f"{type(exc).__name__}: {str(exc)[:180]}"}
+    return probes
 
 
 def _allowed_tickers(universe: Iterable[str] | None) -> set[str] | None:
@@ -191,7 +233,8 @@ def _paginate(
         if not frame.empty:
             parts.append(frame)
         candidates = [payload.get("total"), payload.get("recordsFiltered"), payload.get("recordsTotal")]
-        raw_total = next((pd.to_numeric(v, errors="coerce") for v in candidates if pd.notna(pd.to_numeric(v, errors="coerce"))), None)
+        numeric_totals = [pd.to_numeric(v, errors="coerce") for v in candidates]
+        raw_total = next((v for v in numeric_totals if pd.notna(v)), None)
         returned = len(raw_rows) if isinstance(raw_rows, list) else 0
         total = int(raw_total) if raw_total is not None and pd.notna(raw_total) else start + returned
         if returned <= 0 or total <= start + returned:
@@ -293,7 +336,8 @@ def fetch_zapi_foreign_flow_history(
         if valid_days >= int(target_trading_days):
             break
     if not parts:
-        return pd.DataFrame()
+        probe = probe_zapi_idx(key)
+        raise ZapiUnavailable("Zapi returned no usable IDX rows; safe_probe=" + json.dumps(probe, sort_keys=True))
     out = pd.concat(parts, ignore_index=True)
     return out.drop_duplicates(["ticker", "trade_date"], keep="first").sort_values(
         ["ticker", "trade_date"], kind="stable"
