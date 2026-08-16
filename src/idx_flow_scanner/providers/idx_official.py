@@ -3,8 +3,9 @@ from __future__ import annotations
 import random
 import time
 from datetime import date, timedelta
-from typing import Iterable
+from typing import Iterable, Any
 
+import numpy as np
 import pandas as pd
 
 from ..data import canonical_ticker
@@ -105,3 +106,34 @@ def fetch_idx_official_flow_history(
     return out.dropna(subset=["trade_date","ticker"]).drop_duplicates(
         ["ticker","trade_date","source"], keep="last"
     ).sort_values(["ticker","trade_date"]).reset_index(drop=True)
+
+
+def load_cached_idx_official_flows(store: Any, universe: Iterable[str], lookback_calendar_days: int = 50) -> pd.DataFrame:
+    names = list(dict.fromkeys(canonical_ticker(t) for t in universe if canonical_ticker(t)))
+    if not names or store is None:
+        return pd.DataFrame()
+    since = (date.today()-timedelta(days=int(lookback_calendar_days))).isoformat(); rows=[]
+    for i in range(0,len(names),40):
+        chunk=names[i:i+40]
+        resp=(store.client.table("flow_official_stock_flows")
+              .select("ticker,trade_date,foreign_buy,foreign_sell,foreign_net,traded_value,volume,frequency,bid,offer,bid_volume,offer_volume,listed_shares,tradable_shares,source")
+              .in_("ticker",chunk).gte("trade_date",since).order("trade_date").execute())
+        rows.extend(resp.data or [])
+    if not rows:
+        return pd.DataFrame()
+    out=pd.DataFrame(rows); out["trade_date"]=pd.to_datetime(out["trade_date"],errors="coerce").dt.normalize()
+    return out.dropna(subset=["ticker","trade_date"]).sort_values(["ticker","trade_date"]).reset_index(drop=True)
+
+
+def upsert_idx_official_flows(store: Any, frame: pd.DataFrame) -> int:
+    if store is None or frame is None or frame.empty:
+        return 0
+    cols=["ticker","trade_date","foreign_buy","foreign_sell","foreign_net","traded_value","volume","frequency","bid","offer","bid_volume","offer_volume","listed_shares","tradable_shares","source"]
+    clean=frame.copy()
+    for c in cols:
+        if c not in clean.columns: clean[c]=None
+    clean["ticker"]=clean["ticker"].map(canonical_ticker); clean["trade_date"]=pd.to_datetime(clean["trade_date"],errors="coerce").dt.date.astype("string")
+    clean=clean.replace({np.nan:None}); rows=clean[cols].to_dict("records")
+    for i in range(0,len(rows),500):
+        store.client.table("flow_official_stock_flows").upsert(rows[i:i+500],on_conflict="ticker,trade_date,source").execute()
+    return len(rows)
