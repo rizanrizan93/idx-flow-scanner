@@ -55,18 +55,27 @@ PYTHONPATH=src pytest -q
 
 ## Supabase
 
-The designated production database is the existing Supabase project **`Idx emir framework`** (the first/legacy Emir project), project ref **`utgrknbmtmhpjurvcabg`**. The current Emir Scanner remains on **`Idx emir framework v2`** and is not modified by this scanner.
+Production persistence uses the dedicated Supabase project **`IDX Flow Scanner`**, created in a separate Supabase account and connected directly to this GitHub repository.
 
-Apply `supabase/migrations/001_initial_schema.sql` to the designated Flow project. Runtime should use backend-only secrets:
+The project ref and backend secret are intentionally **not committed to GitHub**. Database schema is versioned under `supabase/migrations/`, with `001_initial_schema.sql` as the current bootstrap migration.
+
+In the Supabase GitHub integration:
+
+- repository: `rizanrizan93/idx-flow-scanner`
+- production branch: `main`
+- working directory: `.`
+- `Deploy to production`: enabled for automatic migration deployment
+
+Runtime should use backend-only secrets:
 
 ```toml
-SUPABASE_URL = "https://utgrknbmtmhpjurvcabg.supabase.co"
+SUPABASE_URL = "https://<idx-flow-project-ref>.supabase.co"
 SUPABASE_SECRET_KEY = "<backend secret/service-role key>"
 ```
 
-All scanner tables enable RLS, and `anon` / `authenticated` table privileges are revoked. Streamlit performs server-side persistence only. Never commit the secret/service-role key to GitHub.
+All scanner tables enable RLS. `anon` and `authenticated` table privileges are revoked; Streamlit persistence is server-side through a secret/service-role key. Never commit a Supabase secret/service-role key to GitHub.
 
-A temporary `flow_*` namespace may exist in the Super Scanner database only as a fail-safe while the legacy Emir project's PostgreSQL recovery completes. It must be removed after the designated project passes SQL, migration, and persistence validation.
+The legacy Emir Supabase project is no longer a Flow Scanner target. `Idx emir framework v2` remains independent for the Emir Scanner, and the Super Scanner database is not part of Flow production persistence.
 
 ## Deployment
 
@@ -96,7 +105,9 @@ Weights are explicitly **not** claimed to reproduce any proprietary formula. Bef
 
 ## Next production gates
 
-- Designated Supabase project SQL health + clean Flow migration + advisor checks.
+- Verify the dedicated `IDX Flow Scanner` project has applied all pending migrations.
+- Verify RLS, backend service-role grants, and Supabase Security/Performance Advisor findings.
+- Configure Streamlit `SUPABASE_URL` and `SUPABASE_SECRET_KEY` for the dedicated project.
 - Verified broker-summary ingestion adapter and freshness audit.
 - Persistent OHLCV/broker caches and resumable 400-ticker jobs.
 - Independent historical labels for accumulation → markup and distribution → drawdown.
@@ -104,4 +115,5 @@ Weights are explicitly **not** claimed to reproduce any proprietary formula. Bef
 - Session/EOD data lineage and source quorum.
 
 ## v0.1.1 proxy integrity
-When direct broker summary is unavailable, the scanner now computes explicitly-labelled OHLCV accumulation/absorption proxies so research ranking remains informative. These proxies never change `PRICE_PROXY` evidence to `BROKER_DIRECT` and can never pass the real-money guardrail by themselves.
+
+When direct broker summary is unavailable, the scanner computes explicitly-labelled OHLCV accumulation/absorption proxies so research ranking remains informative. These proxies never change `PRICE_PROXY` evidence to `BROKER_DIRECT` and can never pass the real-money guardrail by themselves.
