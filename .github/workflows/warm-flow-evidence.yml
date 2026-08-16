@@ -40,7 +40,11 @@ jobs:
           GOAPI_KEY: ${{ secrets.GOAPI_KEY }}
           GOAPI_DAILY_BUDGET: ${{ vars.GOAPI_DAILY_BUDGET || '5' }}
           INDEX_ALPHA_KEY: ${{ secrets.INDEX_ALPHA_KEY }}
-          INDEX_ALPHA_DAILY_BUDGET: ${{ vars.INDEX_ALPHA_DAILY_BUDGET || '5' }}
+          # v0.3 funnel reserves the permanent free-tier Index Alpha quota for
+          # the Final Guarded Top 5 chosen by the live/manual scan. The old
+          # pinned cohort remains only as historical cache and must not consume
+          # the five daily requests before the guarded ranking exists.
+          INDEX_ALPHA_DAILY_BUDGET: '0'
           IDX_FOREIGN_TARGET_DAYS: '20'
           IDX_FOREIGN_MAX_CALENDAR_DAYS: '45'
           ZAPI_FOREIGN_TARGET_DAYS: '20'
@@ -133,9 +137,9 @@ jobs:
               with gzip.open(path, "rb") as handle:
                   return handle.read()
 
-          # For Index Alpha, the stable JSON mirror is the canonical semantic projection used
-          # by Supabase pull-sync. If that projection is unchanged, preserve the tracked gzip
-          # even when pandas rewrites equivalent CSV bytes/float formatting differently.
+          # The stable Index Alpha JSON mirror is the canonical semantic projection used by
+          # Supabase pull-sync. If it is unchanged, preserve the tracked gzip even when pandas
+          # rewrites equivalent CSV float formatting or compression metadata differently.
           new_json = fresh / "indexalpha_broker_60d.json"
           old_json = cache / "indexalpha_broker_60d.json"
           indexalpha_semantically_same = (
