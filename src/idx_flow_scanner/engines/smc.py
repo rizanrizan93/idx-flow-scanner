@@ -17,7 +17,7 @@ def compute_smc_features(price: pd.DataFrame) -> dict[str, object]:
             "smc_execution_score": 25.0, "bos": False, "choch": False,
             "liquidity_sweep": False, "fvg_low": None, "fvg_high": None,
             "entry_low": None, "entry_high": None, "invalidation": None,
-            "tp1": None, "tp2": None,
+            "tp1": None, "tp2": None, "execution_geometry_valid": False,
         }
     p = price.sort_values("date").copy().reset_index(drop=True)
     p["atr"] = _atr(p)
@@ -58,6 +58,19 @@ def compute_smc_features(price: pd.DataFrame) -> dict[str, object]:
     mid = (entry_low + entry_high)/2
     tp1, tp2 = mid + 2.0*risk, mid + 3.2*risk
 
+    geometry = np.array([entry_low, entry_high, invalidation, tp1, tp2, risk], dtype=float)
+    execution_geometry_valid = bool(
+        np.isfinite(geometry).all()
+        and risk > 0.0
+        and entry_high > entry_low
+        and invalidation < entry_low
+        and tp1 > entry_high
+        and tp2 > tp1
+    )
+    if not execution_geometry_valid:
+        entry_low = entry_high = invalidation = tp1 = tp2 = None
+        score = min(score, 25.0)
+
     return {
         "smc_execution_score": score,
         "bos": bos,
@@ -65,11 +78,12 @@ def compute_smc_features(price: pd.DataFrame) -> dict[str, object]:
         "liquidity_sweep": liquidity_sweep,
         "fvg_low": fvg_low,
         "fvg_high": fvg_high,
-        "entry_low": float(entry_low),
-        "entry_high": float(entry_high),
-        "invalidation": float(invalidation),
-        "tp1": float(tp1),
-        "tp2": float(tp2),
+        "entry_low": float(entry_low) if entry_low is not None else None,
+        "entry_high": float(entry_high) if entry_high is not None else None,
+        "invalidation": float(invalidation) if invalidation is not None else None,
+        "tp1": float(tp1) if tp1 is not None else None,
+        "tp2": float(tp2) if tp2 is not None else None,
         "ema20": float(last["ema20"]),
         "ema50": float(last["ema50"]),
+        "execution_geometry_valid": execution_geometry_valid,
     }
