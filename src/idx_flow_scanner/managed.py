@@ -11,6 +11,9 @@ import pandas as pd
 from .data import parse_universe
 
 
+MANAGED_ACTIVE_TIMEOUT_MINUTES = 45
+
+
 @dataclass(frozen=True)
 class ManagedDecision:
     should_run: bool
@@ -50,7 +53,7 @@ def decide_managed_run(
     universe_count: int,
     signature: str,
     now: datetime | None = None,
-    active_timeout_minutes: int = 45,
+    active_timeout_minutes: int = MANAGED_ACTIVE_TIMEOUT_MINUTES,
     failure_cooldown_minutes: int = 20,
     success_fresh_hours: int = 12,
     min_success_ratio: float = 0.90,
@@ -136,15 +139,17 @@ def load_persisted_results(store: Any, run_id: str) -> pd.DataFrame:
     return frame
 
 
-def mark_stale_managed_runs(store: Any, *, max_age_minutes: int = 60) -> int:
-    """Fail clearly stale RUNNING rows from either managed or manual scans.
+def mark_stale_managed_runs(store: Any, *, max_age_minutes: int = MANAGED_ACTIVE_TIMEOUT_MINUTES) -> int:
+    """Fail clearly stale RUNNING rows from managed or manual scans.
 
-    Manual runs used to accumulate indefinitely because only managed rows were
-    cleaned. The function name is kept for compatibility with the Streamlit app,
-    but stale-run hygiene now covers every scanner run while preserving fresh work.
+    Cleanup must never lag behind the managed gate timeout. Otherwise a RUNNING
+    row can stop blocking at 45 minutes while remaining RUNNING until a later
+    cleanup threshold, allowing duplicate managed scans. Explicit larger values
+    are therefore capped at the managed active timeout.
     """
+    effective_age_minutes = min(max(1, int(max_age_minutes)), MANAGED_ACTIVE_TIMEOUT_MINUTES)
     rows = recent_runs(store, limit=100)
-    cutoff = datetime.now(timezone.utc) - timedelta(minutes=max_age_minutes)
+    cutoff = datetime.now(timezone.utc) - timedelta(minutes=effective_age_minutes)
     changed = 0
     for run in rows:
         if str(run.get("status") or "").upper() != "RUNNING":
