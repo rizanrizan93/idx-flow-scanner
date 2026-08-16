@@ -28,7 +28,7 @@ from idx_flow_scanner.managed import (
 from idx_flow_scanner.pipeline import scan_universe
 from idx_flow_scanner.storage import SupabaseStore
 
-APP_VERSION = "0.1.3"
+APP_VERSION = "0.1.4"
 DEFAULT_UNIVERSE_PATH = ROOT / "data" / "universe" / "idx_400_syariah.csv"
 MANAGED_MIN_VALID_RATIO = 0.90
 
@@ -58,7 +58,7 @@ with st.sidebar:
     managed_auto = st.toggle(
         "Managed auto-run",
         value=True,
-        help="Dengan universe bawaan, scanner otomatis menjalankan scan bila belum ada run v0.1.3 yang valid/fresh.",
+        help="Dengan universe bawaan, scanner otomatis menjalankan scan bila belum ada run v0.1.4 yang valid/fresh.",
     )
     universe_file = st.file_uploader(
         "Override universe CSV (opsional)",
