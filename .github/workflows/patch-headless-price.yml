@@ -1,0 +1,47 @@
+name: Patch Headless Price Transport
+
+on:
+  push:
+    branches:
+      - run/headless-v025-foreign
+    paths:
+      - '.github/workflows/patch-headless-price.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: run/headless-v025-foreign
+      - name: Replace absent bundled OHLCV seed with production Yahoo acquisition path
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('.github/workflows/headless-managed-v025.yml')
+          s = p.read_text(encoding='utf-8')
+          s = s.replace(
+              'from idx_flow_scanner.database_first import load_bundled_price_seed',
+              'from idx_flow_scanner.data import fetch_yfinance_prices_batch',
+              1,
+          )
+          s = s.replace(
+              '          price_map = load_bundled_price_seed(min_rows=config.minimum_price_bars)\n',
+              "          price_map = fetch_yfinance_prices_batch(\n              universe, period='1y', chunk_size=40, retries=2,\n              inter_chunk_delay_seconds=1.0, retry_backoff_seconds=5.0,\n          )\n          price_map = {k: v for k, v in price_map.items() if len(v) >= config.minimum_price_bars}\n          print(f'Yahoo OHLCV valid: {len(price_map)}/{len(universe)}')\n",
+              1,
+          )
+          s = s.replace(
+              "              'price_seed_tickers': len(price_map),",
+              "              'price_yahoo_tickers': len(price_map),\n              'price_transport': 'YAHOO_BATCH_CHART_GITHUB_RUNNER',",
+              1,
+          )
+          p.write_text(s, encoding='utf-8')
+          PY
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add .github/workflows/headless-managed-v025.yml
+          git commit -m "Use Yahoo OHLCV in headless managed audit"
+          git push origin HEAD:run/headless-v025-foreign
