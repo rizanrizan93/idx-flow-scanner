@@ -26,6 +26,15 @@ def _numeric(series: pd.Series, default: float = 0.0) -> pd.Series:
     return pd.to_numeric(series, errors="coerce").fillna(default)
 
 
+def _int_or_default(value: object, default: int) -> int:
+    try:
+        if value is None or pd.isna(value):
+            return int(default)
+        return int(value)
+    except (TypeError, ValueError):
+        return int(default)
+
+
 def select_guarded_top5(
     results: pd.DataFrame,
     config: ScannerConfig | None = None,
@@ -58,7 +67,7 @@ def select_guarded_top5(
         )
     )
     work["price_staleness_days"] = work["diagnostics"].map(
-        lambda d: int(_diagnostics(d).get("price_staleness_days", 999) or 999)
+        lambda d: _int_or_default(_diagnostics(d).get("price_staleness_days", 999), 999)
     )
 
     score = _numeric(work.get("final_score", pd.Series(index=work.index, dtype=float)))
