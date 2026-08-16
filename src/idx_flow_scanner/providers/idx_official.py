@@ -198,11 +198,13 @@ def fetch_idx_official_flow_history(
     target_trading_days: int = 20,
     max_calendar_days: int = 38,
     request_delay_seconds: float = 0.45,
+    raise_on_block: bool = False,
 ) -> pd.DataFrame:
     """Fetch N official stock-summary trading days in market-wide calls.
 
     If the cloud environment is challenged, stop immediately. Missing official
-    evidence stays missing/guarded and is never synthesized from OHLCV.
+    evidence stays missing/guarded and is never synthesized from OHLCV. Schedulers
+    can request ``raise_on_block`` so their audit metadata records the blockage.
     """
     names = set(canonical_ticker(t) for t in universe if canonical_ticker(t))
     if not names:
@@ -217,6 +219,8 @@ def fetch_idx_official_flow_history(
         try:
             frame = fetch_idx_stock_summary(day)
         except IdxOfficialAccessBlocked:
+            if raise_on_block:
+                raise
             break
         if frame.empty:
             continue
