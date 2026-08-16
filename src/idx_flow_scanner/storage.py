@@ -16,8 +16,7 @@ from .data import canonical_ticker, normalize_broker_summary, normalize_price_fr
 def _records(frame: pd.DataFrame) -> list[dict]:
     if frame is None or frame.empty:
         return []
-    clean = frame.copy()
-    clean = clean.replace({np.nan: None})
+    clean = frame.copy().replace({np.nan: None})
     out=[]
     for row in clean.to_dict("records"):
         item={}
@@ -72,7 +71,6 @@ class SupabaseStore:
         }).execute()
 
     def update_run_progress(self, run_id: str, attempted_count: int, current_ticker: str) -> None:
-        """Best-effort heartbeat; compatible with databases before telemetry migration."""
         try:
             self.client.table("flow_scan_runs").update({
                 "attempted_count": int(attempted_count),
@@ -81,6 +79,33 @@ class SupabaseStore:
             }).eq("id", run_id).execute()
         except Exception:
             pass
+
+    def seed_signal_outcomes(self, run_id: str, frame: pd.DataFrame) -> int:
+        if frame is None or frame.empty:
+            return 0
+        rows=[]
+        for row in frame.to_dict("records"):
+            rows.append({
+                "run_id":run_id,"ticker":canonical_ticker(row["ticker"]),"as_of_date":row["as_of_date"],
+                "phase":row["phase"],"evidence_tier":row["evidence_tier"],"final_score":row["final_score"],
+                "evaluation_status":"PENDING",
+            })
+        for i in range(0,len(rows),500):
+            self.client.table("flow_signal_outcomes").upsert(rows[i:i+500],on_conflict="run_id,ticker").execute()
+        return len(rows)
+
+    def refresh_signal_outcomes(self, limit: int = 2000) -> int:
+        """Best-effort DB-native forward outcome refresh. Never feeds current scoring."""
+        try:
+            resp=self.client.rpc("flow_refresh_signal_outcomes",{"p_limit":int(limit)}).execute()
+            data=getattr(resp,"data",None)
+            if isinstance(data,(int,float)):
+                return int(data)
+            if isinstance(data,list) and data and isinstance(data[0],(int,float)):
+                return int(data[0])
+        except Exception:
+            pass
+        return 0
 
     def save_results(self, run_id: str, frame: pd.DataFrame) -> None:
         if frame is None or frame.empty:
@@ -98,12 +123,18 @@ class SupabaseStore:
                 "invalidation": row.get("invalidation"), "tp1": row.get("tp1"), "tp2": row.get("tp2"),
                 "components": {k: row.get(k) for k in (
                     "accumulation_score", "operator_dominance_score", "cost_basis_score",
-                    "retail_exhaustion_score", "supply_concentration_score",
-                    "price_flow_divergence_score", "smc_execution_score", "risk_liquidity_score")},
+                    "retail_exhaustion_score", "foreign_institutional_score",
+                    "supply_concentration_score", "price_flow_divergence_score",
+                    "market_context_score", "smc_execution_score", "risk_liquidity_score",
+                    "price_data_quality_score")},
                 "diagnostics": row.get("diagnostics", {}), "guardrail_reason": row.get("guardrail_reason"),
             })
         for i in range(0, len(records), 500):
             self.client.table("flow_scan_results").upsert(records[i:i+500], on_conflict="run_id,ticker").execute()
+        try:
+            self.seed_signal_outcomes(run_id,frame)
+        except Exception:
+            pass
 
     def finish_run(
         self,
@@ -134,6 +165,8 @@ class SupabaseStore:
             self.client.table("flow_scan_runs").update(extended).eq("id", run_id).execute()
         except Exception:
             self.client.table("flow_scan_runs").update(base).eq("id", run_id).execute()
+        if status == "COMPLETED":
+            self.refresh_signal_outcomes(limit=2000)
 
     def upsert_broker_flows(self, frame: pd.DataFrame) -> int:
         b = normalize_broker_summary(frame)
@@ -164,8 +197,7 @@ class SupabaseStore:
         if p.empty: return 0
         rows=[]
         for row in p.to_dict("records"):
-            close=float(row["close"])
-            volume=row.get("volume")
+            close=float(row["close"]); volume=row.get("volume")
             rows.append({
                 "ticker":canonical_ticker(ticker), "trade_date":pd.Timestamp(row["date"]).date().isoformat(),
                 "open":row.get("open"), "high":row.get("high"), "low":row.get("low"), "close":close,
