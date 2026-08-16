@@ -1,0 +1,67 @@
+name: Zapi Diagnostic
+
+on:
+  push:
+    branches:
+      - diag/zapi-key-check
+    paths:
+      - '.github/workflows/zapi-diagnostic.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Probe Zapi response shapes safely
+        env:
+          ZAPI_KEY: ${{ secrets.ZAPI_KEY }}
+        run: |
+          python - <<'PY'
+          import json, os, urllib.parse, urllib.request, urllib.error
+
+          key = (os.getenv('ZAPI_KEY') or '').strip()
+          print(json.dumps({'token_present': bool(key)}))
+          if not key:
+              raise SystemExit(2)
+
+          cases = [
+              ('foreign_latest', 'https://api.zpi.web.id/v1/finance:idx/foreign-flow', {'sort':'code','length':1,'start':0}),
+              ('foreign_doc_date', 'https://api.zpi.web.id/v1/finance:idx/foreign-flow', {'date':'2026-07-31','sort':'code','length':1,'start':0}),
+              ('stock_latest', 'https://api.zpi.web.id/v1/finance:idx/stock-summary', {'length':1,'start':0}),
+              ('stock_doc_date', 'https://api.zpi.web.id/v1/finance:idx/stock-summary', {'date':'2026-06-12','length':1,'start':0}),
+          ]
+          for name, base, params in cases:
+              url = base + '?' + urllib.parse.urlencode(params)
+              req = urllib.request.Request(url, headers={'Accept':'application/json','x-api-key':key,'User-Agent':'Mozilla/5.0'})
+              try:
+                  with urllib.request.urlopen(req, timeout=20) as response:
+                      status = response.status
+                      body = json.loads(response.read().decode('utf-8'))
+                  rows = body.get('data') if isinstance(body, dict) else None
+                  first = rows[0] if isinstance(rows, list) and rows and isinstance(rows[0], dict) else None
+                  safe = {
+                      'case': name,
+                      'http_status': status,
+                      'top_keys': sorted(body.keys())[:30] if isinstance(body, dict) else [],
+                      'data_type': type(rows).__name__,
+                      'data_len': len(rows) if isinstance(rows, list) else None,
+                      'first_row_keys': sorted(first.keys())[:40] if first else [],
+                      'dataset': body.get('dataset') if isinstance(body, dict) else None,
+                      'provider': body.get('provider') if isinstance(body, dict) else None,
+                      'date': body.get('date') if isinstance(body, dict) else None,
+                      'unit': body.get('unit') if isinstance(body, dict) else None,
+                      'total': body.get('total') if isinstance(body, dict) else None,
+                      'recordsTotal': body.get('recordsTotal') if isinstance(body, dict) else None,
+                      'recordsFiltered': body.get('recordsFiltered') if isinstance(body, dict) else None,
+                      'message': str((body.get('message') or body.get('error') or ''))[:200] if isinstance(body, dict) else None,
+                  }
+                  print(json.dumps(safe, sort_keys=True))
+              except urllib.error.HTTPError as exc:
+                  print(json.dumps({'case': name, 'http_status': exc.code, 'error': 'HTTPError'}))
+              except Exception as exc:
+                  print(json.dumps({'case': name, 'error': type(exc).__name__, 'message': str(exc)[:160]}))
+          PY
