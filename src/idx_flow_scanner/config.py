@@ -31,6 +31,8 @@ class ScannerConfig:
     minimum_price_bars: int = 80
     minimum_broker_days: int = 10
     direct_broker_min_coverage_pct: float = 70.0
+    direct_broker_min_distinct_brokers: int = 6
+    direct_broker_max_balance_error_pct: float = 10.0
     real_money_min_coverage_pct: float = 80.0
     top_brokers: int = 5
     max_price_extension_from_cost_pct: float = 35.0
@@ -38,3 +40,7 @@ class ScannerConfig:
 
     def __post_init__(self) -> None:
         self.weights.validate()
+        if self.direct_broker_min_distinct_brokers < 2:
+            raise ValueError("direct_broker_min_distinct_brokers must be >= 2")
+        if not 0 <= self.direct_broker_max_balance_error_pct <= 100:
+            raise ValueError("direct_broker_max_balance_error_pct must be between 0 and 100")
