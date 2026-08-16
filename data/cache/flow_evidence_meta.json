@@ -1,37 +1,25 @@
 {
-  "broker_direct_vendor": {
-    "budget_units": 3,
-    "days": 0,
-    "freshest": null,
-    "provider": "INDEXALPHA_API",
-    "quota_units_attempted": 0,
-    "rows": 0,
-    "selected_tickers": [],
-    "status": "NO_TOKEN",
-    "tickers": 0,
-    "token_present": false,
-    "verified_tickers": 0
-  },
-  "foreign_vendor": {
-    "budget_units": 2,
-    "days": 0,
-    "flow_unit": "IDR",
-    "freshest": null,
-    "provider": "INDEXALPHA_FOREIGN_FLOW",
-    "quota_units_attempted": 0,
-    "rows": 0,
-    "selected_tickers": [],
-    "status": "NO_TOKEN",
-    "tickers": 0,
-    "token_present": false
-  },
-  "generated_at": "2026-08-16T07:57:01.583036+00:00",
-  "official_idx": {
+  "direct_idx_foreign": {
     "days": 0,
     "freshest": null,
     "rows": 0,
     "status": "BLOCKED: IDX official TradingSummary access blocked with HTTP 403 (Cloudflare challenge)",
     "tickers": 0
+  },
+  "generated_at": "2026-08-16T08:06:17.397385+00:00",
+  "goapi_broker_direct": {
+    "budget_requests": 5,
+    "days": 0,
+    "freshest": null,
+    "jobs_planned": 0,
+    "provider": "GOAPI_BROKER_SUMMARY_NET",
+    "requests_attempted": 0,
+    "rows": 0,
+    "status": "NO_TOKEN",
+    "target_history_days": 20,
+    "tickers": 0,
+    "token_present": false,
+    "verified_tickers": 0
   },
   "official_market_broker_health": {
     "brokers": 0,
@@ -40,5 +28,14 @@
     "status": "BLOCKED: IDX official TradingSummary access blocked with HTTP 403 (Cloudflare challenge)"
   },
   "target_trade_date": "2026-08-14",
-  "universe_count": 400
+  "universe_count": 400,
+  "zapi_idx_foreign": {
+    "days": 0,
+    "flow_unit": "SHARES",
+    "freshest": null,
+    "rows": 0,
+    "status": "NO_TOKEN",
+    "tickers": 0,
+    "token_present": false
+  }
 }

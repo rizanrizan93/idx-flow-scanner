@@ -28,6 +28,10 @@ from idx_flow_scanner.managed import (
 )
 from idx_flow_scanner.outcomes import refresh_pending_outcomes, seed_signal_outcomes
 from idx_flow_scanner.pipeline import scan_universe
+from idx_flow_scanner.providers.goapi import (
+    load_bundled_goapi_broker_flows,
+    merge_goapi_broker_frames,
+)
 from idx_flow_scanner.providers.idx_official import (
     fetch_idx_official_flow_history,
     load_bundled_idx_official_flows,
@@ -35,19 +39,10 @@ from idx_flow_scanner.providers.idx_official import (
     merge_official_flow_frames,
     upsert_idx_official_flows,
 )
-from idx_flow_scanner.providers.indexalpha import (
-    load_bundled_indexalpha_broker_flows,
-    load_bundled_indexalpha_foreign_flows,
-    merge_broker_frames,
-    merge_vendor_foreign_frames,
-)
+from idx_flow_scanner.providers.zapi import load_bundled_zapi_foreign_flows
 from idx_flow_scanner.storage import SupabaseStore
-from idx_flow_scanner.vendor_foreign_storage import (
-    load_vendor_foreign_flows,
-    upsert_vendor_foreign_flows,
-)
 
-APP_VERSION = "0.2.3"
+APP_VERSION = "0.2.4"
 DEFAULT_UNIVERSE_PATH = ROOT / "data" / "universe" / "idx_400_syariah.csv"
 MANAGED_MIN_VALID_RATIO = 0.90
 
@@ -55,8 +50,8 @@ st.set_page_config(page_title="IDX Flow Scanner", page_icon="📡", layout="wide
 st.title("IDX Flow Scanner")
 st.caption(
     f"v{APP_VERSION} • clean-room bandarmology / accumulation engine • database-first • "
-    "managed 400-ticker mode • official IDX + verified vendor foreign-flow evidence • "
-    "provenance-gated broker evidence • verified bandar-cost display • OOS memory"
+    "managed 400-ticker mode • direct IDX + Zapi IDX-derived foreign shares • "
+    "GOAPI stock-level broker evidence • provenance-gated bandar cost • OOS memory"
 )
 
 
@@ -108,39 +103,41 @@ with st.sidebar:
         type=["csv"],
         help=(
             "Direct broker evidence harus punya source_verified=true dan provenance yang dapat diaudit. "
-            "File tanpa provenance tetap dipakai sebagai research input tetapi tidak bisa menjadi BROKER_DIRECT."
+            "File tanpa provenance tetap research-only."
         ),
     )
     period = st.selectbox("OHLCV lookback", ["6mo", "1y", "2y"], index=1)
     use_database = st.checkbox("Database-first Supabase", value=True)
-    use_idx_official = st.checkbox(
+    use_foreign = st.checkbox(
         "Foreign flow evidence",
         value=True,
         help=(
-            "Urutan sumber per ticker: official IDX bila coverage terbaik, lalu verified vendor fallback. "
-            "Unit saham IDX dan unit IDR vendor tidak pernah dijumlahkan satu sama lain."
+            "Sumber share-unit: direct IDX dan Zapi IDX-derived. Satu sumber dipilih per ticker berdasarkan "
+            "coverage; tie selalu memilih direct IDX agar tidak terjadi double counting."
         ),
     )
     persist = st.checkbox("Persist hasil scan", value=True)
     run_manual = st.button("Run / Re-run sekarang", type="primary", width="stretch")
 
 st.info(
-    "Evidence hierarchy: verified stock-level broker summary > official IDX foreign flow > verified vendor foreign flow > OHLCV proxy. "
-    "Harga Bandar Est. hanya ditampilkan jika broker summary lolos BROKER_DIRECT. IDX market-wide broker totals, "
-    "foreign flow, dan OHLCV tidak pernah dipromosikan menjadi harga bandar. Direct evidence juga harus lolos coverage, "
-    "history, broker quorum, buy/sell balance, dan verified provenance."
+    "Evidence hierarchy: verified stock-level broker summary > IDX-derived foreign flow > OHLCV proxy. "
+    "Harga Bandar Est. hanya ditampilkan jika broker summary lolos BROKER_DIRECT. Foreign flow dan OHLCV tidak pernah "
+    "dipromosikan menjadi harga bandar. Broker direct tetap harus lolos coverage, history, broker quorum, buy/sell balance, "
+    "verified provenance, dan price-quality gate."
 )
 
-if "last_results" not in st.session_state:
-    st.session_state.last_results = None
-    st.session_state.last_errors = []
-    st.session_state.last_run_id = None
-    st.session_state.last_price_stats = None
-    st.session_state.last_broker_stats = None
-    st.session_state.last_official_stats = None
-    st.session_state.last_vendor_foreign_stats = None
-    st.session_state.last_foreign_selection_stats = None
-    st.session_state.last_outcome_stats = None
+for key, value in {
+    "last_results": None,
+    "last_errors": [],
+    "last_run_id": None,
+    "last_price_stats": None,
+    "last_broker_stats": None,
+    "last_direct_idx_stats": None,
+    "last_zapi_stats": None,
+    "last_foreign_selection_stats": None,
+    "last_outcome_stats": None,
+}.items():
+    st.session_state.setdefault(key, value)
 
 if universe_file is None:
     universe = load_bundled_universe(DEFAULT_UNIVERSE_PATH)
@@ -221,13 +218,13 @@ if trigger_scan:
                 db_broker = store.load_broker_flows(universe)
             except Exception as exc:
                 st.warning(f"Broker database read failed; continuing with bundled evidence/PRICE_PROXY: {exc}")
-        bundled_broker = load_bundled_indexalpha_broker_flows(universe)
-        broker = merge_broker_frames(db_broker, bundled_broker)
+        bundled_broker = load_bundled_goapi_broker_flows(universe)
+        broker = merge_goapi_broker_frames(db_broker, bundled_broker)
         if store is not None and not bundled_broker.empty:
             try:
                 store.upsert_broker_flows(bundled_broker)
             except Exception as exc:
-                st.caption(f"Bundled broker cache could not be persisted: {exc}")
+                st.caption(f"Bundled GOAPI broker cache could not be persisted: {exc}")
     broker_stats = data_stats(broker)
     st.session_state.last_broker_stats = broker_stats
 
@@ -250,11 +247,12 @@ if trigger_scan:
                     "universe_source": universe_source,
                     "universe_signature": signature,
                     "minimum_price_bars": config.minimum_price_bars,
-                    "official_idx_foreign_flow": bool(use_idx_official),
-                    "official_idx_transport_cache": True,
-                    "vendor_foreign_transport_cache": True,
-                    "foreign_evidence_selector": "BEST_COVERAGE_OFFICIAL_TIE_BREAK",
-                    "broker_vendor_transport_cache": True,
+                    "foreign_flow_enabled": bool(use_foreign),
+                    "direct_idx_transport_cache": True,
+                    "zapi_idx_foreign_transport_cache": True,
+                    "foreign_evidence_selector": "BEST_COVERAGE_DIRECT_IDX_TIE_BREAK",
+                    "goapi_broker_transport_cache": True,
+                    "broker_contract": "STOCK_LEVEL_NET_SIDE",
                     "broker_provenance_gate": True,
                     "bandar_cost_display": "BROKER_DIRECT_ONLY",
                     "market_context": "CROSS_SECTIONAL_400",
@@ -276,91 +274,80 @@ if trigger_scan:
     )
     st.session_state.last_price_stats = price_stats
 
-    official_flow = pd.DataFrame()
-    vendor_foreign = pd.DataFrame()
+    foreign_candidates = pd.DataFrame()
     foreign_flow = pd.DataFrame()
-    official_stats = {"days": 0, "tickers": 0, "freshest": None, "source": "DISABLED"}
-    vendor_foreign_stats = {"days": 0, "tickers": 0, "freshest": None, "source": "DISABLED"}
+    direct_idx_stats = {"days": 0, "tickers": 0, "freshest": None, "source": "DISABLED"}
+    zapi_stats = {"days": 0, "tickers": 0, "freshest": None, "source": "DISABLED"}
     foreign_selection_stats = {
-        "idx_official_selected_tickers": 0,
-        "vendor_selected_tickers": 0,
+        "idx_direct_selected_tickers": 0,
+        "zapi_selected_tickers": 0,
+        "other_selected_tickers": 0,
         "foreign_unavailable_tickers": len(universe),
         "median_selected_coverage_pct": 0.0,
     }
-    if use_idx_official:
-        status_box.caption("Loading foreign flow evidence...")
-        try:
-            db_official = load_cached_idx_official_flows(store, universe, lookback_calendar_days=70) if store is not None else pd.DataFrame()
-            bundled_official = load_bundled_idx_official_flows(universe, lookback_calendar_days=100)
-            official_flow = merge_official_flow_frames(db_official, bundled_official)
-            if store is not None and not bundled_official.empty:
-                try:
-                    upsert_idx_official_flows(store, bundled_official)
-                except Exception as exc:
-                    st.caption(f"Bundled IDX cache could not be persisted: {exc}")
 
-            cached_days = int(official_flow["trade_date"].nunique()) if not official_flow.empty else 0
+    if use_foreign:
+        status_box.caption("Loading share-unit foreign flow evidence...")
+        try:
+            db_flow = load_cached_idx_official_flows(store, universe, lookback_calendar_days=120) if store is not None else pd.DataFrame()
+            bundled_direct = load_bundled_idx_official_flows(universe, lookback_calendar_days=120)
+            bundled_zapi = load_bundled_zapi_foreign_flows(universe, lookback_calendar_days=120)
+            foreign_candidates = merge_official_flow_frames(db_flow, bundled_direct, bundled_zapi)
+
+            if store is not None:
+                for transport in (bundled_direct, bundled_zapi):
+                    if transport is not None and not transport.empty:
+                        try:
+                            upsert_idx_official_flows(store, transport)
+                        except Exception as exc:
+                            st.caption(f"Foreign transport cache could not be persisted: {exc}")
+
             latest_price_dates = []
             for ticker in universe[:20]:
                 frame = load_price(ticker)
                 if not frame.empty:
                     latest_price_dates.append(pd.to_datetime(frame["date"], errors="coerce").max())
             end_date = max([d for d in latest_price_dates if pd.notna(d)], default=pd.Timestamp.today())
-            freshest_cached = pd.to_datetime(official_flow["trade_date"], errors="coerce").max() if not official_flow.empty else pd.NaT
-            need_refresh = cached_days < 18 or pd.isna(freshest_cached) or freshest_cached.normalize() < pd.Timestamp(end_date).normalize()
-            if need_refresh:
-                status_box.caption(f"Refreshing official IDX foreign flow • cache {cached_days} trading days")
-                fresh = fetch_idx_official_flow_history(
+
+            # Direct IDX refresh is only attempted if no cached source already
+            # covers the current price date. This avoids repeated Cloudflare cost.
+            freshest_any = pd.to_datetime(foreign_candidates["trade_date"], errors="coerce").max() if not foreign_candidates.empty else pd.NaT
+            cached_days = int(foreign_candidates["trade_date"].nunique()) if not foreign_candidates.empty else 0
+            need_direct_refresh = cached_days < 18 or pd.isna(freshest_any) or freshest_any.normalize() < pd.Timestamp(end_date).normalize()
+            if need_direct_refresh:
+                status_box.caption(f"Trying direct IDX foreign refresh • cached evidence {cached_days} trading days")
+                fresh_direct = fetch_idx_official_flow_history(
                     universe,
                     end_date=pd.Timestamp(end_date).date(),
                     target_trading_days=20,
                     max_calendar_days=40,
                 )
-                if not fresh.empty:
+                if not fresh_direct.empty:
                     if store is not None:
-                        upsert_idx_official_flows(store, fresh)
-                    official_flow = merge_official_flow_frames(official_flow, fresh)
-            if not official_flow.empty:
-                official_stats = {
-                    "days": int(official_flow["trade_date"].nunique()),
-                    "tickers": int(official_flow["ticker"].nunique()),
-                    "freshest": str(pd.to_datetime(official_flow["trade_date"], errors="coerce").max().date()),
-                    "source": "IDX_OFFICIAL_STOCK_SUMMARY",
-                }
+                        upsert_idx_official_flows(store, fresh_direct)
+                    foreign_candidates = merge_official_flow_frames(foreign_candidates, fresh_direct)
+
+            direct_rows = foreign_candidates[
+                foreign_candidates["source"].eq("IDX_OFFICIAL_STOCK_SUMMARY")
+            ].copy() if not foreign_candidates.empty and "source" in foreign_candidates.columns else pd.DataFrame()
+            zapi_rows = foreign_candidates[
+                foreign_candidates["source"].eq("ZAPI_IDX_FOREIGN_FLOW")
+            ].copy() if not foreign_candidates.empty and "source" in foreign_candidates.columns else pd.DataFrame()
+            direct_idx_stats = {**data_stats(direct_rows), "source": "IDX_OFFICIAL_STOCK_SUMMARY"}
+            zapi_stats = {**data_stats(zapi_rows), "source": "ZAPI_IDX_FOREIGN_FLOW"}
+            foreign_flow, foreign_selection_stats = prepare_foreign_evidence(
+                universe,
+                foreign_candidates,
+                load_price,
+                lookback=20,
+            )
         except Exception as exc:
-            st.caption(f"Official IDX foreign flow unavailable; checking verified vendor fallback: {exc}")
-            official_flow = pd.DataFrame()
-            official_stats = {"days": 0, "tickers": 0, "freshest": None, "source": "UNAVAILABLE"}
+            st.warning(f"Foreign-flow evidence unavailable; continuing neutral/guarded: {exc}")
+            foreign_candidates = pd.DataFrame()
+            foreign_flow = pd.DataFrame()
 
-        try:
-            db_vendor = load_vendor_foreign_flows(store, universe, lookback_calendar_days=120) if store is not None else pd.DataFrame()
-            bundled_vendor = load_bundled_indexalpha_foreign_flows(universe, lookback_calendar_days=150)
-            vendor_foreign = merge_vendor_foreign_frames(db_vendor, bundled_vendor)
-            if store is not None and not bundled_vendor.empty:
-                try:
-                    upsert_vendor_foreign_flows(store, bundled_vendor)
-                except Exception as exc:
-                    st.caption(f"Bundled vendor foreign cache could not be persisted: {exc}")
-            if not vendor_foreign.empty:
-                vendor_foreign_stats = {
-                    **data_stats(vendor_foreign),
-                    "source": "INDEXALPHA_FOREIGN_FLOW",
-                }
-        except Exception as exc:
-            st.caption(f"Verified vendor foreign flow unavailable: {exc}")
-            vendor_foreign = pd.DataFrame()
-            vendor_foreign_stats = {"days": 0, "tickers": 0, "freshest": None, "source": "UNAVAILABLE"}
-
-        foreign_flow, foreign_selection_stats = prepare_foreign_evidence(
-            universe,
-            official_flow,
-            vendor_foreign,
-            load_price,
-            lookback=20,
-        )
-
-    st.session_state.last_official_stats = official_stats
-    st.session_state.last_vendor_foreign_stats = vendor_foreign_stats
+    st.session_state.last_direct_idx_stats = direct_idx_stats
+    st.session_state.last_zapi_stats = zapi_stats
     st.session_state.last_foreign_selection_stats = foreign_selection_stats
 
     if store is not None and run_record_created:
@@ -413,9 +400,11 @@ if trigger_scan:
                 },
             )
             try:
+                selected_days = int(foreign_flow["trade_date"].nunique()) if not foreign_flow.empty else 0
+                selected_tickers = int(foreign_flow["ticker"].nunique()) if not foreign_flow.empty else 0
                 store.client.table("flow_scan_runs").update({
-                    "official_flow_days": int(official_stats.get("days", 0)),
-                    "official_flow_tickers": int(official_stats.get("tickers", 0)),
+                    "official_flow_days": selected_days,
+                    "official_flow_tickers": selected_tickers,
                 }).eq("id", run_id).execute()
             except Exception:
                 pass
@@ -437,8 +426,8 @@ results = st.session_state.last_results
 errors = st.session_state.last_errors
 price_stats = st.session_state.last_price_stats
 broker_stats = st.session_state.last_broker_stats
-official_stats = st.session_state.last_official_stats
-vendor_foreign_stats = st.session_state.last_vendor_foreign_stats
+direct_idx_stats = st.session_state.last_direct_idx_stats
+zapi_stats = st.session_state.last_zapi_stats
 foreign_selection_stats = st.session_state.last_foreign_selection_stats
 outcome_stats = st.session_state.last_outcome_stats
 
@@ -451,16 +440,16 @@ if isinstance(price_stats, dict):
     p4.metric("Broker days", int((broker_stats or {}).get("days", 0)))
     p5.metric("Broker verified tickers", int((broker_stats or {}).get("verified_tickers", 0)))
     q1, q2, q3, q4, q5 = st.columns(5)
-    q1.metric("IDX foreign days", int((official_stats or {}).get("days", 0)))
-    q2.metric("IDX foreign tickers", int((official_stats or {}).get("tickers", 0)))
-    q3.metric("Vendor foreign days", int((vendor_foreign_stats or {}).get("days", 0)))
-    q4.metric("Vendor foreign tickers", int((vendor_foreign_stats or {}).get("tickers", 0)))
+    q1.metric("Direct IDX days", int((direct_idx_stats or {}).get("days", 0)))
+    q2.metric("Direct IDX tickers", int((direct_idx_stats or {}).get("tickers", 0)))
+    q3.metric("Zapi IDX days", int((zapi_stats or {}).get("days", 0)))
+    q4.metric("Zapi IDX tickers", int((zapi_stats or {}).get("tickers", 0)))
     q5.metric("OOS seeded", int((outcome_stats or {}).get("seeded", 0)))
     if foreign_selection_stats:
         st.caption(
             "Foreign selector: "
-            f"IDX {int(foreign_selection_stats.get('idx_official_selected_tickers', 0))} ticker • "
-            f"vendor {int(foreign_selection_stats.get('vendor_selected_tickers', 0))} • "
+            f"direct IDX {int(foreign_selection_stats.get('idx_direct_selected_tickers', 0))} ticker • "
+            f"Zapi {int(foreign_selection_stats.get('zapi_selected_tickers', 0))} • "
             f"unavailable {int(foreign_selection_stats.get('foreign_unavailable_tickers', 0))} • "
             f"median coverage {float(foreign_selection_stats.get('median_selected_coverage_pct', 0.0)):.0f}%"
         )
