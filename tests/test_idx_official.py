@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import pandas as pd
+import pytest
 
 from idx_flow_scanner.engines.flow import compute_official_foreign_features
 from idx_flow_scanner.providers.idx_official import (
     IdxOfficialAccessBlocked,
     fetch_idx_official_flow_history,
+    normalize_idx_broker_summary_payload,
     normalize_idx_stock_summary_payload,
 )
 
@@ -16,8 +18,8 @@ def test_idx_stock_summary_normalization_and_foreign_score():
             {
                 "StockCode": "ELSA",
                 "Date": "2026-08-14T00:00:00",
-                "ForeignBuy": 15_000_000_000,
-                "ForeignSell": 5_000_000_000,
+                "ForeignBuy": 15_000_000,
+                "ForeignSell": 5_000_000,
                 "Value": 100_000_000_000,
                 "Volume": 200_000_000,
                 "Frequency": 1200,
@@ -33,7 +35,7 @@ def test_idx_stock_summary_normalization_and_foreign_score():
     one = normalize_idx_stock_summary_payload(payload, "2026-08-14")
     assert len(one) == 1
     assert one.iloc[0]["ticker"] == "ELSA"
-    assert one.iloc[0]["foreign_net"] == 10_000_000_000
+    assert one.iloc[0]["foreign_net"] == 10_000_000
 
     dates = pd.bdate_range("2026-07-20", periods=20)
     flow = pd.concat([one.assign(trade_date=d) for d in dates], ignore_index=True)
@@ -47,7 +49,28 @@ def test_idx_stock_summary_normalization_and_foreign_score():
     })
     feat = compute_official_foreign_features(flow, price)
     assert feat["official_foreign_coverage_pct"] == 100.0
+    assert feat["foreign_intensity_20d"] == pytest.approx(0.05)
     assert feat["foreign_institutional_score"] > 70
+
+
+def test_idx_market_broker_summary_is_not_stock_level_direct_evidence():
+    payload = {
+        "data": [{
+            "Date": "2026-08-14T00:00:00",
+            "IDFirm": "SQ",
+            "FirmName": "Example Securities",
+            "Volume": 35_415_900,
+            "Value": 4_351_965_300,
+            "Frequency": 461,
+        }]
+    }
+    out = normalize_idx_broker_summary_payload(payload, "2026-08-14")
+    assert len(out) == 1
+    assert out.iloc[0]["broker_code"] == "SQ"
+    assert out.iloc[0]["source"] == "IDX_OFFICIAL_BROKER_SUMMARY_MARKET"
+    assert "ticker" not in out.columns
+    assert "buy_value" not in out.columns
+    assert "sell_value" not in out.columns
 
 
 def test_official_history_stops_after_cloud_access_block(monkeypatch):
