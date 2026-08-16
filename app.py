@@ -34,15 +34,15 @@ from idx_flow_scanner.providers.idx_official import (
 )
 from idx_flow_scanner.storage import SupabaseStore
 
-APP_VERSION = "0.1.6"
+APP_VERSION = "0.2.0"
 DEFAULT_UNIVERSE_PATH = ROOT / "data" / "universe" / "idx_400_syariah.csv"
 MANAGED_MIN_VALID_RATIO = 0.90
 
 st.set_page_config(page_title="IDX Flow Scanner", page_icon="📡", layout="wide")
 st.title("IDX Flow Scanner")
 st.caption(
-    f"v{APP_VERSION} • clean-room bandarmology / broker-flow research engine • "
-    "database-first • managed 400-ticker mode • free official IDX foreign-flow overlay • OOS outcome memory"
+    f"v{APP_VERSION} • clean-room bandarmology / accumulation engine • database-first • "
+    "managed 400-ticker mode • free IDX foreign-flow overlay • provenance-gated broker evidence • OOS memory"
 )
 
 
@@ -74,7 +74,10 @@ with st.sidebar:
     broker_file = st.file_uploader(
         "Broker Summary CSV (opsional)",
         type=["csv"],
-        help="Direct broker evidence. Tanpa data broker asli hasil tetap PRICE_PROXY / GUARDED.",
+        help=(
+            "Direct broker evidence harus punya source_verified=true dan provenance yang dapat diaudit. "
+            "File tanpa provenance tetap dipakai sebagai research input tetapi tidak bisa menjadi BROKER_DIRECT."
+        ),
     )
     period = st.selectbox("OHLCV lookback", ["6mo", "1y", "2y"], index=1)
     use_database = st.checkbox("Database-first Supabase", value=True)
@@ -87,8 +90,9 @@ with st.sidebar:
     run_manual = st.button("Run / Re-run sekarang", type="primary", width="stretch")
 
 st.info(
-    "Price/volume tidak dianggap data bandar langsung. Official IDX foreign flow adalah evidence resmi tambahan, "
-    "tetapi BROKER_DIRECT tetap hanya diberikan jika broker-summary per saham lolos coverage, history, quorum, dan balance gate."
+    "Evidence hierarchy: verified broker summary > official IDX foreign flow > OHLCV proxy. "
+    "OHLCV/foreign flow tidak pernah dipromosikan menjadi BROKER_DIRECT. Direct evidence juga harus lolos coverage, "
+    "history, broker quorum, buy/sell balance, dan verified provenance."
 )
 
 if "last_results" not in st.session_state:
@@ -199,6 +203,9 @@ if trigger_scan:
                     "universe_signature": signature,
                     "minimum_price_bars": config.minimum_price_bars,
                     "official_idx_foreign_flow": bool(use_idx_official),
+                    "broker_provenance_gate": True,
+                    "market_context": "CROSS_SECTIONAL_400",
+                    "price_integrity_gate": True,
                     "oos_outcome_memory": True,
                 },
             )
@@ -282,7 +289,7 @@ if trigger_scan:
 
     valid_ratio = len(results) / max(len(universe), 1)
     final_status = "COMPLETED" if valid_ratio >= MANAGED_MIN_VALID_RATIO else "FAILED"
-    outcome_stats = {"checked": 0, "updated": 0, "complete": 0, "seeded": 0, "status": "SKIPPED"}
+    outcome_stats = {"checked": 0, "updated": 0, "complete": 0, "seeded": 0, "mode": "SKIPPED", "status": "SKIPPED"}
 
     if persist and store is not None and run_record_created:
         try:
@@ -292,7 +299,7 @@ if trigger_scan:
                 seeded = seed_signal_outcomes(store, run_id, results, load_price)
                 outcome_stats = {**refreshed, "seeded": int(seeded), "status": "OK"}
             except Exception as exc:
-                outcome_stats = {"checked": 0, "updated": 0, "complete": 0, "seeded": 0, "status": f"UNAVAILABLE: {exc}"}
+                outcome_stats = {"checked": 0, "updated": 0, "complete": 0, "seeded": 0, "mode": "UNAVAILABLE", "status": f"UNAVAILABLE: {exc}"}
             st.session_state.last_outcome_stats = outcome_stats
 
             store.finish_run(
@@ -343,45 +350,89 @@ if isinstance(price_stats, dict):
     p4.metric("IDX flow days", int((official_stats or {}).get("days", 0)))
     p5.metric("IDX flow tickers", int((official_stats or {}).get("tickers", 0)))
     p6.metric("OOS seeded", int((outcome_stats or {}).get("seeded", 0)))
+    if outcome_stats:
+        st.caption(
+            f"OOS refresh mode: {outcome_stats.get('mode', 'N/A')} • "
+            f"updated: {int(outcome_stats.get('updated', 0) or 0)}"
+        )
     if outcome_stats and outcome_stats.get("status") not in {None, "OK", "SKIPPED"}:
         st.caption(f"OOS memory: {outcome_stats.get('status')}")
 
 if isinstance(results, pd.DataFrame) and not results.empty:
-    st.subheader("Decision Priority")
-    eligible = results[results["real_money_state"] == "ELIGIBLE"].copy()
+    display = results.copy()
+    if "diagnostics" in display.columns:
+        for name in (
+            "broker_verified_source_pct", "persistence_20d", "broker_cohort_stability", "cost_position",
+            "official_foreign_coverage_pct", "market_regime_label", "relative_strength_20d_pct",
+        ):
+            display[name] = display["diagnostics"].map(
+                lambda value, key=name: (value or {}).get(key) if isinstance(value, dict) else None
+            )
+
+    eligible = display[
+        (display["real_money_state"] == "ELIGIBLE")
+        & (display["evidence_tier"] == "BROKER_DIRECT")
+    ].copy()
+    broker_direct = display[display["evidence_tier"] == "BROKER_DIRECT"].copy()
     official_coverages = [
         float(d.get("official_foreign_coverage_pct", 0) or 0)
         for d in results.get("diagnostics", pd.Series(dtype=object))
         if isinstance(d, dict)
     ]
-    c1, c2, c3, c4, c5 = st.columns(5)
-    c1.metric("Scanned valid", len(results))
-    c2.metric("Real-money eligible", len(eligible))
-    c3.metric("Broker-direct", int((results["evidence_tier"] == "BROKER_DIRECT").sum()))
-    c4.metric("Median broker evidence", f"{results['evidence_coverage_pct'].median():.0f}%")
+
+    st.subheader("Decision Integrity")
+    c1, c2, c3, c4, c5, c6 = st.columns(6)
+    c1.metric("Scanned valid", len(display))
+    c2.metric("Production eligible", len(eligible))
+    c3.metric("Broker-direct", len(broker_direct))
+    c4.metric("Median broker evidence", f"{display['evidence_coverage_pct'].median():.0f}%")
     c5.metric("Median IDX foreign", f"{pd.Series(official_coverages).median():.0f}%" if official_coverages else "0%")
+    c6.metric("Median price quality", f"{display['price_data_quality_score'].median():.0f}%" if "price_data_quality_score" in display else "N/A")
 
     cols = [
         "ticker", "final_score", "phase", "action", "real_money_state",
-        "evidence_tier", "evidence_coverage_pct", "accumulation_score",
-        "operator_dominance_score", "distribution_risk",
+        "evidence_tier", "evidence_coverage_pct", "broker_verified_source_pct",
+        "accumulation_score", "operator_dominance_score", "persistence_20d",
+        "broker_cohort_stability", "cost_position", "foreign_institutional_score",
+        "official_foreign_coverage_pct", "market_context_score", "market_regime_label",
+        "relative_strength_20d_pct", "price_data_quality_score", "distribution_risk",
         "estimated_smart_money_cost", "premium_to_cost_pct",
         "entry_low", "entry_high", "invalidation", "tp1", "tp2",
     ]
-    available_cols = [c for c in cols if c in results.columns]
-    st.dataframe(results[available_cols], width="stretch", hide_index=True)
+    available_cols = [c for c in cols if c in display.columns]
 
-    st.subheader("Top Silent Accumulation")
-    silent = results[results["phase"].isin(["ACCUMULATION", "EARLY_MARKUP"])].sort_values("final_score", ascending=False)
-    st.dataframe(silent[available_cols].head(20), width="stretch", hide_index=True)
+    st.subheader("1. Raw Research Priority")
+    st.caption("Seluruh kandidat termasuk PRICE_PROXY. Ranking ini untuk discovery, bukan izin eksekusi real-money.")
+    st.dataframe(display[available_cols], width="stretch", hide_index=True)
+
+    st.subheader("2. Guarded Accumulation Watch")
+    guarded_acc = display[
+        display["phase"].isin(["ACCUMULATION", "EARLY_MARKUP"])
+        & (display["real_money_state"] != "ELIGIBLE")
+    ].sort_values(["final_score", "accumulation_score"], ascending=False)
+    if guarded_acc.empty:
+        st.info("Tidak ada kandidat guarded accumulation pada run ini.")
+    else:
+        st.dataframe(guarded_acc[available_cols].head(20), width="stretch", hide_index=True)
+
+    st.subheader("3. Broker-Verified Production")
+    st.caption("Hanya BROKER_DIRECT + ELIGIBLE. Proxy OHLCV dan foreign flow tidak dapat masuk lane ini.")
+    production = eligible.sort_values(["final_score", "accumulation_score"], ascending=False)
+    if production.empty:
+        st.info("Belum ada kandidat production-eligible. Ini expected jika direct broker evidence terverifikasi belum tersedia.")
+    else:
+        st.dataframe(production[available_cols].head(20), width="stretch", hide_index=True)
 
     st.subheader("Distribution Warning")
-    dist = results.sort_values("distribution_risk", ascending=False)
-    dist_cols = [c for c in ["ticker", "distribution_risk", "phase", "action", "final_score", "guardrail_reason"] if c in dist.columns]
+    dist = display.sort_values("distribution_risk", ascending=False)
+    dist_cols = [c for c in [
+        "ticker", "distribution_risk", "phase", "action", "final_score", "evidence_tier",
+        "broker_verified_source_pct", "price_data_quality_score", "guardrail_reason"
+    ] if c in dist.columns]
     st.dataframe(dist[dist_cols].head(20), width="stretch", hide_index=True)
 
     st.subheader("Single Ticker Audit")
-    selected = st.selectbox("Ticker", results["ticker"].tolist())
+    selected = st.selectbox("Ticker", display["ticker"].tolist())
     row = results[results["ticker"] == selected].iloc[0].to_dict()
     a, b, c = st.columns(3)
     a.metric("Final Score", row["final_score"])
