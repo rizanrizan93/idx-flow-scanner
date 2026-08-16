@@ -46,6 +46,14 @@ def normalize_broker_summary(frame: pd.DataFrame) -> pd.DataFrame:
 
 
 def normalize_price_frame(frame: pd.DataFrame, ticker: str | None = None) -> pd.DataFrame:
+    """Normalize provider OHLCV while preserving raw traded prices.
+
+    Direct broker inventory/cost analysis must align to actual historical traded
+    prices. Therefore raw ``close`` wins when a provider supplies both ``Close``
+    and ``Adj Close``. ``Adj Close`` is used only as a fallback when raw close is
+    genuinely absent. This also avoids duplicate ``close`` columns that can make
+    pandas return a DataFrame instead of a Series and silently break ingestion.
+    """
     if frame is None or frame.empty:
         return pd.DataFrame(columns=["date", "open", "high", "low", "close", "volume"])
     out = frame.copy()
@@ -53,13 +61,25 @@ def normalize_price_frame(frame: pd.DataFrame, ticker: str | None = None) -> pd.
         out.columns = [c[0] if isinstance(c, tuple) else c for c in out.columns]
     out = out.reset_index()
     out.columns = [str(c).strip().lower().replace(" ", "_") for c in out.columns]
+
     # Prefer an explicit timestamp/datetime column over the synthetic numeric
     # index created by reset_index(). Otherwise Unix timestamps can collapse
     # to 1970-01-01 and silently deduplicate valid bars.
     date_col = next((c for c in ("date", "datetime", "timestamp", "index") if c in out.columns), None)
     if date_col is None:
         raise ValueError("Price frame requires a date/datetime/index column")
-    out = out.rename(columns={"adj_close": "close"})
+
+    # Never rename adj_close over an existing raw close. Broker-flow and cost-
+    # basis calculations require the traded price scale. Use adjusted close only
+    # when no raw close exists at all.
+    if "close" not in out.columns and "adj_close" in out.columns:
+        out["close"] = out["adj_close"]
+
+    # Defensive collapse for malformed provider frames with duplicate labels.
+    # Keep the first occurrence, which is the raw provider field after slicing.
+    if out.columns.duplicated().any():
+        out = out.loc[:, ~out.columns.duplicated(keep="first")].copy()
+
     for required in ("open", "high", "low", "close", "volume"):
         if required not in out.columns:
             if required == "volume":
@@ -102,7 +122,7 @@ def _period_to_range(period: str) -> str:
 
 
 def parse_yahoo_chart_payload(payload: dict, ticker: str) -> pd.DataFrame:
-    """Convert Yahoo chart JSON into our normalized price contract."""
+    """Convert Yahoo chart JSON into our normalized raw-price contract."""
     try:
         result = payload["chart"]["result"][0]
         timestamps = result.get("timestamp") or []
