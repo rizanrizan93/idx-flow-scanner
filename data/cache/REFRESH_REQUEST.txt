@@ -1,4 +1,4 @@
-request_id=2026-08-16T08:49:00+07:00
-reason=cold_start_dedicated_flow_database
+request_id=2026-08-16T20:08:00Z
+reason=verify_v0.3.9_supabase_fast_fail_managed_runtime
 universe=idx_400_syariah
 period=1y
