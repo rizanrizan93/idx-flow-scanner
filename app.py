@@ -40,6 +40,11 @@ from idx_flow_scanner.providers.idx_official import (
     upsert_idx_official_flows,
 )
 from idx_flow_scanner.providers.zapi import load_bundled_zapi_foreign_flows
+from idx_flow_scanner.vendor_foreign_store import (
+    ZAPI_VENDOR_SOURCES,
+    load_zapi_vendor_foreign_flows,
+    upsert_zapi_vendor_foreign_flows,
+)
 from idx_flow_scanner.storage import SupabaseStore
 
 APP_VERSION = "0.2.5"
@@ -250,6 +255,7 @@ if trigger_scan:
                     "foreign_flow_enabled": bool(use_foreign),
                     "direct_idx_transport_cache": True,
                     "zapi_idx_foreign_transport_cache": True,
+                    "zapi_vendor_foreign_db": True,
                     "foreign_evidence_selector": "BEST_COVERAGE_DIRECT_IDX_TIE_BREAK",
                     "goapi_broker_transport_cache": True,
                     "broker_contract": "STOCK_LEVEL_NET_SIDE",
@@ -290,17 +296,22 @@ if trigger_scan:
         status_box.caption("Loading share-unit foreign flow evidence...")
         try:
             db_flow = load_cached_idx_official_flows(store, universe, lookback_calendar_days=120) if store is not None else pd.DataFrame()
+            db_vendor_flow = load_zapi_vendor_foreign_flows(store, universe, lookback_calendar_days=120) if store is not None else pd.DataFrame()
             bundled_direct = load_bundled_idx_official_flows(universe, lookback_calendar_days=120)
             bundled_zapi = load_bundled_zapi_foreign_flows(universe, lookback_calendar_days=120)
-            foreign_candidates = merge_official_flow_frames(db_flow, bundled_direct, bundled_zapi)
+            foreign_candidates = merge_official_flow_frames(db_flow, db_vendor_flow, bundled_direct, bundled_zapi)
 
             if store is not None:
-                for transport in (bundled_direct, bundled_zapi):
-                    if transport is not None and not transport.empty:
-                        try:
-                            upsert_idx_official_flows(store, transport)
-                        except Exception as exc:
-                            st.caption(f"Foreign transport cache could not be persisted: {exc}")
+                if bundled_direct is not None and not bundled_direct.empty:
+                    try:
+                        upsert_idx_official_flows(store, bundled_direct)
+                    except Exception as exc:
+                        st.caption(f"Direct IDX cache could not be persisted: {exc}")
+                if bundled_zapi is not None and not bundled_zapi.empty:
+                    try:
+                        upsert_zapi_vendor_foreign_flows(store, bundled_zapi)
+                    except Exception as exc:
+                        st.caption(f"Zapi vendor cache could not be persisted: {exc}")
 
             latest_price_dates = []
             for ticker in universe[:20]:
@@ -331,7 +342,7 @@ if trigger_scan:
                 foreign_candidates["source"].eq("IDX_OFFICIAL_STOCK_SUMMARY")
             ].copy() if not foreign_candidates.empty and "source" in foreign_candidates.columns else pd.DataFrame()
             zapi_rows = foreign_candidates[
-                foreign_candidates["source"].eq("ZAPI_IDX_FOREIGN_FLOW")
+                foreign_candidates["source"].isin(ZAPI_VENDOR_SOURCES)
             ].copy() if not foreign_candidates.empty and "source" in foreign_candidates.columns else pd.DataFrame()
             direct_idx_stats = {**data_stats(direct_rows), "source": "IDX_OFFICIAL_STOCK_SUMMARY"}
             zapi_stats = {**data_stats(zapi_rows), "source": "ZAPI_IDX_FOREIGN_FLOW"}

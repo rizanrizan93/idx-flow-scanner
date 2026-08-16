@@ -106,6 +106,7 @@ Weights are explicitly **not** claimed to reproduce any proprietary formula. Bef
 ## v0.2.5 foreign evidence
 
 - Bundled Zapi IDX-derived foreign-flow cache covers the managed 400-ticker universe for 20 trading days.
+- Zapi rows persist in `flow_vendor_foreign_flows`, never in the direct-IDX `flow_official_stock_flows` table.
 - Foreign buy/sell/net remain share-unit evidence and are never promoted to broker-direct evidence or bandar cost.
 - Direct IDX HTTP remains preferred on equal coverage, but cloud 403/Cloudflare failures fail closed.
 - GOAPI is optional; the scanner remains fully operational in PRICE_PROXY/GUARDED mode when stock-level broker evidence is absent.

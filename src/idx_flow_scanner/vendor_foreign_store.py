@@ -100,22 +100,25 @@ def load_zapi_vendor_foreign_flows(
         return pd.DataFrame()
     since = (date.today() - timedelta(days=int(lookback_calendar_days))).isoformat()
     rows: list[dict[str, object]] = []
-    for i in range(0, len(names), 40):
-        chunk = names[i:i + 40]
-        response = (
-            store.client.table("flow_vendor_foreign_flows")
-            .select(
-                "ticker,trade_date,foreign_buy,foreign_sell,foreign_net,volume,traded_value,"
-                "flow_unit,market_type,source,source_verified,source_url,provenance_state"
+    try:
+        for i in range(0, len(names), 40):
+            chunk = names[i:i + 40]
+            response = (
+                store.client.table("flow_vendor_foreign_flows")
+                .select(
+                    "ticker,trade_date,foreign_buy,foreign_sell,foreign_net,volume,traded_value,"
+                    "flow_unit,market_type,source,source_verified,source_url,provenance_state"
+                )
+                .in_("ticker", chunk)
+                .eq("flow_unit", "SHARES")
+                .eq("source_verified", True)
+                .gte("trade_date", since)
+                .order("trade_date")
+                .execute()
             )
-            .in_("ticker", chunk)
-            .eq("flow_unit", "SHARES")
-            .eq("source_verified", True)
-            .gte("trade_date", since)
-            .order("trade_date")
-            .execute()
-        )
-        rows.extend(response.data or [])
+            rows.extend(response.data or [])
+    except Exception:
+        return pd.DataFrame()
     if not rows:
         return pd.DataFrame()
     out = pd.DataFrame(rows)
