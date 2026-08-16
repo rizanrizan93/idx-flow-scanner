@@ -12,7 +12,8 @@ def test_app_and_evidence_builder_compile():
         compile(source, str(path), "exec")
 
 
-def test_scheduled_indexalpha_quota_is_reserved_for_guarded_live_scan():
+def test_scheduled_indexalpha_quota_builds_pinned_exact_day_history():
     workflow = Path(".github/workflows/warm-flow-evidence.yml").read_text(encoding="utf-8")
-    assert "INDEX_ALPHA_DAILY_BUDGET: '0'" in workflow
-    assert "vars.INDEX_ALPHA_DAILY_BUDGET || '5'" not in workflow
+    assert "INDEX_ALPHA_DAILY_BUDGET: '5'" in workflow
+    assert "pinned five-ticker cohort" in workflow
+    assert "vars.INDEX_ALPHA_DAILY_BUDGET" not in workflow
