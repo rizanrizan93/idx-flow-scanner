@@ -1,0 +1,45 @@
+name: Index Alpha Contract Diagnostic
+
+on:
+  push:
+    branches:
+      - diag/indexalpha-contract
+    paths:
+      - '.github/workflows/indexalpha-contract-diagnostic.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Read public OpenAPI broker contract
+        run: |
+          python - <<'PY'
+          import json, urllib.request
+          url='https://api.indexalpha.id/openapi.json'
+          req=urllib.request.Request(url,headers={'Accept':'application/json','User-Agent':'idx-flow-scanner-contract-audit/1.0'})
+          with urllib.request.urlopen(req,timeout=20) as r:
+              spec=json.loads(r.read().decode('utf-8'))
+          op=spec.get('paths',{}).get('/stocks/broker-summary',{}).get('get',{})
+          schemas=spec.get('components',{}).get('schemas',{})
+          refs={}
+          for name in ('APIResponse','BrokerSummaryResponse','BrokerSummaryRow'):
+              if name in schemas:
+                  refs[name]=schemas[name]
+          safe={
+              'summary':op.get('summary'),
+              'parameters':[
+                  {
+                      'name':p.get('name'),'in':p.get('in'),'required':p.get('required'),
+                      'schema':p.get('schema'),'description':p.get('description')
+                  } for p in op.get('parameters',[])
+              ],
+              'security':op.get('security'),
+              'responses':op.get('responses'),
+              'schemas':refs,
+          }
+          print(json.dumps(safe,indent=2,sort_keys=True))
+          PY
