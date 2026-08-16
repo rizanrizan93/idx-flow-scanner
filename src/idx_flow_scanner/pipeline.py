@@ -102,9 +102,10 @@ def scan_universe(
     broker_frame: pd.DataFrame | None = None,
     config: ScannerConfig | None = None,
     progress: Callable[[int, int, str], None] | None = None,
+    run_id: str | None = None,
 ) -> tuple[str, pd.DataFrame, list[dict[str, str]]]:
     config = config or ScannerConfig()
-    run_id = str(uuid.uuid4())
+    run_id = run_id or str(uuid.uuid4())
     broker_frame = broker_frame if broker_frame is not None else pd.DataFrame()
     rows: list[dict[str, object]] = []
     errors: list[dict[str, str]] = []
