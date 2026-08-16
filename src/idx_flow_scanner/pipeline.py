@@ -20,7 +20,15 @@ def scan_one(ticker: str, price: pd.DataFrame, broker: pd.DataFrame | None, conf
     if len(price) < config.minimum_price_bars:
         raise ValueError(f"{ticker}: insufficient price history ({len(price)} bars)")
     bf = compute_broker_features(broker, price, config); pf = compute_price_flow_features(price, bf); ff = compute_official_foreign_features(official_flow, price); sf = compute_smc_features(price)
-    direct = bool(len(broker) and float(bf["coverage_pct"]) >= config.direct_broker_min_coverage_pct)
+    distinct_brokers = int(broker["broker_code"].nunique()) if not broker.empty and "broker_code" in broker.columns else 0
+    broker_balance_error = float(bf.get("broker_balance_error_pct", 100.0) or 0.0)
+    direct = bool(
+        len(broker)
+        and float(bf["coverage_pct"]) >= config.direct_broker_min_coverage_pct
+        and int(bf["broker_days"]) >= config.minimum_broker_days
+        and distinct_brokers >= config.direct_broker_min_distinct_brokers
+        and broker_balance_error <= config.direct_broker_max_balance_error_pct
+    )
     features = {**bf, **pf, **ff, **sf, "direct_broker": direct}
     evidence_tier = "BROKER_DIRECT" if direct else "PRICE_PROXY"
     effective_distribution = float(bf["distribution_risk"]) if direct else float(pf.get("proxy_distribution_risk", 50.0))
@@ -30,6 +38,11 @@ def scan_one(ticker: str, price: pd.DataFrame, broker: pd.DataFrame | None, conf
     effective_cost_basis = float(bf["cost_basis_score"]) if direct else 50.0
     score = final_score(features, config); phase = phase_from_features(features); action = action_from_phase(phase, score, effective_distribution, direct)
     state, reason = real_money_guard(evidence_tier=evidence_tier,evidence_coverage_pct=float(bf["coverage_pct"]),broker_days=int(bf["broker_days"]),distribution_risk=effective_distribution,score=score,config=config)
+    if not direct and not broker.empty:
+        reason = (
+            f"broker evidence integrity gate failed: coverage={float(bf['coverage_pct']):.0f}%, days={int(bf['broker_days'])}, "
+            f"brokers={distinct_brokers}, balance_error={broker_balance_error:.1f}%"
+        )
     as_of = pd.to_datetime(price["date"].iloc[-1]).date().isoformat()
     return ScanResult(
         ticker=ticker,as_of_date=as_of,final_score=round(score,2),phase=phase,action=action,evidence_tier=evidence_tier,
@@ -44,7 +57,7 @@ def scan_one(ticker: str, price: pd.DataFrame, broker: pd.DataFrame | None, conf
         invalidation=round(float(sf["invalidation"]),2) if sf["invalidation"] is not None else None,tp1=round(float(sf["tp1"]),2) if sf["tp1"] is not None else None,
         tp2=round(float(sf["tp2"]),2) if sf["tp2"] is not None else None,real_money_state=state,guardrail_reason=reason,
         diagnostics={
-            "broker_days":bf["broker_days"],"net_value_5d":bf["net_value_5d"],"net_value_20d":bf["net_value_20d"],"net_value_60d":bf["net_value_60d"],
+            "broker_days":bf["broker_days"],"distinct_brokers":distinct_brokers,"net_value_5d":bf["net_value_5d"],"net_value_20d":bf["net_value_20d"],"net_value_60d":bf["net_value_60d"],
             "persistence_5d":bf.get("persistence_5d"),"persistence_20d":bf["persistence_20d"],"persistence_60d":bf.get("persistence_60d"),
             "accumulation_quality_score":bf.get("accumulation_quality_score"),"broker_cohort_stability":bf.get("broker_cohort_stability"),
             "broker_hhi":bf.get("broker_hhi"),"net_conversion_ratio":bf.get("net_conversion_ratio"),"reversal_ratio_5d":bf.get("reversal_ratio_5d"),
