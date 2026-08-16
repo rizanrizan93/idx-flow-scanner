@@ -15,7 +15,7 @@ def prices(n=100, start=100.0):
     return pd.DataFrame({"date":dates,"open":close-.5,"high":close+1,"low":close-1,"close":close,"volume":np.full(n,2_000_000)})
 
 
-def broker_rows(dates, accumulating=True):
+def broker_rows(dates, accumulating=True, verified=True):
     """Balanced full-market-like broker sample: every buy has an opposing seller."""
     rows=[]
     buyers=[("YP",1.0),("BK",.7),("AK",.5)]
@@ -26,13 +26,13 @@ def broker_rows(dates, accumulating=True):
             sell=3_000_000*scale if accumulating else 10_000_000*scale
             bvol=100_000*scale if accumulating else 30_000*scale
             svol=30_000*scale if accumulating else 100_000*scale
-            rows.append({"ticker":"TEST","trade_date":d,"broker_code":code,"buy_value":buy,"sell_value":sell,"buy_volume":bvol,"sell_volume":svol,"buy_avg":104.0,"sell_avg":105.0})
+            rows.append({"ticker":"TEST","trade_date":d,"broker_code":code,"buy_value":buy,"sell_value":sell,"buy_volume":bvol,"sell_volume":svol,"buy_avg":104.0,"sell_avg":105.0,"source":"TEST_DIRECT","source_verified":verified})
         for code,scale in sellers:
             buy=3_000_000*scale if accumulating else 10_000_000*scale
             sell=10_000_000*scale if accumulating else 3_000_000*scale
             bvol=30_000*scale if accumulating else 100_000*scale
             svol=100_000*scale if accumulating else 30_000*scale
-            rows.append({"ticker":"TEST","trade_date":d,"broker_code":code,"buy_value":buy,"sell_value":sell,"buy_volume":bvol,"sell_volume":svol,"buy_avg":104.0,"sell_avg":105.0})
+            rows.append({"ticker":"TEST","trade_date":d,"broker_code":code,"buy_value":buy,"sell_value":sell,"buy_volume":bvol,"sell_volume":svol,"buy_avg":104.0,"sell_avg":105.0,"source":"TEST_DIRECT","source_verified":verified})
     return normalize_broker_summary(pd.DataFrame(rows))
 
 
@@ -52,6 +52,15 @@ def test_no_broker_data_is_never_real_money_eligible():
 def test_direct_broker_data_can_pass_evidence_tier():
     px=prices(); br=broker_rows(px["date"].tail(60)); result=scan_one("TEST",px,br,ScannerConfig())
     assert result.evidence_tier=="BROKER_DIRECT"; assert result.evidence_coverage_pct==100.0
+    assert result.diagnostics["broker_verified_source_pct"] == 100.0
+
+
+def test_complete_but_unverified_broker_file_cannot_be_broker_direct():
+    px=prices(); br=broker_rows(px["date"].tail(60), verified=False)
+    result=scan_one("TEST",px,br,ScannerConfig())
+    assert result.evidence_tier=="PRICE_PROXY"
+    assert result.real_money_state=="GUARDED"
+    assert "verified_source=0.0%" in result.guardrail_reason
 
 
 def test_partial_unbalanced_broker_file_cannot_be_broker_direct():
@@ -72,11 +81,11 @@ def test_prior_accumulators_reversing_to_sell_triggers_distribution_warning():
         for code,scale in buyers:
             if reversal: buy,sell,bvol,svol=1_000_000*scale,18_000_000*scale,10_000*scale,180_000*scale
             else: buy,sell,bvol,svol=10_000_000*scale,2_000_000*scale,100_000*scale,20_000*scale
-            rows.append({"ticker":"TEST","trade_date":d,"broker_code":code,"buy_value":buy,"sell_value":sell,"buy_volume":bvol,"sell_volume":svol,"buy_avg":104.0,"sell_avg":108.0})
+            rows.append({"ticker":"TEST","trade_date":d,"broker_code":code,"buy_value":buy,"sell_value":sell,"buy_volume":bvol,"sell_volume":svol,"buy_avg":104.0,"sell_avg":108.0,"source":"TEST_DIRECT","source_verified":True})
         for code,scale in sellers:
             if reversal: buy,sell,bvol,svol=18_000_000*scale,1_000_000*scale,180_000*scale,10_000*scale
             else: buy,sell,bvol,svol=2_000_000*scale,10_000_000*scale,20_000*scale,100_000*scale
-            rows.append({"ticker":"TEST","trade_date":d,"broker_code":code,"buy_value":buy,"sell_value":sell,"buy_volume":bvol,"sell_volume":svol,"buy_avg":104.0,"sell_avg":108.0})
+            rows.append({"ticker":"TEST","trade_date":d,"broker_code":code,"buy_value":buy,"sell_value":sell,"buy_volume":bvol,"sell_volume":svol,"buy_avg":104.0,"sell_avg":108.0,"source":"TEST_DIRECT","source_verified":True})
     br=normalize_broker_summary(pd.DataFrame(rows)); result=scan_one("TEST",px,br,ScannerConfig())
     assert result.evidence_tier=="BROKER_DIRECT"
     assert result.distribution_risk>=65; assert result.phase=="DISTRIBUTION"; assert result.action=="REDUCE_AVOID"; assert result.real_money_state=="GUARDED"
