@@ -3,7 +3,10 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from idx_flow_scanner.persistence_guard import install_bounded_result_persistence
+from idx_flow_scanner.persistence_guard import (
+    PERSISTENCE_GUARD_REVISION,
+    install_bounded_result_persistence,
+)
 
 
 class _FakeStore:
@@ -96,3 +99,21 @@ def test_install_is_idempotent_across_streamlit_reruns():
 
     assert Store.save_results is first
     assert Store._flow_result_persistence_batch_size == 25
+    assert Store._flow_bounded_result_persistence_revision == PERSISTENCE_GUARD_REVISION
+
+
+def test_new_revision_reinstalls_over_hot_reloaded_legacy_wrapper():
+    class Store(_FakeStore):
+        pass
+
+    install_bounded_result_persistence(Store, batch_size=25)
+    legacy_wrapper = Store.save_results
+
+    # Simulate a long-lived Streamlit process whose class retained an older
+    # monkeypatch while the module source was redeployed.
+    Store._flow_bounded_result_persistence_revision = "legacy-revision"
+    install_bounded_result_persistence(Store, batch_size=20)
+
+    assert Store.save_results is not legacy_wrapper
+    assert Store._flow_result_persistence_batch_size == 20
+    assert Store._flow_bounded_result_persistence_revision == PERSISTENCE_GUARD_REVISION
