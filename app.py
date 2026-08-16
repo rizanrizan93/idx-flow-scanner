@@ -413,9 +413,17 @@ if trigger_scan:
             try:
                 selected_days = int(foreign_flow["trade_date"].nunique()) if not foreign_flow.empty else 0
                 selected_tickers = int(foreign_flow["ticker"].nunique()) if not foreign_flow.empty else 0
+                direct_selected = foreign_flow[foreign_flow["source"].eq("IDX_OFFICIAL_STOCK_SUMMARY")].copy() if not foreign_flow.empty and "source" in foreign_flow.columns else pd.DataFrame()
+                direct_days = int(direct_selected["trade_date"].nunique()) if not direct_selected.empty else 0
+                direct_tickers = int(direct_selected["ticker"].nunique()) if not direct_selected.empty else 0
+                source_col = "foreign_evidence_source" if not foreign_flow.empty and "foreign_evidence_source" in foreign_flow.columns else "source"
+                source_counts = foreign_flow.groupby(source_col, observed=True)["ticker"].nunique().astype(int).to_dict() if not foreign_flow.empty and source_col in foreign_flow.columns else {}
                 store.client.table("flow_scan_runs").update({
-                    "official_flow_days": selected_days,
-                    "official_flow_tickers": selected_tickers,
+                    "official_flow_days": direct_days,
+                    "official_flow_tickers": direct_tickers,
+                    "foreign_evidence_days": selected_days,
+                    "foreign_evidence_tickers": selected_tickers,
+                    "foreign_evidence_sources": source_counts,
                 }).eq("id", run_id).execute()
             except Exception:
                 pass
@@ -482,7 +490,7 @@ if isinstance(results, pd.DataFrame) and not results.empty:
     if "diagnostics" in display.columns:
         for name in (
             "broker_verified_source_pct", "persistence_20d", "broker_cohort_stability", "cost_position",
-            "official_foreign_coverage_pct", "market_regime_label", "relative_strength_20d_pct",
+            "foreign_evidence_coverage_pct", "foreign_evidence_source", "official_foreign_coverage_pct", "market_regime_label", "relative_strength_20d_pct",
         ):
             display[name] = display["diagnostics"].map(
                 lambda value, key=name: (value or {}).get(key) if isinstance(value, dict) else None
@@ -505,7 +513,7 @@ if isinstance(results, pd.DataFrame) and not results.empty:
     ].copy()
     broker_direct = display[display["evidence_tier"] == "BROKER_DIRECT"].copy()
     foreign_coverages = [
-        float(d.get("official_foreign_coverage_pct", 0) or 0)
+        float(d.get("foreign_evidence_coverage_pct", d.get("official_foreign_coverage_pct", 0)) or 0)
         for d in results.get("diagnostics", pd.Series(dtype=object))
         if isinstance(d, dict)
     ]
@@ -525,7 +533,7 @@ if isinstance(results, pd.DataFrame) and not results.empty:
         "evidence_tier", "evidence_coverage_pct", "broker_verified_source_pct",
         "accumulation_score", "operator_dominance_score", "persistence_20d",
         "broker_cohort_stability", "foreign_institutional_score",
-        "official_foreign_coverage_pct", "market_context_score", "market_regime_label",
+        "foreign_evidence_source", "foreign_evidence_coverage_pct", "official_foreign_coverage_pct", "market_context_score", "market_regime_label",
         "relative_strength_20d_pct", "price_data_quality_score", "distribution_risk",
         "entry_low", "entry_high", "invalidation", "tp1", "tp2",
     ]
