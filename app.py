@@ -14,6 +14,7 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from idx_flow_scanner.config import ScannerConfig
+from idx_flow_scanner.broker_evidence import select_broker_evidence
 from idx_flow_scanner.data import normalize_broker_summary, parse_universe
 from idx_flow_scanner.database_first import prepare_database_first_prices
 from idx_flow_scanner.foreign_evidence import prepare_foreign_evidence
@@ -233,7 +234,9 @@ if trigger_scan:
                 store.upsert_broker_flows(bundled_broker)
             except Exception as exc:
                 st.caption(f"Bundled verified broker cache could not be persisted: {exc}")
+    broker, broker_selector_stats = select_broker_evidence(broker)
     broker_stats = data_stats(broker)
+    broker_stats["provider_selection"] = broker_selector_stats
     st.session_state.last_broker_stats = broker_stats
 
     bar = st.progress(0.0, text="Preparing OHLCV...")
@@ -264,6 +267,7 @@ if trigger_scan:
                     "indexalpha_broker_transport_cache": True,
                     "broker_contract": "VERIFIED_STOCK_LEVEL_PROVIDER_ROWS",
                     "broker_provenance_gate": True,
+                    "broker_provider_selector": "ONE_SOURCE_PER_TICKER_DAY_VERIFIED_FIRST",
                     "bandar_cost_display": "BROKER_DIRECT_ONLY",
                     "market_context": "CROSS_SECTIONAL_400",
                     "price_integrity_gate": True,
