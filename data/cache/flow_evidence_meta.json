@@ -6,7 +6,7 @@
     "status": "BLOCKED: IDX official TradingSummary access blocked with HTTP 403 (Cloudflare challenge)",
     "tickers": 0
   },
-  "generated_at": "2026-08-16T12:06:15.681060+00:00",
+  "generated_at": "2026-08-16T12:12:47.885869+00:00",
   "goapi_broker_direct": {
     "budget_requests": 5,
     "days": 0,
@@ -28,9 +28,9 @@
     "freshest": "2026-08-14",
     "jobs_planned": 5,
     "provider": "INDEX_ALPHA_BROKER_SUMMARY",
-    "requests_attempted": 5,
+    "requests_attempted": 0,
     "rows": 108,
-    "status": "UPDATED",
+    "status": "UNAVAILABLE: Index Alpha plan does not allow broker summary",
     "target_history_days": 20,
     "targets": [
       "MMIX",

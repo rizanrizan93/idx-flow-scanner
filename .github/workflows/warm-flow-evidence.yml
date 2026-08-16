@@ -47,6 +47,37 @@ jobs:
           ZAPI_FOREIGN_MAX_CALENDAR_DAYS: '45'
           IDX_REQUEST_DELAY_SECONDS: '1.0'
         run: python scripts/build_flow_evidence_cache.py
+      - name: Export stable Index Alpha JSON mirror for Supabase pull-sync
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import pandas as pd
+
+          src = Path('data/cache/indexalpha_broker_60d.csv.gz')
+          dst = Path('data/cache/indexalpha_broker_60d.json')
+          if not src.exists():
+              print('Index Alpha gzip cache absent; JSON mirror unchanged')
+              raise SystemExit(0)
+
+          df = pd.read_csv(src)
+          if df.empty:
+              print('Index Alpha cache empty; JSON mirror unchanged')
+              raise SystemExit(0)
+
+          cols = [
+              'ticker','trade_date','broker_code','buy_value','sell_value',
+              'buy_volume','sell_volume','buy_avg','sell_avg','market_type',
+              'source','source_verified','source_url','provenance_state'
+          ]
+          missing = [c for c in cols if c not in df.columns]
+          if missing:
+              raise SystemExit(f'Index Alpha cache missing JSON mirror columns: {missing}')
+          out = df[cols].copy()
+          out['trade_date'] = pd.to_datetime(out['trade_date'], errors='raise').dt.strftime('%Y-%m-%d')
+          out = out.sort_values(['ticker','trade_date','broker_code','source'], kind='stable').reset_index(drop=True)
+          dst.write_text(out.to_json(orient='records', double_precision=15) + '\n', encoding='utf-8')
+          print(f'Wrote {len(out)} verified broker rows to {dst}')
+          PY
       - name: Commit audited evidence cache
         run: |
           set -euo pipefail
@@ -60,6 +91,7 @@ jobs:
           test ! -f data/cache/zapi_idx_foreign_60d.csv.gz || cp data/cache/zapi_idx_foreign_60d.csv.gz /tmp/flow-evidence-cache/
           test ! -f data/cache/goapi_broker_60d.csv.gz || cp data/cache/goapi_broker_60d.csv.gz /tmp/flow-evidence-cache/
           test ! -f data/cache/indexalpha_broker_60d.csv.gz || cp data/cache/indexalpha_broker_60d.csv.gz /tmp/flow-evidence-cache/
+          test ! -f data/cache/indexalpha_broker_60d.json || cp data/cache/indexalpha_broker_60d.json /tmp/flow-evidence-cache/
 
           git fetch origin "$GITHUB_REF_NAME"
           git reset --hard "origin/$GITHUB_REF_NAME"
@@ -121,6 +153,15 @@ jobs:
                   print(f"{name}: uncompressed evidence unchanged; preserving tracked gzip")
               else:
                   shutil.copy2(new_path, old_path)
+
+          new_json = fresh / "indexalpha_broker_60d.json"
+          old_json = cache / "indexalpha_broker_60d.json"
+          if new_json.exists():
+              same = old_json.exists() and new_json.read_bytes() == old_json.read_bytes()
+              if same:
+                  print("indexalpha_broker_60d.json: evidence unchanged; preserving tracked mirror")
+              else:
+                  shutil.copy2(new_json, old_json)
           PY
 
           git add data/cache/flow_evidence_meta.json
@@ -128,6 +169,7 @@ jobs:
           test ! -f data/cache/zapi_idx_foreign_60d.csv.gz || git add data/cache/zapi_idx_foreign_60d.csv.gz
           test ! -f data/cache/goapi_broker_60d.csv.gz || git add data/cache/goapi_broker_60d.csv.gz
           test ! -f data/cache/indexalpha_broker_60d.csv.gz || git add data/cache/indexalpha_broker_60d.csv.gz
+          test ! -f data/cache/indexalpha_broker_60d.json || git add data/cache/indexalpha_broker_60d.json
           if git diff --cached --quiet; then
             echo "Flow evidence cache materially unchanged; no commit and no Streamlit redeploy"
           else
