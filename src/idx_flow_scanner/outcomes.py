@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Callable, Iterable, Any
 
@@ -27,12 +27,17 @@ def _pct(value: float, base: float) -> float:
 
 
 def compute_signal_outcome(price: pd.DataFrame, as_of_date: str | pd.Timestamp) -> SignalOutcome:
-    """Strictly forward walk-forward evaluation; never used by signal generation itself."""
+    """Strictly forward walk-forward evaluation; never used by signal generation itself.
+
+    The signal baseline must exist on the exact signal date. We intentionally do
+    not slide a missing baseline to a later bar because that would change the
+    historical entry after the fact and contaminate OOS calibration.
+    """
     if price is None or price.empty:
         return SignalOutcome(None,None,None,None,None,None,None,"PENDING")
     px=price.copy(); px["date"]=pd.to_datetime(px["date"],errors="coerce").dt.normalize()
     px=px.dropna(subset=["date","close"]).drop_duplicates("date",keep="last").sort_values("date").reset_index(drop=True)
-    target=pd.Timestamp(as_of_date).normalize(); matches=px.index[px["date"]>=target]
+    target=pd.Timestamp(as_of_date).normalize(); matches=px.index[px["date"]==target]
     if len(matches)==0:
         return SignalOutcome(None,None,None,None,None,None,None,"PENDING")
     i=int(matches[0]); entry=float(px.loc[i,"close"])
