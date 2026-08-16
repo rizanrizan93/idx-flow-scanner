@@ -1,1 +1,1 @@
-ticker,trade_date,broker_code,buy_value,sell_value,buy_volume,sell_volume,buy_avg,sell_avg,market_type,source
+ticker,trade_date,broker_code,buy_value,sell_value,buy_volume,sell_volume,buy_avg,sell_avg,market_type,source,source_verified,source_url,provenance_state
