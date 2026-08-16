@@ -59,14 +59,70 @@ jobs:
           git fetch origin "$GITHUB_REF_NAME"
           git reset --hard "origin/$GITHUB_REF_NAME"
           mkdir -p data/cache
-          cp /tmp/flow-evidence-cache/* data/cache/
+
+          # Do not let timestamp-only JSON changes or gzip header mtimes create a
+          # repository commit. A no-op cache commit can redeploy Streamlit while a
+          # managed scan is running, leaving a RUNNING row orphaned in OHLCV_PREP.
+          python - <<'PY'
+          from __future__ import annotations
+
+          import gzip
+          import json
+          import shutil
+          from pathlib import Path
+
+          cache = Path("data/cache")
+          fresh = Path("/tmp/flow-evidence-cache")
+
+          new_meta = fresh / "flow_evidence_meta.json"
+          old_meta = cache / "flow_evidence_meta.json"
+          if new_meta.exists():
+              material_changed = True
+              if old_meta.exists():
+                  try:
+                      new_obj = json.loads(new_meta.read_text(encoding="utf-8"))
+                      old_obj = json.loads(old_meta.read_text(encoding="utf-8"))
+                      new_obj.pop("generated_at", None)
+                      old_obj.pop("generated_at", None)
+                      material_changed = new_obj != old_obj
+                  except Exception:
+                      material_changed = True
+              if material_changed:
+                  shutil.copy2(new_meta, old_meta)
+              else:
+                  print("flow_evidence_meta.json: material evidence unchanged; preserving tracked generated_at")
+
+          def uncompressed_bytes(path: Path) -> bytes:
+              with gzip.open(path, "rb") as handle:
+                  return handle.read()
+
+          for name in (
+              "idx_official_flow_60d.csv.gz",
+              "zapi_idx_foreign_60d.csv.gz",
+              "goapi_broker_60d.csv.gz",
+          ):
+              new_path = fresh / name
+              old_path = cache / name
+              if not new_path.exists():
+                  continue
+              same = False
+              if old_path.exists():
+                  try:
+                      same = uncompressed_bytes(new_path) == uncompressed_bytes(old_path)
+                  except Exception:
+                      same = False
+              if same:
+                  print(f"{name}: uncompressed evidence unchanged; preserving tracked gzip")
+              else:
+                  shutil.copy2(new_path, old_path)
+          PY
 
           git add data/cache/flow_evidence_meta.json
           test ! -f data/cache/idx_official_flow_60d.csv.gz || git add data/cache/idx_official_flow_60d.csv.gz
           test ! -f data/cache/zapi_idx_foreign_60d.csv.gz || git add data/cache/zapi_idx_foreign_60d.csv.gz
           test ! -f data/cache/goapi_broker_60d.csv.gz || git add data/cache/goapi_broker_60d.csv.gz
           if git diff --cached --quiet; then
-            echo "Flow evidence cache unchanged"
+            echo "Flow evidence cache materially unchanged; no commit and no Streamlit redeploy"
           else
             git commit -m "Refresh audited flow evidence cache [skip ci]"
             git push origin HEAD:"$GITHUB_REF_NAME"
