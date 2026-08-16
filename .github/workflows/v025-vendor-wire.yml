@@ -1,0 +1,68 @@
+name: Wire v0.2.5 Vendor Foreign
+
+on:
+  push:
+    branches:
+      - release/v0.2.5-zapi-foreign
+    paths:
+      - '.github/workflows/v025-vendor-wire.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: release/v0.2.5-zapi-foreign
+      - name: Wire separate vendor foreign DB cache
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          # Make vendor DB reads best-effort so bundled evidence survives migration races.
+          p = Path('src/idx_flow_scanner/vendor_foreign_store.py')
+          s = p.read_text(encoding='utf-8')
+          old = '''    rows: list[dict[str, object]] = []\n    for i in range(0, len(names), 40):\n        chunk = names[i:i + 40]\n        response = (\n            store.client.table("flow_vendor_foreign_flows")\n            .select(\n                "ticker,trade_date,foreign_buy,foreign_sell,foreign_net,volume,traded_value,"\n                "flow_unit,market_type,source,source_verified,source_url,provenance_state"\n            )\n            .in_("ticker", chunk)\n            .eq("flow_unit", "SHARES")\n            .eq("source_verified", True)\n            .gte("trade_date", since)\n            .order("trade_date")\n            .execute()\n        )\n        rows.extend(response.data or [])\n'''
+          new = '''    rows: list[dict[str, object]] = []\n    try:\n        for i in range(0, len(names), 40):\n            chunk = names[i:i + 40]\n            response = (\n                store.client.table("flow_vendor_foreign_flows")\n                .select(\n                    "ticker,trade_date,foreign_buy,foreign_sell,foreign_net,volume,traded_value,"\n                    "flow_unit,market_type,source,source_verified,source_url,provenance_state"\n                )\n                .in_("ticker", chunk)\n                .eq("flow_unit", "SHARES")\n                .eq("source_verified", True)\n                .gte("trade_date", since)\n                .order("trade_date")\n                .execute()\n            )\n            rows.extend(response.data or [])\n    except Exception:\n        return pd.DataFrame()\n'''
+          if old not in s:
+              raise SystemExit('vendor loader marker not found')
+          p.write_text(s.replace(old, new, 1), encoding='utf-8')
+
+          app = Path('app.py')
+          a = app.read_text(encoding='utf-8')
+          import_old = 'from idx_flow_scanner.providers.zapi import load_bundled_zapi_foreign_flows\nfrom idx_flow_scanner.storage import SupabaseStore\n'
+          import_new = '''from idx_flow_scanner.providers.zapi import load_bundled_zapi_foreign_flows\nfrom idx_flow_scanner.vendor_foreign_store import (\n    ZAPI_VENDOR_SOURCES,\n    load_zapi_vendor_foreign_flows,\n    upsert_zapi_vendor_foreign_flows,\n)\nfrom idx_flow_scanner.storage import SupabaseStore\n'''
+          if import_old not in a:
+              raise SystemExit('app import marker not found')
+          a = a.replace(import_old, import_new, 1)
+
+          block_old = '''            db_flow = load_cached_idx_official_flows(store, universe, lookback_calendar_days=120) if store is not None else pd.DataFrame()\n            bundled_direct = load_bundled_idx_official_flows(universe, lookback_calendar_days=120)\n            bundled_zapi = load_bundled_zapi_foreign_flows(universe, lookback_calendar_days=120)\n            foreign_candidates = merge_official_flow_frames(db_flow, bundled_direct, bundled_zapi)\n\n            if store is not None:\n                for transport in (bundled_direct, bundled_zapi):\n                    if transport is not None and not transport.empty:\n                        try:\n                            upsert_idx_official_flows(store, transport)\n                        except Exception as exc:\n                            st.caption(f"Foreign transport cache could not be persisted: {exc}")\n'''
+          block_new = '''            db_flow = load_cached_idx_official_flows(store, universe, lookback_calendar_days=120) if store is not None else pd.DataFrame()\n            db_vendor_flow = load_zapi_vendor_foreign_flows(store, universe, lookback_calendar_days=120) if store is not None else pd.DataFrame()\n            bundled_direct = load_bundled_idx_official_flows(universe, lookback_calendar_days=120)\n            bundled_zapi = load_bundled_zapi_foreign_flows(universe, lookback_calendar_days=120)\n            foreign_candidates = merge_official_flow_frames(db_flow, db_vendor_flow, bundled_direct, bundled_zapi)\n\n            if store is not None:\n                if bundled_direct is not None and not bundled_direct.empty:\n                    try:\n                        upsert_idx_official_flows(store, bundled_direct)\n                    except Exception as exc:\n                        st.caption(f"Direct IDX cache could not be persisted: {exc}")\n                if bundled_zapi is not None and not bundled_zapi.empty:\n                    try:\n                        upsert_zapi_vendor_foreign_flows(store, bundled_zapi)\n                    except Exception as exc:\n                        st.caption(f"Zapi vendor cache could not be persisted: {exc}")\n'''
+          if block_old not in a:
+              raise SystemExit('app foreign block marker not found')
+          a = a.replace(block_old, block_new, 1)
+
+          zold = '''            zapi_rows = foreign_candidates[\n                foreign_candidates["source"].eq("ZAPI_IDX_FOREIGN_FLOW")\n            ].copy() if not foreign_candidates.empty and "source" in foreign_candidates.columns else pd.DataFrame()\n'''
+          znew = '''            zapi_rows = foreign_candidates[\n                foreign_candidates["source"].isin(ZAPI_VENDOR_SOURCES)\n            ].copy() if not foreign_candidates.empty and "source" in foreign_candidates.columns else pd.DataFrame()\n'''
+          if zold not in a:
+              raise SystemExit('app zapi stats marker not found')
+          a = a.replace(zold, znew, 1)
+          a = a.replace('"zapi_idx_foreign_transport_cache": True,', '"zapi_idx_foreign_transport_cache": True,\n                    "zapi_vendor_foreign_db": True,', 1)
+          app.write_text(a, encoding='utf-8')
+
+          r = Path('README.md')
+          text = r.read_text(encoding='utf-8')
+          needle = '- Bundled Zapi IDX-derived foreign-flow cache covers the managed 400-ticker universe for 20 trading days.\n'
+          repl = needle + '- Zapi rows persist in `flow_vendor_foreign_flows`, never in the direct-IDX `flow_official_stock_flows` table.\n'
+          if needle in text and repl not in text:
+              text = text.replace(needle, repl, 1)
+          r.write_text(text, encoding='utf-8')
+          PY
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add app.py README.md src/idx_flow_scanner/vendor_foreign_store.py
+          git commit -m "Wire Zapi foreign evidence to vendor persistence"
+          git push origin HEAD:release/v0.2.5-zapi-foreign
