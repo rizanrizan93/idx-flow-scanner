@@ -10,3 +10,9 @@ def test_app_and_evidence_builder_compile():
     ):
         source = path.read_text(encoding="utf-8")
         compile(source, str(path), "exec")
+
+
+def test_scheduled_indexalpha_quota_is_reserved_for_guarded_live_scan():
+    workflow = Path(".github/workflows/warm-flow-evidence.yml").read_text(encoding="utf-8")
+    assert "INDEX_ALPHA_DAILY_BUDGET: '0'" in workflow
+    assert "vars.INDEX_ALPHA_DAILY_BUDGET || '5'" not in workflow
