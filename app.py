@@ -16,6 +16,7 @@ if str(SRC) not in sys.path:
 from idx_flow_scanner.config import ScannerConfig
 from idx_flow_scanner.data import normalize_broker_summary, parse_universe
 from idx_flow_scanner.database_first import prepare_database_first_prices
+from idx_flow_scanner.foreign_evidence import prepare_foreign_evidence
 from idx_flow_scanner.managed import (
     ManagedDecision,
     decide_managed_run,
@@ -36,11 +37,17 @@ from idx_flow_scanner.providers.idx_official import (
 )
 from idx_flow_scanner.providers.indexalpha import (
     load_bundled_indexalpha_broker_flows,
+    load_bundled_indexalpha_foreign_flows,
     merge_broker_frames,
+    merge_vendor_foreign_frames,
 )
 from idx_flow_scanner.storage import SupabaseStore
+from idx_flow_scanner.vendor_foreign_storage import (
+    load_vendor_foreign_flows,
+    upsert_vendor_foreign_flows,
+)
 
-APP_VERSION = "0.2.2"
+APP_VERSION = "0.2.3"
 DEFAULT_UNIVERSE_PATH = ROOT / "data" / "universe" / "idx_400_syariah.csv"
 MANAGED_MIN_VALID_RATIO = 0.90
 
@@ -48,8 +55,8 @@ st.set_page_config(page_title="IDX Flow Scanner", page_icon="📡", layout="wide
 st.title("IDX Flow Scanner")
 st.caption(
     f"v{APP_VERSION} • clean-room bandarmology / accumulation engine • database-first • "
-    "managed 400-ticker mode • persistent official IDX foreign-flow cache • provenance-gated broker evidence • "
-    "verified bandar-cost display • OOS memory"
+    "managed 400-ticker mode • official IDX + verified vendor foreign-flow evidence • "
+    "provenance-gated broker evidence • verified bandar-cost display • OOS memory"
 )
 
 
@@ -66,7 +73,7 @@ def connect_store(enabled: bool) -> tuple[SupabaseStore | None, str | None]:
         return None, str(exc)
 
 
-def broker_data_stats(frame: pd.DataFrame) -> dict[str, object]:
+def data_stats(frame: pd.DataFrame) -> dict[str, object]:
     if frame is None or frame.empty:
         return {"rows": 0, "tickers": 0, "days": 0, "verified_tickers": 0, "freshest": None}
     dates = pd.to_datetime(frame.get("trade_date"), errors="coerce")
@@ -107,20 +114,20 @@ with st.sidebar:
     period = st.selectbox("OHLCV lookback", ["6mo", "1y", "2y"], index=1)
     use_database = st.checkbox("Database-first Supabase", value=True)
     use_idx_official = st.checkbox(
-        "Official IDX foreign flow",
+        "Foreign flow evidence",
         value=True,
         help=(
-            "Gratis. Urutan sumber: Supabase cache → bundled audited IDX cache → direct IDX refresh. "
-            "ForeignBuy/ForeignSell disimpan sebagai jumlah saham resmi IDX."
+            "Urutan sumber per ticker: official IDX bila coverage terbaik, lalu verified vendor fallback. "
+            "Unit saham IDX dan unit IDR vendor tidak pernah dijumlahkan satu sama lain."
         ),
     )
     persist = st.checkbox("Persist hasil scan", value=True)
     run_manual = st.button("Run / Re-run sekarang", type="primary", width="stretch")
 
 st.info(
-    "Evidence hierarchy: verified stock-level broker summary > official IDX foreign flow > OHLCV proxy. "
+    "Evidence hierarchy: verified stock-level broker summary > official IDX foreign flow > verified vendor foreign flow > OHLCV proxy. "
     "Harga Bandar Est. hanya ditampilkan jika broker summary lolos BROKER_DIRECT. IDX market-wide broker totals, "
-    "OHLCV, dan foreign flow tidak pernah dipromosikan menjadi harga bandar. Direct evidence juga harus lolos coverage, "
+    "foreign flow, dan OHLCV tidak pernah dipromosikan menjadi harga bandar. Direct evidence juga harus lolos coverage, "
     "history, broker quorum, buy/sell balance, dan verified provenance."
 )
 
@@ -131,6 +138,8 @@ if "last_results" not in st.session_state:
     st.session_state.last_price_stats = None
     st.session_state.last_broker_stats = None
     st.session_state.last_official_stats = None
+    st.session_state.last_vendor_foreign_stats = None
+    st.session_state.last_foreign_selection_stats = None
     st.session_state.last_outcome_stats = None
 
 if universe_file is None:
@@ -219,7 +228,7 @@ if trigger_scan:
                 store.upsert_broker_flows(bundled_broker)
             except Exception as exc:
                 st.caption(f"Bundled broker cache could not be persisted: {exc}")
-    broker_stats = broker_data_stats(broker)
+    broker_stats = data_stats(broker)
     st.session_state.last_broker_stats = broker_stats
 
     bar = st.progress(0.0, text="Preparing OHLCV...")
@@ -243,6 +252,8 @@ if trigger_scan:
                     "minimum_price_bars": config.minimum_price_bars,
                     "official_idx_foreign_flow": bool(use_idx_official),
                     "official_idx_transport_cache": True,
+                    "vendor_foreign_transport_cache": True,
+                    "foreign_evidence_selector": "BEST_COVERAGE_OFFICIAL_TIE_BREAK",
                     "broker_vendor_transport_cache": True,
                     "broker_provenance_gate": True,
                     "bandar_cost_display": "BROKER_DIRECT_ONLY",
@@ -266,9 +277,18 @@ if trigger_scan:
     st.session_state.last_price_stats = price_stats
 
     official_flow = pd.DataFrame()
+    vendor_foreign = pd.DataFrame()
+    foreign_flow = pd.DataFrame()
     official_stats = {"days": 0, "tickers": 0, "freshest": None, "source": "DISABLED"}
+    vendor_foreign_stats = {"days": 0, "tickers": 0, "freshest": None, "source": "DISABLED"}
+    foreign_selection_stats = {
+        "idx_official_selected_tickers": 0,
+        "vendor_selected_tickers": 0,
+        "foreign_unavailable_tickers": len(universe),
+        "median_selected_coverage_pct": 0.0,
+    }
     if use_idx_official:
-        status_box.caption("Loading official IDX foreign flow...")
+        status_box.caption("Loading foreign flow evidence...")
         try:
             db_official = load_cached_idx_official_flows(store, universe, lookback_calendar_days=70) if store is not None else pd.DataFrame()
             bundled_official = load_bundled_idx_official_flows(universe, lookback_calendar_days=100)
@@ -308,10 +328,40 @@ if trigger_scan:
                     "source": "IDX_OFFICIAL_STOCK_SUMMARY",
                 }
         except Exception as exc:
-            st.warning(f"Official IDX flow unavailable; scan continues without it: {exc}")
+            st.caption(f"Official IDX foreign flow unavailable; checking verified vendor fallback: {exc}")
             official_flow = pd.DataFrame()
             official_stats = {"days": 0, "tickers": 0, "freshest": None, "source": "UNAVAILABLE"}
+
+        try:
+            db_vendor = load_vendor_foreign_flows(store, universe, lookback_calendar_days=120) if store is not None else pd.DataFrame()
+            bundled_vendor = load_bundled_indexalpha_foreign_flows(universe, lookback_calendar_days=150)
+            vendor_foreign = merge_vendor_foreign_frames(db_vendor, bundled_vendor)
+            if store is not None and not bundled_vendor.empty:
+                try:
+                    upsert_vendor_foreign_flows(store, bundled_vendor)
+                except Exception as exc:
+                    st.caption(f"Bundled vendor foreign cache could not be persisted: {exc}")
+            if not vendor_foreign.empty:
+                vendor_foreign_stats = {
+                    **data_stats(vendor_foreign),
+                    "source": "INDEXALPHA_FOREIGN_FLOW",
+                }
+        except Exception as exc:
+            st.caption(f"Verified vendor foreign flow unavailable: {exc}")
+            vendor_foreign = pd.DataFrame()
+            vendor_foreign_stats = {"days": 0, "tickers": 0, "freshest": None, "source": "UNAVAILABLE"}
+
+        foreign_flow, foreign_selection_stats = prepare_foreign_evidence(
+            universe,
+            official_flow,
+            vendor_foreign,
+            load_price,
+            lookback=20,
+        )
+
     st.session_state.last_official_stats = official_stats
+    st.session_state.last_vendor_foreign_stats = vendor_foreign_stats
+    st.session_state.last_foreign_selection_stats = foreign_selection_stats
 
     if store is not None and run_record_created:
         store.update_run_progress(run_id, 0, "SCORING")
@@ -329,7 +379,7 @@ if trigger_scan:
         config,
         progress,
         run_id=run_id,
-        official_flow_frame=official_flow,
+        official_flow_frame=foreign_flow,
     )
     st.session_state.last_results = results
     st.session_state.last_errors = errors
@@ -388,19 +438,32 @@ errors = st.session_state.last_errors
 price_stats = st.session_state.last_price_stats
 broker_stats = st.session_state.last_broker_stats
 official_stats = st.session_state.last_official_stats
+vendor_foreign_stats = st.session_state.last_vendor_foreign_stats
+foreign_selection_stats = st.session_state.last_foreign_selection_stats
 outcome_stats = st.session_state.last_outcome_stats
 
 if isinstance(price_stats, dict):
     st.subheader("Data Integrity")
-    p1, p2, p3, p4, p5, p6, p7, p8 = st.columns(8)
+    p1, p2, p3, p4, p5 = st.columns(5)
     p1.metric("DB OHLCV hits", int(price_stats.get("cache_hits", 0)))
     p2.metric("OHLCV fetched", int(price_stats.get("fetched_valid", 0)))
     p3.metric("OHLCV unavailable", int(price_stats.get("unavailable", 0)))
-    p4.metric("IDX flow days", int((official_stats or {}).get("days", 0)))
-    p5.metric("IDX flow tickers", int((official_stats or {}).get("tickers", 0)))
-    p6.metric("Broker days", int((broker_stats or {}).get("days", 0)))
-    p7.metric("Broker verified tickers", int((broker_stats or {}).get("verified_tickers", 0)))
-    p8.metric("OOS seeded", int((outcome_stats or {}).get("seeded", 0)))
+    p4.metric("Broker days", int((broker_stats or {}).get("days", 0)))
+    p5.metric("Broker verified tickers", int((broker_stats or {}).get("verified_tickers", 0)))
+    q1, q2, q3, q4, q5 = st.columns(5)
+    q1.metric("IDX foreign days", int((official_stats or {}).get("days", 0)))
+    q2.metric("IDX foreign tickers", int((official_stats or {}).get("tickers", 0)))
+    q3.metric("Vendor foreign days", int((vendor_foreign_stats or {}).get("days", 0)))
+    q4.metric("Vendor foreign tickers", int((vendor_foreign_stats or {}).get("tickers", 0)))
+    q5.metric("OOS seeded", int((outcome_stats or {}).get("seeded", 0)))
+    if foreign_selection_stats:
+        st.caption(
+            "Foreign selector: "
+            f"IDX {int(foreign_selection_stats.get('idx_official_selected_tickers', 0))} ticker • "
+            f"vendor {int(foreign_selection_stats.get('vendor_selected_tickers', 0))} • "
+            f"unavailable {int(foreign_selection_stats.get('foreign_unavailable_tickers', 0))} • "
+            f"median coverage {float(foreign_selection_stats.get('median_selected_coverage_pct', 0.0)):.0f}%"
+        )
     if broker_stats:
         st.caption(
             f"Broker cache: {int(broker_stats.get('rows', 0))} rows • "
@@ -441,7 +504,7 @@ if isinstance(results, pd.DataFrame) and not results.empty:
         & (display["evidence_tier"] == "BROKER_DIRECT")
     ].copy()
     broker_direct = display[display["evidence_tier"] == "BROKER_DIRECT"].copy()
-    official_coverages = [
+    foreign_coverages = [
         float(d.get("official_foreign_coverage_pct", 0) or 0)
         for d in results.get("diagnostics", pd.Series(dtype=object))
         if isinstance(d, dict)
@@ -453,7 +516,7 @@ if isinstance(results, pd.DataFrame) and not results.empty:
     c2.metric("Production eligible", len(eligible))
     c3.metric("Broker-direct", len(broker_direct))
     c4.metric("Median broker evidence", f"{display['evidence_coverage_pct'].median():.0f}%")
-    c5.metric("Median IDX foreign", f"{pd.Series(official_coverages).median():.0f}%" if official_coverages else "0%")
+    c5.metric("Median foreign evidence", f"{pd.Series(foreign_coverages).median():.0f}%" if foreign_coverages else "0%")
     c6.metric("Median price quality", f"{display['price_data_quality_score'].median():.0f}%" if "price_data_quality_score" in display else "N/A")
 
     cols = [
