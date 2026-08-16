@@ -70,6 +70,9 @@ def scan_one(
     distinct_brokers = int(broker["broker_code"].nunique()) if not broker.empty and "broker_code" in broker.columns else 0
     broker_balance_error = float(bf.get("broker_balance_error_pct", 100.0) or 0.0)
     verified_source_pct = _broker_verified_source_pct(broker)
+    price_quality = float(qf.get("price_data_quality_score", 0.0) or 0.0)
+    staleness = int(qf.get("price_staleness_days", 999) or 0)
+    split_like_recent = bool(qf.get("split_like_event_recent", False))
     direct = bool(
         len(broker)
         and float(bf["coverage_pct"]) >= config.direct_broker_min_coverage_pct
@@ -77,10 +80,14 @@ def scan_one(
         and distinct_brokers >= config.direct_broker_min_distinct_brokers
         and broker_balance_error <= config.direct_broker_max_balance_error_pct
         and verified_source_pct >= config.direct_broker_min_verified_source_pct
+        and price_quality >= config.real_money_min_price_quality_score
+        and staleness <= config.max_price_staleness_days
+        and not split_like_recent
     )
 
-    # Broker evidence that has not passed the direct integrity gate must have
-    # zero alpha influence. Pending rows remain visible only in diagnostics.
+    # Broker evidence that has not passed the full direct integrity gate — including
+    # price quality/freshness/corporate-action gates — must have zero alpha influence.
+    # Pending rows remain visible only in diagnostics.
     pf = compute_price_flow_features(price, bf if direct else {})
 
     features = {**bf, **pf, **ff, **sf, **market_features, **qf, "direct_broker": direct}
@@ -112,15 +119,13 @@ def scan_one(
         reason = f"{reason}; {integrity_reason}" if reason else integrity_reason
 
     quality_reasons: list[str] = []
-    price_quality = float(qf.get("price_data_quality_score", 0.0) or 0.0)
-    staleness = int(qf.get("price_staleness_days", 999) or 0)
     if price_quality < config.real_money_min_price_quality_score:
         quality_reasons.append(
             f"price data quality {price_quality:.1f} < {config.real_money_min_price_quality_score:.0f}"
         )
     if staleness > config.max_price_staleness_days:
         quality_reasons.append(f"price stale {staleness}d > {config.max_price_staleness_days}d")
-    if bool(qf.get("split_like_event_recent", False)):
+    if split_like_recent:
         quality_reasons.append(
             f"split/corporate-action-like gap detected on {qf.get('split_like_event_date') or 'unknown date'}; "
             f"post-event bars={qf.get('split_like_bars_ago')}"
