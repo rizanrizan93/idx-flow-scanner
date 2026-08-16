@@ -1,0 +1,83 @@
+name: Build Headless OHLCV Seed
+
+on:
+  push:
+    branches:
+      - run/headless-v025-foreign
+    paths:
+      - '.github/workflows/build-headless-ohlcv-seed.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: run/headless-v025-foreign
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Acquire audited Yahoo OHLCV seed
+        env:
+          PYTHONPATH: src
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import pandas as pd
+          from idx_flow_scanner.config import ScannerConfig
+          from idx_flow_scanner.data import fetch_yfinance_prices_batch
+          from idx_flow_scanner.managed import load_bundled_universe
+
+          universe = load_bundled_universe(Path('data/universe/idx_400_syariah.csv'))
+          cfg = ScannerConfig()
+          frames = fetch_yfinance_prices_batch(
+              universe,
+              period='1y',
+              chunk_size=40,
+              retries=2,
+              inter_chunk_delay_seconds=1.0,
+              retry_backoff_seconds=5.0,
+          )
+          parts=[]
+          valid=[]
+          for ticker in universe:
+              f=frames.get(ticker, pd.DataFrame())
+              if len(f) < cfg.minimum_price_bars:
+                  continue
+              g=f.copy()
+              g['ticker']=ticker
+              parts.append(g[['ticker','date','open','high','low','close','volume']])
+              valid.append(ticker)
+          print(f'Yahoo valid {len(valid)}/{len(universe)}')
+          missing=[t for t in universe if t not in valid]
+          print('Missing:', ','.join(missing))
+          if len(valid) < 360:
+              raise SystemExit(f'Yahoo coverage too low: {len(valid)}/400')
+          out=pd.concat(parts, ignore_index=True)
+          path=Path('data/cache/idx_400_ohlcv_1y.csv.gz')
+          path.parent.mkdir(parents=True, exist_ok=True)
+          out.to_csv(path,index=False,compression='gzip')
+          Path('data/cache/headless_ohlcv_meta.json').write_text(
+              pd.Series({
+                  'tickers':len(valid),'rows':len(out),
+                  'freshest':str(pd.to_datetime(out['date']).max().date()),
+                  'oldest':str(pd.to_datetime(out['date']).min().date()),
+                  'missing':missing,
+                  'source':'YAHOO_BATCH_CHART_GITHUB_RUNNER'
+              }).to_json(indent=2)+'\n', encoding='utf-8'
+          )
+          PY
+      - name: Commit temporary audited seed
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add data/cache/idx_400_ohlcv_1y.csv.gz data/cache/headless_ohlcv_meta.json
+          git commit -m "Build temporary Yahoo OHLCV seed for headless audit"
+          git push origin HEAD:run/headless-v025-foreign
