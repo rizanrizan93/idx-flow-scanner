@@ -3,6 +3,8 @@ import pandas as pd
 from idx_flow_scanner.database_first import _load_prices_per_ticker_json
 
 
+# Regression contract: oversized caller values must be clamped before the RPC
+# so free-tier PostgREST responses remain bounded during managed OHLCV_PREP.
 def _payload(ticker: str, rows: int = 120):
     dates = pd.bdate_range("2026-01-02", periods=rows)
     return [
