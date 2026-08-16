@@ -5,6 +5,7 @@ import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Callable
 
 import pandas as pd
 
@@ -95,6 +96,49 @@ def _candidate_trade_dates(foreign_candidates: pd.DataFrame, end_date: pd.Timest
             dates.append(str(cursor.date()))
         cursor -= pd.Timedelta(days=1)
     return dates
+
+
+def _classify_indexalpha_unavailable(exc: IndexAlphaUnavailable) -> str:
+    """Keep 402/403-style plan/access limits distinct from invalid-key telemetry."""
+    message = str(exc)
+    lowered = message.lower()
+    if "plan does not allow" in lowered or "http 402" in lowered or "http 403" in lowered:
+        return f"PLAN_LIMIT: {message}"
+    return f"UNAVAILABLE: {message}"
+
+
+def _run_indexalpha_jobs(
+    jobs: list[tuple[str, str]],
+    fetcher: Callable[..., pd.DataFrame] = fetch_indexalpha_broker_summary,
+) -> tuple[list[pd.DataFrame], str, int, int]:
+    """Execute scarce exact-day jobs with truthful attempted/succeeded telemetry.
+
+    A request counts as attempted before the provider call. This matters when the
+    first call returns a 402/403 plan/access response: the key may still be valid,
+    but a real request was consumed/issued and must not be reported as zero.
+    """
+    parts: list[pd.DataFrame] = []
+    attempted = 0
+    succeeded = 0
+    status = "UNCHANGED"
+    for ticker, day in jobs:
+        attempted += 1
+        try:
+            frame = fetcher(ticker, day, investor="all", market="RG")
+            succeeded += 1
+            if frame is not None and not frame.empty:
+                parts.append(frame)
+            status = "UPDATED"
+        except IndexAlphaQuotaExhausted as exc:
+            status = f"QUOTA_EXHAUSTED: {exc}"
+            break
+        except IndexAlphaUnavailable as exc:
+            status = _classify_indexalpha_unavailable(exc)
+            break
+        except Exception as exc:
+            status = f"ERROR: {type(exc).__name__}: {exc}"
+            break
+    return parts, status, attempted, succeeded
 
 
 def main() -> int:
@@ -275,24 +319,9 @@ def main() -> int:
     )
     indexalpha_parts: list[pd.DataFrame] = []
     indexalpha_attempted = 0
-    for ticker, day in indexalpha_jobs:
-        try:
-            frame = fetch_indexalpha_broker_summary(
-                ticker, day, investor="all", market="RG"
-            )
-            indexalpha_attempted += 1
-            if not frame.empty:
-                indexalpha_parts.append(frame)
-            indexalpha_status = "UPDATED"
-        except IndexAlphaQuotaExhausted as exc:
-            indexalpha_status = f"QUOTA_EXHAUSTED: {exc}"
-            break
-        except IndexAlphaUnavailable as exc:
-            indexalpha_status = f"UNAVAILABLE: {exc}"
-            break
-        except Exception as exc:
-            indexalpha_status = f"ERROR: {type(exc).__name__}: {exc}"
-            break
+    indexalpha_succeeded = 0
+    if indexalpha_jobs:
+        indexalpha_parts, indexalpha_status, indexalpha_attempted, indexalpha_succeeded = _run_indexalpha_jobs(indexalpha_jobs)
 
     fresh_indexalpha = pd.concat(indexalpha_parts, ignore_index=True) if indexalpha_parts else pd.DataFrame()
     merged_indexalpha = merge_indexalpha_broker_frames(existing_indexalpha, fresh_indexalpha)
@@ -310,6 +339,7 @@ def main() -> int:
         "token_present": indexalpha_key_present,
         "budget_requests": indexalpha_budget,
         "requests_attempted": indexalpha_attempted,
+        "requests_succeeded": indexalpha_succeeded,
         "jobs_planned": len(indexalpha_jobs),
         "targets": indexalpha_targets,
         "verified_tickers": indexalpha_verified_tickers,
