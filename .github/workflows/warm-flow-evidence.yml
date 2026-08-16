@@ -49,5 +49,6 @@ jobs:
             echo "Flow evidence cache unchanged"
           else
             git commit -m "Refresh audited flow evidence cache [skip ci]"
-            git push
+            git pull --rebase origin "$GITHUB_REF_NAME"
+            git push origin HEAD:"$GITHUB_REF_NAME"
           fi
