@@ -56,6 +56,7 @@ def final_score(features: dict[str, object], config: ScannerConfig) -> float:
     direct = bool(features.get("direct_broker", False))
     foreign = float(features.get("foreign_institutional_score", 50.0) or 50.0)
     market = float(features.get("market_sector_score", 50.0) or 50.0)
+    price_quality = float(features.get("price_data_quality_score", 100.0) or 0.0)
     if direct:
         accumulation = float(features.get("accumulation_score", 0.0) or 0.0)
         dominance = float(features.get("operator_dominance_score", 0.0) or 0.0)
@@ -82,6 +83,10 @@ def final_score(features: dict[str, object], config: ScannerConfig) -> float:
     }
     score = sum(parts[k] * getattr(w, k) for k in parts)
     score -= max(0.0, distribution - 55.0) * 0.22
+    # Data integrity is not a separate alpha factor. It is a confidence haircut.
+    # Healthy data (>=80) is effectively neutral; stale/illiquid/split-like data
+    # is progressively de-rated so bad bars cannot manufacture accumulation.
+    score -= max(0.0, 80.0 - price_quality) * 0.18
     if direct:
         quality = float(features.get("accumulation_quality_score", 50.0) or 50.0)
         stability = float(features.get("broker_cohort_stability", 0.0) or 0.0)
