@@ -1,8 +1,13 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
+from datetime import datetime, timezone
+from typing import Callable, Iterable, Any
+
 import numpy as np
 import pandas as pd
+
+from .data import canonical_ticker
 
 
 @dataclass(frozen=True)
@@ -47,3 +52,78 @@ def compute_signal_outcome(price: pd.DataFrame, as_of_date: str | pd.Timestamp) 
     status="COMPLETE" if r60 is not None else ("PARTIAL" if r5 is not None or r20 is not None else "PENDING")
     through=px["date"].iloc[-1].date().isoformat() if len(px) else None
     return SignalOutcome(entry,r5,r20,r60,mfe,mae,through,status)
+
+
+def _finite_or_none(value: object) -> float | None:
+    try:
+        out=float(value)
+        return out if np.isfinite(out) else None
+    except (TypeError,ValueError):
+        return None
+
+
+def seed_signal_outcomes(
+    store: Any,
+    run_id: str,
+    results: pd.DataFrame,
+    price_loader: Callable[[str], pd.DataFrame],
+) -> int:
+    """Register today's signals for future OOS scoring without feeding outcomes back into the signal."""
+    if store is None or results is None or results.empty:
+        return 0
+    rows=[]
+    for row in results.to_dict("records"):
+        ticker=canonical_ticker(row.get("ticker")); as_of=row.get("as_of_date")
+        if not ticker or not as_of:
+            continue
+        outcome=compute_signal_outcome(price_loader(ticker),as_of)
+        rows.append({
+            "run_id":run_id,"ticker":ticker,"as_of_date":str(as_of),"phase":str(row.get("phase") or "UNKNOWN"),
+            "evidence_tier":str(row.get("evidence_tier") or "PRICE_PROXY"),"final_score":_finite_or_none(row.get("final_score")) or 0.0,
+            "entry_close":_finite_or_none(outcome.entry_close),"return_5d":_finite_or_none(outcome.return_5d),
+            "return_20d":_finite_or_none(outcome.return_20d),"return_60d":_finite_or_none(outcome.return_60d),
+            "mfe_20d":_finite_or_none(outcome.mfe_20d),"mae_20d":_finite_or_none(outcome.mae_20d),
+            "evaluated_through":outcome.evaluated_through,"evaluation_status":outcome.evaluation_status,
+            "evaluated_at":datetime.now(timezone.utc).isoformat() if outcome.evaluation_status!="PENDING" else None,
+        })
+    for i in range(0,len(rows),500):
+        store.client.table("flow_signal_outcomes").upsert(rows[i:i+500],on_conflict="run_id,ticker").execute()
+    return len(rows)
+
+
+def refresh_pending_outcomes(
+    store: Any,
+    universe: Iterable[str],
+    price_loader: Callable[[str], pd.DataFrame],
+    *,
+    limit: int = 2000,
+) -> dict[str,int]:
+    """Advance historical PENDING/PARTIAL outcomes using only bars now available after the signal date."""
+    if store is None:
+        return {"checked":0,"updated":0,"complete":0}
+    names=set(canonical_ticker(t) for t in universe if canonical_ticker(t))
+    response=(store.client.table("flow_signal_outcomes")
+              .select("run_id,ticker,as_of_date,evaluation_status,evaluated_through")
+              .in_("evaluation_status",["PENDING","PARTIAL"])
+              .order("as_of_date").limit(int(limit)).execute())
+    pending=[r for r in (response.data or []) if canonical_ticker(r.get("ticker")) in names]
+    updates=[]; complete=0
+    for row in pending:
+        ticker=canonical_ticker(row.get("ticker")); as_of=row.get("as_of_date")
+        outcome=compute_signal_outcome(price_loader(ticker),as_of)
+        current_status=str(row.get("evaluation_status") or "PENDING")
+        current_through=str(row.get("evaluated_through") or "")
+        if outcome.evaluation_status==current_status and str(outcome.evaluated_through or "")==current_through:
+            continue
+        payload={
+            "run_id":row["run_id"],"ticker":ticker,
+            "entry_close":_finite_or_none(outcome.entry_close),"return_5d":_finite_or_none(outcome.return_5d),
+            "return_20d":_finite_or_none(outcome.return_20d),"return_60d":_finite_or_none(outcome.return_60d),
+            "mfe_20d":_finite_or_none(outcome.mfe_20d),"mae_20d":_finite_or_none(outcome.mae_20d),
+            "evaluated_through":outcome.evaluated_through,"evaluation_status":outcome.evaluation_status,
+            "evaluated_at":datetime.now(timezone.utc).isoformat() if outcome.evaluation_status!="PENDING" else None,
+        }
+        updates.append(payload); complete+=int(outcome.evaluation_status=="COMPLETE")
+    for i in range(0,len(updates),500):
+        store.client.table("flow_signal_outcomes").upsert(updates[i:i+500],on_conflict="run_id,ticker").execute()
+    return {"checked":len(pending),"updated":len(updates),"complete":complete}
