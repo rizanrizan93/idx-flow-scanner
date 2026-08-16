@@ -60,26 +60,28 @@ def _load_prices_per_ticker_json(
     names: list[str],
     *,
     min_rows: int,
-    limit: int = 320,
-    chunk_size: int = 40,
+    limit: int = 120,
+    chunk_size: int = 8,
     status: Callable[[str], None] | None = None,
 ) -> dict[str, pd.DataFrame]:
-    """Load OHLCV as one PostgREST row per ticker, with ticker-day dedupe in SQL.
+    """Load OHLCV as bounded per-ticker JSON payloads.
 
-    The older transport aggregated an entire chunk into one large JSON value and
-    included duplicate ticker-days from multiple provenance sources before Python
-    normalization. On Streamlit/Supabase free infrastructure that caused many
-    large request/heartbeat round-trips and could leave a managed scan stuck in
-    ``OHLCV_PREP``. The v0.3.7 RPC returns at most one row per ticker while the
-    database chooses the newest persisted provenance for each ticker-day.
+    The SQL RPC deduplicates ticker-days before transport. v0.3.7 still requested
+    40 tickers x ~320 bars per PostgREST response, which can be a multi-megabyte
+    payload and was observed to stall managed scans before the first heartbeat.
+    v0.3.8 deliberately caps each request to at most eight tickers and 120 bars.
+    The scanner's longest live lookback is 60 sessions and the hard minimum is 80,
+    so 120 bars preserve scoring semantics while materially reducing free-tier
+    network/memory pressure. Older transports remain compatibility fallbacks.
     """
     out: dict[str, pd.DataFrame] = {}
-    step = max(1, min(int(chunk_size), 40))
+    step = max(1, min(int(chunk_size), 8))
+    row_limit = max(int(min_rows), min(int(limit), 160))
     for start in range(0, len(names), step):
         chunk = names[start:start + step]
         response = store.client.rpc(
             "flow_load_price_cache_by_ticker",
-            {"p_tickers": chunk, "p_limit": int(limit)},
+            {"p_tickers": chunk, "p_limit": row_limit},
         ).execute()
         rows = response.data or []
         if isinstance(rows, dict):
@@ -97,7 +99,7 @@ def _load_prices_per_ticker_json(
             except Exception:
                 continue
             if len(normalized) >= int(min_rows):
-                out[ticker] = normalized.tail(int(limit)).reset_index(drop=True)
+                out[ticker] = normalized.tail(row_limit).reset_index(drop=True)
         if status:
             status(
                 f"Checking Supabase OHLCV cache • {min(start + len(chunk), len(names))}/{len(names)} • hits {len(out)}"
@@ -110,18 +112,19 @@ def _load_prices_bulk_json(
     names: list[str],
     *,
     min_rows: int,
-    limit: int = 450,
-    chunk_size: int = 20,
+    limit: int = 160,
+    chunk_size: int = 8,
     status: Callable[[str], None] | None = None,
 ) -> dict[str, pd.DataFrame]:
     """Compatibility fallback for the v0.3.2 single-row JSON RPC."""
     out: dict[str, pd.DataFrame] = {}
-    step = max(1, min(int(chunk_size), 40))
+    step = max(1, min(int(chunk_size), 8))
+    row_limit = max(int(min_rows), min(int(limit), 160))
     for start in range(0, len(names), step):
         chunk = names[start:start + step]
         response = store.client.rpc(
             "flow_load_price_cache_json",
-            {"p_tickers": chunk, "p_limit": int(limit)},
+            {"p_tickers": chunk, "p_limit": row_limit},
         ).execute()
         data = response.data or []
         payload = []
@@ -136,7 +139,7 @@ def _load_prices_bulk_json(
                 t = canonical_ticker(ticker)
                 normalized = normalize_price_frame(group.rename(columns={"trade_date": "date"}), t)
                 if len(normalized) >= int(min_rows):
-                    out[t] = normalized.tail(int(limit)).reset_index(drop=True)
+                    out[t] = normalized.tail(row_limit).reset_index(drop=True)
         if status:
             status(f"Checking Supabase OHLCV cache fallback • {min(start + len(chunk), len(names))}/{len(names)} • hits {len(out)}")
     return out
@@ -155,8 +158,10 @@ def prepare_database_first_prices(
 
     Order of precedence: dedicated Supabase cache -> verified bundled GitHub
     seed -> throttled Yahoo fetch. The preferred database transport returns one
-    PostgREST row per ticker and deduplicates ticker-days in SQL. Older JSON and
-    rowset RPCs remain compatibility fallbacks and never alter evidence semantics.
+    PostgREST row per ticker and deduplicates ticker-days in SQL. Payload size is
+    deliberately bounded so a managed scan can keep heartbeating on free infra.
+    Older JSON and rowset RPCs remain compatibility fallbacks and never alter
+    evidence semantics.
     """
     names = list(dict.fromkeys(canonical_ticker(t) for t in universe if canonical_ticker(t)))
     frames: dict[str, pd.DataFrame] = {}
@@ -171,8 +176,8 @@ def prepare_database_first_prices(
                 store,
                 names,
                 min_rows=min_rows,
-                limit=320,
-                chunk_size=40,
+                limit=120,
+                chunk_size=8,
                 status=status,
             )
             for ticker, frame in (bulk or {}).items():
@@ -180,7 +185,7 @@ def prepare_database_first_prices(
                     frames[canonical_ticker(ticker)] = frame
             cache_hits = len(frames)
             bulk_cache_used = True
-            bulk_cache_transport = "PER_TICKER_JSON_RPC"
+            bulk_cache_transport = "PER_TICKER_JSON_RPC_BOUNDED"
         except Exception:
             db_read_errors += 1
 
@@ -190,8 +195,8 @@ def prepare_database_first_prices(
                 store,
                 names,
                 min_rows=min_rows,
-                limit=450,
-                chunk_size=20,
+                limit=160,
+                chunk_size=8,
                 status=status,
             )
             for ticker, frame in (bulk or {}).items():
@@ -199,7 +204,7 @@ def prepare_database_first_prices(
                     frames[canonical_ticker(ticker)] = frame
             cache_hits = len(frames)
             bulk_cache_used = True
-            bulk_cache_transport = "JSON_RPC_FALLBACK"
+            bulk_cache_transport = "JSON_RPC_FALLBACK_BOUNDED"
         except Exception:
             db_read_errors += 1
 
@@ -212,7 +217,7 @@ def prepare_database_first_prices(
             bulk = store.load_prices_bulk(
                 names,
                 min_rows=min_rows,
-                limit=450,
+                limit=160,
                 chunk_size=4,
                 progress=bulk_progress,
             )
