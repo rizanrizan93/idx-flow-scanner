@@ -94,7 +94,7 @@ class SupabaseStore:
             self.client.table("flow_signal_outcomes").upsert(rows[i:i+500],on_conflict="run_id,ticker").execute()
         return len(rows)
 
-    def refresh_signal_outcomes(self, limit: int = 2000) -> int:
+    def refresh_signal_outcomes(self, limit: int = 30000) -> int:
         """Best-effort DB-native forward outcome refresh. Never feeds current scoring."""
         try:
             resp=self.client.rpc("flow_refresh_signal_outcomes",{"p_limit":int(limit)}).execute()
@@ -131,10 +131,6 @@ class SupabaseStore:
             })
         for i in range(0, len(records), 500):
             self.client.table("flow_scan_results").upsert(records[i:i+500], on_conflict="run_id,ticker").execute()
-        try:
-            self.seed_signal_outcomes(run_id,frame)
-        except Exception:
-            pass
 
     def finish_run(
         self,
@@ -165,13 +161,26 @@ class SupabaseStore:
             self.client.table("flow_scan_runs").update(extended).eq("id", run_id).execute()
         except Exception:
             self.client.table("flow_scan_runs").update(base).eq("id", run_id).execute()
-        if status == "COMPLETED":
-            self.refresh_signal_outcomes(limit=2000)
 
     def upsert_broker_flows(self, frame: pd.DataFrame) -> int:
         b = normalize_broker_summary(frame)
-        if b.empty: return 0
-        cols=["ticker","trade_date","broker_code","market_type","buy_value","sell_value","buy_volume","sell_volume","buy_avg","sell_avg","source"]
+        if b.empty:
+            return 0
+        if "source_verified" not in b.columns:
+            b["source_verified"] = False
+        if "source_url" not in b.columns:
+            b["source_url"] = None
+        if "provenance_state" not in b.columns:
+            b["provenance_state"] = None
+        raw_verified=b["source_verified"]
+        if not pd.api.types.is_bool_dtype(raw_verified):
+            b["source_verified"] = raw_verified.astype(str).str.strip().str.lower().isin({"1","true","yes","y","verified"})
+        else:
+            b["source_verified"] = raw_verified.fillna(False)
+        cols=[
+            "ticker","trade_date","broker_code","market_type","buy_value","sell_value","buy_volume","sell_volume",
+            "buy_avg","sell_avg","source","source_verified","source_url","provenance_state"
+        ]
         rows=_records(b[cols])
         for i in range(0,len(rows),500):
             self.client.table("flow_broker_flows").upsert(
@@ -181,20 +190,22 @@ class SupabaseStore:
 
     def load_broker_flows(self, tickers: Iterable[str], lookback_calendar_days: int = 120) -> pd.DataFrame:
         names=list(dict.fromkeys(canonical_ticker(t) for t in tickers if canonical_ticker(t)))
-        if not names: return pd.DataFrame()
+        if not names:
+            return pd.DataFrame()
         since=(date.today()-timedelta(days=int(lookback_calendar_days))).isoformat()
         all_rows=[]
         for i in range(0,len(names),40):
             chunk=names[i:i+40]
             resp=(self.client.table("flow_broker_flows").select(
-                "ticker,trade_date,broker_code,buy_value,sell_value,buy_volume,sell_volume,buy_avg,sell_avg,market_type,source"
+                "ticker,trade_date,broker_code,buy_value,sell_value,buy_volume,sell_volume,buy_avg,sell_avg,market_type,source,source_verified,source_url,provenance_state"
             ).in_("ticker",chunk).gte("trade_date",since).order("trade_date").execute())
             all_rows.extend(resp.data or [])
         return normalize_broker_summary(pd.DataFrame(all_rows)) if all_rows else pd.DataFrame()
 
     def upsert_prices(self, ticker: str, frame: pd.DataFrame, source: str = "YFINANCE") -> int:
         p=normalize_price_frame(frame,ticker)
-        if p.empty: return 0
+        if p.empty:
+            return 0
         rows=[]
         for row in p.to_dict("records"):
             close=float(row["close"]); volume=row.get("volume")
