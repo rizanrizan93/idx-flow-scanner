@@ -3,6 +3,7 @@ from __future__ import annotations
 import uuid
 from typing import Callable
 
+import numpy as np
 import pandas as pd
 
 from .config import ScannerConfig
@@ -14,6 +15,30 @@ from .engines.scoring import action_from_phase, final_score, phase_from_features
 from .guardrails import real_money_guard
 from .market_context import compute_market_context, ticker_market_features
 from .models import ScanResult
+
+
+def _broker_verified_source_pct(broker: pd.DataFrame) -> float:
+    """Gross-value weighted provenance coverage for direct broker evidence.
+
+    A complete-looking CSV is not enough to become BROKER_DIRECT. Rows need an
+    explicit verified provenance flag. Missing provenance is deliberately treated
+    as unverified/fail-closed.
+    """
+    if broker is None or broker.empty or "source_verified" not in broker.columns:
+        return 0.0
+    raw = broker["source_verified"]
+    if pd.api.types.is_bool_dtype(raw):
+        verified = raw.fillna(False)
+    else:
+        verified = raw.astype(str).str.strip().str.lower().isin({"1", "true", "yes", "y", "verified"})
+    buy = pd.to_numeric(broker.get("buy_value"), errors="coerce").fillna(0.0).clip(lower=0.0)
+    sell = pd.to_numeric(broker.get("sell_value"), errors="coerce").fillna(0.0).clip(lower=0.0)
+    gross = buy + sell
+    total = float(gross.sum())
+    if not np.isfinite(total) or total <= 0:
+        return 0.0
+    verified_value = float(gross[verified].sum())
+    return float(np.clip(100.0 * verified_value / total, 0.0, 100.0))
 
 
 def scan_one(
@@ -45,12 +70,14 @@ def scan_one(
 
     distinct_brokers = int(broker["broker_code"].nunique()) if not broker.empty and "broker_code" in broker.columns else 0
     broker_balance_error = float(bf.get("broker_balance_error_pct", 100.0) or 0.0)
+    verified_source_pct = _broker_verified_source_pct(broker)
     direct = bool(
         len(broker)
         and float(bf["coverage_pct"]) >= config.direct_broker_min_coverage_pct
         and int(bf["broker_days"]) >= config.minimum_broker_days
         and distinct_brokers >= config.direct_broker_min_distinct_brokers
         and broker_balance_error <= config.direct_broker_max_balance_error_pct
+        and verified_source_pct >= config.direct_broker_min_verified_source_pct
     )
 
     features = {**bf, **pf, **ff, **sf, **market_features, **qf, "direct_broker": direct}
@@ -77,7 +104,7 @@ def scan_one(
         integrity_reason = (
             f"broker evidence integrity gate failed: coverage={float(bf['coverage_pct']):.0f}%, "
             f"days={int(bf['broker_days'])}, brokers={distinct_brokers}, "
-            f"balance_error={broker_balance_error:.1f}%"
+            f"balance_error={broker_balance_error:.1f}%, verified_source={verified_source_pct:.1f}%"
         )
         reason = f"{reason}; {integrity_reason}" if reason else integrity_reason
 
@@ -92,7 +119,8 @@ def scan_one(
         quality_reasons.append(f"price stale {staleness}d > {config.max_price_staleness_days}d")
     if bool(qf.get("split_like_event_recent", False)):
         quality_reasons.append(
-            f"split/corporate-action-like gap detected on {qf.get('split_like_event_date') or 'unknown date'}"
+            f"split/corporate-action-like gap detected on {qf.get('split_like_event_date') or 'unknown date'}; "
+            f"post-event bars={qf.get('split_like_bars_ago')}"
         )
     if quality_reasons:
         state = "GUARDED"
@@ -133,6 +161,7 @@ def scan_one(
         diagnostics={
             "broker_days": bf["broker_days"],
             "distinct_brokers": distinct_brokers,
+            "broker_verified_source_pct": verified_source_pct,
             "net_value_5d": bf["net_value_5d"],
             "net_value_20d": bf["net_value_20d"],
             "net_value_60d": bf["net_value_60d"],
@@ -165,9 +194,11 @@ def scan_one(
             "zero_volume_ratio_20d": qf.get("zero_volume_ratio_20d"),
             "unchanged_close_ratio_20d": qf.get("unchanged_close_ratio_20d"),
             "ohlc_geometry_error_ratio": qf.get("ohlc_geometry_error_ratio"),
+            "split_like_event_detected": qf.get("split_like_event_detected"),
             "split_like_event_recent": qf.get("split_like_event_recent"),
             "split_like_event_date": qf.get("split_like_event_date"),
             "split_like_factor": qf.get("split_like_factor"),
+            "split_like_bars_ago": qf.get("split_like_bars_ago"),
             "proxy_accumulation_score": pf.get("proxy_accumulation_score"),
             "proxy_absorption_score": pf.get("proxy_absorption_score"),
             "proxy_supply_tightness_score": pf.get("proxy_supply_tightness_score"),
