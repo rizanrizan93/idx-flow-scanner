@@ -97,13 +97,7 @@ def seed_signal_outcomes(
 
 
 def _load_open_outcomes(store: Any, *, page_size: int = 1000, max_rows: int = 30000) -> list[dict[str, object]]:
-    """Page through open OOS rows so old rows cannot starve newer signals.
-
-    Supabase/PostgREST commonly caps a response page. A single ``limit(2000)``
-    query therefore becomes unsafe as daily 400-ticker runs accumulate. Paging
-    keeps the free-tier workload bounded while allowing the full 60-trading-day
-    open-outcome working set to advance.
-    """
+    """Page through open OOS rows so old rows cannot starve newer signals."""
     page_size=max(1,min(int(page_size),1000)); max_rows=max(page_size,int(max_rows))
     rows: list[dict[str, object]]=[]; offset=0
     while len(rows)<max_rows:
@@ -121,22 +115,14 @@ def _load_open_outcomes(store: Any, *, page_size: int = 1000, max_rows: int = 30
     return rows[:max_rows]
 
 
-def refresh_pending_outcomes(
+def _refresh_pending_outcomes_python(
     store: Any,
     universe: Iterable[str],
     price_loader: Callable[[str], pd.DataFrame],
     *,
-    max_rows: int = 30000,
-    page_size: int = 1000,
-) -> dict[str,int]:
-    """Advance historical PENDING/PARTIAL outcomes using only later-available bars.
-
-    Open rows are paged instead of taking only the oldest fixed-size slice, and
-    OHLCV is loaded once per ticker per refresh. This prevents refresh starvation
-    while keeping external/data-cache reads bounded to roughly the universe size.
-    """
-    if store is None:
-        return {"checked":0,"updated":0,"complete":0}
+    max_rows: int,
+    page_size: int,
+) -> dict[str, object]:
     names=set(canonical_ticker(t) for t in universe if canonical_ticker(t))
     open_rows=_load_open_outcomes(store,page_size=page_size,max_rows=max_rows)
     pending=[r for r in open_rows if canonical_ticker(r.get("ticker")) in names]
@@ -167,4 +153,42 @@ def refresh_pending_outcomes(
         updates.append(payload); complete+=int(outcome.evaluation_status=="COMPLETE")
     for i in range(0,len(updates),500):
         store.client.table("flow_signal_outcomes").upsert(updates[i:i+500],on_conflict="run_id,ticker").execute()
-    return {"checked":len(pending),"updated":len(updates),"complete":complete}
+    return {"checked":len(pending),"updated":len(updates),"complete":complete,"mode":"PYTHON_FALLBACK"}
+
+
+def refresh_pending_outcomes(
+    store: Any,
+    universe: Iterable[str],
+    price_loader: Callable[[str], pd.DataFrame],
+    *,
+    max_rows: int = 30000,
+    page_size: int = 1000,
+) -> dict[str, object]:
+    """Advance historical outcomes using persisted OHLCV, database-first.
+
+    Production prefers one PostgreSQL RPC so tens of thousands of open 60D
+    outcomes do not cause hundreds of Streamlit/PostgREST reads. The Python path
+    remains as a compatibility fallback and keeps the same exact-date baseline
+    semantics. Neither path feeds future outcomes into current signal generation.
+    """
+    if store is None:
+        return {"checked":0,"updated":0,"complete":0,"mode":"SKIPPED"}
+
+    try:
+        response=store.client.rpc(
+            "flow_refresh_signal_outcomes",
+            {"p_limit":max(1,int(max_rows))},
+        ).execute()
+        raw=response.data
+        if isinstance(raw,list) and len(raw)==1:
+            raw=raw[0]
+        updated=int(raw or 0)
+        return {"checked":updated,"updated":updated,"complete":0,"mode":"DATABASE_RPC"}
+    except Exception:
+        return _refresh_pending_outcomes_python(
+            store,
+            universe,
+            price_loader,
+            max_rows=max_rows,
+            page_size=page_size,
+        )
