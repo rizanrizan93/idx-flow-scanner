@@ -126,25 +126,35 @@ def main() -> int:
         direct_status = f"ERROR: {type(exc).__name__}: {exc}"
     meta["direct_idx_foreign"] = {"status": direct_status, **_stats(merged_direct)}
 
-    # Tier 2: Zapi's documented IDX foreign-flow endpoint. It exposes the same
-    # Foreign Buy/Sell semantics in share units and is stored with distinct source
-    # provenance so it can never masquerade as the direct IDX HTTP path.
+    # Tier 2: Zapi. Bootstrap the desired history once; after that only refresh
+    # the newest trading day. This keeps the free-tier request budget sustainable
+    # instead of downloading the same 20-day window on every scheduled run.
     existing_zapi = load_bundled_zapi_foreign_flows(universe, ZAPI_FOREIGN_CACHE, lookback_calendar_days=120)
     zapi_key_present = bool(str(os.getenv("ZAPI_KEY") or "").strip())
+    zapi_target_days = max(1, int(os.getenv("ZAPI_FOREIGN_TARGET_DAYS", "20") or "20"))
+    zapi_max_calendar_days = max(zapi_target_days, int(os.getenv("ZAPI_FOREIGN_MAX_CALENDAR_DAYS", "45") or "45"))
     zapi_status = "NO_TOKEN" if not zapi_key_present else "UNCHANGED"
     merged_zapi = existing_zapi
     if zapi_key_present:
         try:
-            fresh_zapi = fetch_zapi_foreign_flow_history(
-                universe,
-                end_date=end_date.date(),
-                target_trading_days=int(os.getenv("ZAPI_FOREIGN_TARGET_DAYS", "20") or "20"),
-                max_calendar_days=int(os.getenv("ZAPI_FOREIGN_MAX_CALENDAR_DAYS", "45") or "45"),
-            )
+            cached_dates = pd.to_datetime(existing_zapi.get("trade_date"), errors="coerce").dropna() if not existing_zapi.empty else pd.Series(dtype="datetime64[ns]")
+            cached_days = int(cached_dates.dt.normalize().nunique()) if not cached_dates.empty else 0
+            freshest_cached = cached_dates.max().normalize() if not cached_dates.empty else pd.NaT
+            if cached_days >= zapi_target_days and pd.notna(freshest_cached) and freshest_cached >= end_date.normalize():
+                fresh_zapi = pd.DataFrame()
+                zapi_status = "PRESERVED"
+            else:
+                incremental = cached_days >= zapi_target_days
+                fresh_zapi = fetch_zapi_foreign_flow_history(
+                    universe,
+                    end_date=end_date.date(),
+                    target_trading_days=1 if incremental else zapi_target_days,
+                    max_calendar_days=7 if incremental else zapi_max_calendar_days,
+                )
+                zapi_status = "UPDATED" if not fresh_zapi.empty else "NO_DATA"
             merged_zapi = merge_official_flow_frames(existing_zapi, fresh_zapi)
             if not merged_zapi.empty:
                 write_zapi_foreign_cache(merged_zapi, ZAPI_FOREIGN_CACHE)
-            zapi_status = "UPDATED" if not fresh_zapi.empty else "NO_DATA"
         except ZapiQuotaExhausted as exc:
             zapi_status = f"QUOTA_EXHAUSTED: {exc}"
         except ZapiUnavailable as exc:
@@ -155,6 +165,8 @@ def main() -> int:
         "status": zapi_status,
         "token_present": zapi_key_present,
         "flow_unit": "SHARES",
+        "target_history_days": zapi_target_days,
+        "refresh_mode": "INCREMENTAL_AFTER_BOOTSTRAP",
         **_stats(merged_zapi),
     }
 
