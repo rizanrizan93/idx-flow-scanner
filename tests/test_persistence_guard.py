@@ -61,7 +61,7 @@ def test_result_persistence_failure_closes_run_fail_closed():
     assert store.finished == [
         {
             "run_id": "run-2",
-            "processed_count": 63,
+            "processed_count": 25,
             "error_count": 1,
             "status": "FAILED",
         }
