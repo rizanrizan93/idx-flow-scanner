@@ -25,6 +25,7 @@ from idx_flow_scanner.managed import (
     recent_runs,
     universe_signature,
 )
+from idx_flow_scanner.outcomes import refresh_pending_outcomes, seed_signal_outcomes
 from idx_flow_scanner.pipeline import scan_universe
 from idx_flow_scanner.providers.idx_official import (
     fetch_idx_official_flow_history,
@@ -33,7 +34,7 @@ from idx_flow_scanner.providers.idx_official import (
 )
 from idx_flow_scanner.storage import SupabaseStore
 
-APP_VERSION = "0.1.5"
+APP_VERSION = "0.1.6"
 DEFAULT_UNIVERSE_PATH = ROOT / "data" / "universe" / "idx_400_syariah.csv"
 MANAGED_MIN_VALID_RATIO = 0.90
 
@@ -41,7 +42,7 @@ st.set_page_config(page_title="IDX Flow Scanner", page_icon="📡", layout="wide
 st.title("IDX Flow Scanner")
 st.caption(
     f"v{APP_VERSION} • clean-room bandarmology / broker-flow research engine • "
-    "database-first • managed 400-ticker mode • free official IDX foreign-flow overlay"
+    "database-first • managed 400-ticker mode • free official IDX foreign-flow overlay • OOS outcome memory"
 )
 
 
@@ -86,8 +87,8 @@ with st.sidebar:
     run_manual = st.button("Run / Re-run sekarang", type="primary", width="stretch")
 
 st.info(
-    "Price/volume tidak dianggap data bandar langsung. Official IDX foreign flow adalah evidence resmi "
-    "tambahan, tetapi BROKER_DIRECT tetap hanya diberikan jika broker-summary per saham benar-benar tersedia."
+    "Price/volume tidak dianggap data bandar langsung. Official IDX foreign flow adalah evidence resmi tambahan, "
+    "tetapi BROKER_DIRECT tetap hanya diberikan jika broker-summary per saham lolos coverage, history, quorum, dan balance gate."
 )
 
 if "last_results" not in st.session_state:
@@ -96,6 +97,7 @@ if "last_results" not in st.session_state:
     st.session_state.last_run_id = None
     st.session_state.last_price_stats = None
     st.session_state.last_official_stats = None
+    st.session_state.last_outcome_stats = None
 
 if universe_file is None:
     universe = load_bundled_universe(DEFAULT_UNIVERSE_PATH)
@@ -197,6 +199,7 @@ if trigger_scan:
                     "universe_signature": signature,
                     "minimum_price_bars": config.minimum_price_bars,
                     "official_idx_foreign_flow": bool(use_idx_official),
+                    "oos_outcome_memory": True,
                 },
             )
             store.update_run_progress(run_id, 0, "OHLCV_PREP")
@@ -279,10 +282,19 @@ if trigger_scan:
 
     valid_ratio = len(results) / max(len(universe), 1)
     final_status = "COMPLETED" if valid_ratio >= MANAGED_MIN_VALID_RATIO else "FAILED"
+    outcome_stats = {"checked": 0, "updated": 0, "complete": 0, "seeded": 0, "status": "SKIPPED"}
 
     if persist and store is not None and run_record_created:
         try:
             store.save_results(run_id, results)
+            try:
+                refreshed = refresh_pending_outcomes(store, universe, load_price)
+                seeded = seed_signal_outcomes(store, run_id, results, load_price)
+                outcome_stats = {**refreshed, "seeded": int(seeded), "status": "OK"}
+            except Exception as exc:
+                outcome_stats = {"checked": 0, "updated": 0, "complete": 0, "seeded": 0, "status": f"UNAVAILABLE: {exc}"}
+            st.session_state.last_outcome_stats = outcome_stats
+
             store.finish_run(
                 run_id,
                 len(results),
@@ -320,15 +332,19 @@ results = st.session_state.last_results
 errors = st.session_state.last_errors
 price_stats = st.session_state.last_price_stats
 official_stats = st.session_state.last_official_stats
+outcome_stats = st.session_state.last_outcome_stats
 
 if isinstance(price_stats, dict):
     st.subheader("Data Integrity")
-    p1, p2, p3, p4, p5 = st.columns(5)
+    p1, p2, p3, p4, p5, p6 = st.columns(6)
     p1.metric("DB OHLCV hits", int(price_stats.get("cache_hits", 0)))
     p2.metric("OHLCV fetched", int(price_stats.get("fetched_valid", 0)))
     p3.metric("OHLCV unavailable", int(price_stats.get("unavailable", 0)))
     p4.metric("IDX flow days", int((official_stats or {}).get("days", 0)))
     p5.metric("IDX flow tickers", int((official_stats or {}).get("tickers", 0)))
+    p6.metric("OOS seeded", int((outcome_stats or {}).get("seeded", 0)))
+    if outcome_stats and outcome_stats.get("status") not in {None, "OK", "SKIPPED"}:
+        st.caption(f"OOS memory: {outcome_stats.get('status')}")
 
 if isinstance(results, pd.DataFrame) and not results.empty:
     st.subheader("Decision Priority")
