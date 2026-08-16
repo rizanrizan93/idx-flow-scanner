@@ -12,12 +12,12 @@
     "token_present": false,
     "verified_tickers": 0
   },
-  "generated_at": "2026-08-16T07:42:11.549056+00:00",
+  "generated_at": "2026-08-16T07:43:26.590661+00:00",
   "official_idx": {
     "days": 0,
     "freshest": null,
     "rows": 0,
-    "status": "UNCHANGED",
+    "status": "BLOCKED: IDX official TradingSummary access blocked with HTTP 403 (Cloudflare challenge)",
     "tickers": 0
   },
   "official_market_broker_health": {
