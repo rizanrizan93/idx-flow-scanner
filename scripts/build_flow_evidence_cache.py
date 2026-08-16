@@ -41,7 +41,7 @@ META_PATH = CACHE_DIR / "flow_evidence_meta.json"
 def _latest_weekday() -> pd.Timestamp:
     day = pd.Timestamp.now(tz="Asia/Jakarta").normalize().tz_localize(None)
     while day.weekday() >= 5:
-        day -= pd.Timedelta(days=1)
+        day -= pd.Timedelta(1, unit="D")
     return day
 
 
@@ -82,9 +82,10 @@ def main() -> int:
         fresh_official = fetch_idx_official_flow_history(
             universe,
             end_date=end_date.date(),
-            target_trading_days=int(os.getenv("IDX_FOREIGN_TARGET_DAYS", "20")),
-            max_calendar_days=int(os.getenv("IDX_FOREIGN_MAX_CALENDAR_DAYS", "45")),
-            request_delay_seconds=float(os.getenv("IDX_REQUEST_DELAY_SECONDS", "1.0")),
+            target_trading_days=int(os.getenv("IDX_FOREIGN_TARGET_DAYS", "20") or "20"),
+            max_calendar_days=int(os.getenv("IDX_FOREIGN_MAX_CALENDAR_DAYS", "45") or "45"),
+            request_delay_seconds=float(os.getenv("IDX_REQUEST_DELAY_SECONDS", "1.0") or "1.0"),
+            raise_on_block=True,
         )
         merged_official = merge_official_flow_frames(existing_official, fresh_official)
         if not merged_official.empty:
@@ -127,7 +128,7 @@ def main() -> int:
 
     existing_broker = load_bundled_indexalpha_broker_flows(universe, BROKER_CACHE, lookback_calendar_days=150)
     token_present = bool(str(os.getenv("INDEXALPHA_KEY") or os.getenv("INDEXALPHA_TOKEN") or "").strip())
-    budget = max(0, int(os.getenv("INDEXALPHA_DAILY_BUDGET", "5")))
+    budget = max(0, int(os.getenv("INDEXALPHA_DAILY_BUDGET", "5") or "5"))
     selected = choose_broker_refresh_tickers(universe, existing_broker, budget_units=budget) if token_present else []
     broker_status = "NO_TOKEN" if not token_present else "NO_BUDGET" if budget == 0 else "UNCHANGED"
     fetched_parts: list[pd.DataFrame] = []
