@@ -96,26 +96,62 @@ def seed_signal_outcomes(
     return len(rows)
 
 
+def _load_open_outcomes(store: Any, *, page_size: int = 1000, max_rows: int = 30000) -> list[dict[str, object]]:
+    """Page through open OOS rows so old rows cannot starve newer signals.
+
+    Supabase/PostgREST commonly caps a response page. A single ``limit(2000)``
+    query therefore becomes unsafe as daily 400-ticker runs accumulate. Paging
+    keeps the free-tier workload bounded while allowing the full 60-trading-day
+    open-outcome working set to advance.
+    """
+    page_size=max(1,min(int(page_size),1000)); max_rows=max(page_size,int(max_rows))
+    rows: list[dict[str, object]]=[]; offset=0
+    while len(rows)<max_rows:
+        end=min(offset+page_size-1,max_rows-1)
+        response=(store.client.table("flow_signal_outcomes")
+                  .select("run_id,ticker,as_of_date,evaluation_status,evaluated_through")
+                  .in_("evaluation_status",["PENDING","PARTIAL"])
+                  .order("as_of_date")
+                  .range(offset,end).execute())
+        batch=list(response.data or [])
+        rows.extend(batch)
+        if len(batch)<(end-offset+1):
+            break
+        offset=end+1
+    return rows[:max_rows]
+
+
 def refresh_pending_outcomes(
     store: Any,
     universe: Iterable[str],
     price_loader: Callable[[str], pd.DataFrame],
     *,
-    limit: int = 2000,
+    max_rows: int = 30000,
+    page_size: int = 1000,
 ) -> dict[str,int]:
-    """Advance historical PENDING/PARTIAL outcomes using only bars now available after the signal date."""
+    """Advance historical PENDING/PARTIAL outcomes using only later-available bars.
+
+    Open rows are paged instead of taking only the oldest fixed-size slice, and
+    OHLCV is loaded once per ticker per refresh. This prevents refresh starvation
+    while keeping external/data-cache reads bounded to roughly the universe size.
+    """
     if store is None:
         return {"checked":0,"updated":0,"complete":0}
     names=set(canonical_ticker(t) for t in universe if canonical_ticker(t))
-    response=(store.client.table("flow_signal_outcomes")
-              .select("run_id,ticker,as_of_date,evaluation_status,evaluated_through")
-              .in_("evaluation_status",["PENDING","PARTIAL"])
-              .order("as_of_date").limit(int(limit)).execute())
-    pending=[r for r in (response.data or []) if canonical_ticker(r.get("ticker")) in names]
+    open_rows=_load_open_outcomes(store,page_size=page_size,max_rows=max_rows)
+    pending=[r for r in open_rows if canonical_ticker(r.get("ticker")) in names]
+
+    price_cache: dict[str,pd.DataFrame]={}
+    for ticker in sorted({canonical_ticker(r.get("ticker")) for r in pending if canonical_ticker(r.get("ticker"))}):
+        try:
+            price_cache[ticker]=price_loader(ticker)
+        except Exception:
+            price_cache[ticker]=pd.DataFrame()
+
     updates=[]; complete=0
     for row in pending:
         ticker=canonical_ticker(row.get("ticker")); as_of=row.get("as_of_date")
-        outcome=compute_signal_outcome(price_loader(ticker),as_of)
+        outcome=compute_signal_outcome(price_cache.get(ticker,pd.DataFrame()),as_of)
         current_status=str(row.get("evaluation_status") or "PENDING")
         current_through=str(row.get("evaluated_through") or "")
         if outcome.evaluation_status==current_status and str(outcome.evaluated_through or "")==current_through:
