@@ -1,0 +1,72 @@
+{
+  "days": 1,
+  "per_ticker": [
+    {
+      "balance_error_pct": 0.0,
+      "brokers": 5,
+      "buy_value": 3219000.0,
+      "days": 1,
+      "rows": 5,
+      "sell_value": 3219000.0,
+      "source_values": [
+        "INDEX_ALPHA_BROKER_SUMMARY"
+      ],
+      "ticker": "DAYA",
+      "verified_rows": 5
+    },
+    {
+      "balance_error_pct": 0.0,
+      "brokers": 11,
+      "buy_value": 123611800.0,
+      "days": 1,
+      "rows": 11,
+      "sell_value": 123611800.0,
+      "source_values": [
+        "INDEX_ALPHA_BROKER_SUMMARY"
+      ],
+      "ticker": "MDLA",
+      "verified_rows": 11
+    },
+    {
+      "balance_error_pct": 0.0,
+      "brokers": 35,
+      "buy_value": 15627307000.0,
+      "days": 1,
+      "rows": 35,
+      "sell_value": 15627307000.0,
+      "source_values": [
+        "INDEX_ALPHA_BROKER_SUMMARY"
+      ],
+      "ticker": "MMIX",
+      "verified_rows": 35
+    },
+    {
+      "balance_error_pct": 0.0,
+      "brokers": 30,
+      "buy_value": 3922676400.0,
+      "days": 1,
+      "rows": 30,
+      "sell_value": 3922676400.0,
+      "source_values": [
+        "INDEX_ALPHA_BROKER_SUMMARY"
+      ],
+      "ticker": "OMED",
+      "verified_rows": 30
+    },
+    {
+      "balance_error_pct": 0.0,
+      "brokers": 27,
+      "buy_value": 2474229000.0,
+      "days": 1,
+      "rows": 27,
+      "sell_value": 2474229000.0,
+      "source_values": [
+        "INDEX_ALPHA_BROKER_SUMMARY"
+      ],
+      "ticker": "PKPK",
+      "verified_rows": 27
+    }
+  ],
+  "rows": 108,
+  "tickers": 5
+}
