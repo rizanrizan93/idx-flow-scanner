@@ -200,6 +200,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "Flow evidence cache materially unchanged; no commit and no Streamlit redeploy"
           else
-            git commit -m "Refresh audited flow evidence cache [skip ci]"
+            git commit -m "Refresh audited flow evidence cache"
             git push origin HEAD:"$GITHUB_REF_NAME"
           fi
