@@ -7,15 +7,19 @@ import pandas as pd
 _COMMON_SPLIT_FACTORS = np.array([0.1, 0.2, 0.25, 1/3, 0.5, 2.0, 3.0, 4.0, 5.0, 10.0], dtype=float)
 
 
-def _split_like_event(price: pd.DataFrame, lookback: int = 90) -> tuple[bool, str | None, float | None]:
+def _split_like_event(price: pd.DataFrame, lookback: int = 120) -> tuple[bool, str | None, float | None, int | None]:
     if price is None or len(price) < 3:
-        return False, None, None
-    px = price.sort_values("date").tail(max(3, int(lookback))).copy()
+        return False, None, None, None
+    px = price.sort_values("date").tail(max(3, int(lookback))).copy().reset_index(drop=True)
     close = pd.to_numeric(px["close"], errors="coerce")
     open_ = pd.to_numeric(px["open"], errors="coerce")
     prev = close.shift(1)
     ratio = open_ / prev.replace(0, np.nan)
     intraday = (close / open_.replace(0, np.nan) - 1.0).abs()
+    best: tuple[bool, str | None, float | None, int | None] = (False, None, None, None)
+    # Keep the most recent credible split-like event. A historical event should
+    # stop blocking once enough post-event bars exist for the longest 60D flow
+    # window to rebuild on the new traded-price scale.
     for idx in range(1, len(px)):
         r = ratio.iloc[idx]
         move = intraday.iloc[idx]
@@ -23,13 +27,16 @@ def _split_like_event(price: pd.DataFrame, lookback: int = 90) -> tuple[bool, st
             continue
         nearest = float(_COMMON_SPLIT_FACTORS[np.argmin(np.abs(_COMMON_SPLIT_FACTORS - float(r)))])
         rel_error = abs(float(r) - nearest) / max(abs(nearest), 1e-9)
-        # Require a gap very close to a common split/reverse-split factor and
-        # a relatively normal intraday move so ordinary ARA/ARB events are less
-        # likely to be misclassified as corporate actions.
         if rel_error <= 0.06 and (not np.isfinite(move) or float(move) <= 0.25):
             event_date = pd.to_datetime(px["date"].iloc[idx], errors="coerce")
-            return True, event_date.date().isoformat() if pd.notna(event_date) else None, nearest
-    return False, None, None
+            bars_ago = int(len(px) - 1 - idx)
+            best = (
+                True,
+                event_date.date().isoformat() if pd.notna(event_date) else None,
+                nearest,
+                bars_ago,
+            )
+    return best
 
 
 def compute_price_quality_features(price: pd.DataFrame, reference_date: str | pd.Timestamp | None = None) -> dict[str, object]:
@@ -40,9 +47,11 @@ def compute_price_quality_features(price: pd.DataFrame, reference_date: str | pd
             "zero_volume_ratio_20d": 1.0,
             "unchanged_close_ratio_20d": 1.0,
             "ohlc_geometry_error_ratio": 1.0,
+            "split_like_event_detected": False,
             "split_like_event_recent": False,
             "split_like_event_date": None,
             "split_like_factor": None,
+            "split_like_bars_ago": None,
         }
     px = price.sort_values("date").copy()
     dates = pd.to_datetime(px["date"], errors="coerce").dropna()
@@ -67,7 +76,8 @@ def compute_price_quality_features(price: pd.DataFrame, reference_date: str | pd
         | close.le(0)
     )
     geometry_error = float(geometry_bad.tail(60).mean()) if len(geometry_bad) else 1.0
-    split_like, split_date, split_factor = _split_like_event(px, lookback=90)
+    split_detected, split_date, split_factor, bars_ago = _split_like_event(px, lookback=120)
+    split_recent = bool(split_detected and bars_ago is not None and bars_ago < 60)
 
     score = 100.0
     if staleness > 0:
@@ -75,8 +85,10 @@ def compute_price_quality_features(price: pd.DataFrame, reference_date: str | pd
     score -= max(0.0, zero_volume - 0.20) * 45.0
     score -= max(0.0, unchanged - 0.45) * 35.0
     score -= min(35.0, geometry_error * 100.0)
-    if split_like:
-        score -= 25.0
+    if split_recent:
+        # Scale the haircut down as the 60D post-event window rebuilds.
+        recovery = float(np.clip((bars_ago or 0) / 60.0, 0.0, 1.0))
+        score -= 30.0 * (1.0 - recovery)
     score = float(np.clip(score, 0.0, 100.0))
     return {
         "price_data_quality_score": score,
@@ -84,7 +96,9 @@ def compute_price_quality_features(price: pd.DataFrame, reference_date: str | pd
         "zero_volume_ratio_20d": zero_volume,
         "unchanged_close_ratio_20d": unchanged,
         "ohlc_geometry_error_ratio": geometry_error,
-        "split_like_event_recent": bool(split_like),
+        "split_like_event_detected": bool(split_detected),
+        "split_like_event_recent": split_recent,
         "split_like_event_date": split_date,
         "split_like_factor": split_factor,
+        "split_like_bars_ago": bars_ago,
     }
