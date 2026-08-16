@@ -1,0 +1,4 @@
+request_id=2026-08-16T08:49:00+07:00
+reason=cold_start_dedicated_flow_database
+universe=idx_400_syariah
+period=1y
