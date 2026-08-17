@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import json
+
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -10,15 +13,20 @@ from idx_flow_scanner.persistence_guard import (
 
 
 class _FakeStore:
-    def __init__(self, fail_on_call: int | None = None):
+    def __init__(self, fail_on_call: int | None = None, strict_json: bool = False):
         self.calls: list[int] = []
         self.clients_seen: list[object] = []
         self.fail_on_call = fail_on_call
+        self.strict_json = strict_json
+        self.frames_seen: list[pd.DataFrame] = []
         self.finished: list[dict[str, object]] = []
 
     def save_results(self, run_id: str, frame: pd.DataFrame) -> None:
         self.calls.append(len(frame))
         self.clients_seen.append(getattr(self, "client", None))
+        self.frames_seen.append(frame.copy())
+        if self.strict_json:
+            json.dumps(frame.to_dict("records"), allow_nan=False)
         if self.fail_on_call is not None and len(self.calls) == self.fail_on_call:
             raise TimeoutError("simulated PostgREST timeout")
 
@@ -87,6 +95,34 @@ def test_dedicated_write_client_is_used_and_read_client_restored():
     assert store.calls == [25, 25, 1]
     assert store.clients_seen == [write_client, write_client, write_client]
     assert store.client is read_client
+
+
+def test_nested_pandas_numpy_diagnostics_are_made_strict_json_safe():
+    class Store(_FakeStore):
+        pass
+
+    install_bounded_result_persistence(Store, batch_size=20)
+    frame = pd.DataFrame(
+        {
+            "ticker": ["SAFE", "EDGE"],
+            "diagnostics": [
+                {"score": np.float64(1.25), "when": pd.Timestamp("2026-08-14")},
+                {
+                    "nested": [np.int64(7), np.float64(np.nan), np.float64(np.inf), pd.NA],
+                    "set_value": {"A", "B"},
+                },
+            ],
+        }
+    )
+    store = Store(strict_json=True)
+    store.save_results("run-json", frame)
+
+    assert store.calls == [2]
+    seen = store.frames_seen[0].set_index("ticker")
+    assert seen.loc["SAFE", "diagnostics"]["score"] == 1.25
+    assert seen.loc["SAFE", "diagnostics"]["when"] == "2026-08-14T00:00:00"
+    assert seen.loc["EDGE", "diagnostics"]["nested"] == [7, None, None, None]
+    assert sorted(seen.loc["EDGE", "diagnostics"]["set_value"]) == ["A", "B"]
 
 
 def test_install_is_idempotent_across_streamlit_reruns():
