@@ -16,6 +16,8 @@ class _FakeQuery:
     def __init__(self, client, table: str):
         self.client = client
         self.table = table
+        self.count_requested = False
+        self.run_id_filter: str | None = None
 
     def upsert(self, rows, on_conflict=None):
         self.client.write_calls.append((self.table, rows, on_conflict))
@@ -23,33 +25,67 @@ class _FakeQuery:
             raise TimeoutError("simulated PostgREST timeout")
         if self.client.strict_json:
             json.dumps(rows, allow_nan=False)
+        if self.table == "flow_scan_results":
+            for row in rows:
+                if self.client.silent_persist_limit is not None and self.client.persisted_total >= self.client.silent_persist_limit:
+                    continue
+                run_id = str(row["run_id"])
+                ticker = str(row["ticker"])
+                self.client.persisted.setdefault(run_id, set()).add(ticker)
+                self.client.persisted_total = sum(len(v) for v in self.client.persisted.values())
+        return self
+
+    def select(self, _columns, count=None):
+        self.count_requested = count == "exact"
         return self
 
     def update(self, payload):
         self.client.heartbeats.append((self.table, payload))
         return self
 
-    def eq(self, *_args):
+    def eq(self, column, value):
+        if column == "run_id":
+            self.run_id_filter = str(value)
         return self
 
     def execute(self):
-        return type("Response", (), {"data": []})()
+        count = None
+        if self.count_requested:
+            count = len(self.client.persisted.get(str(self.run_id_filter), set()))
+        return type("Response", (), {"data": [], "count": count})()
 
 
 class _FakeClient:
-    def __init__(self, fail_on_call: int | None = None, strict_json: bool = False):
+    def __init__(
+        self,
+        fail_on_call: int | None = None,
+        strict_json: bool = False,
+        silent_persist_limit: int | None = None,
+    ):
         self.fail_on_call = fail_on_call
         self.strict_json = strict_json
+        self.silent_persist_limit = silent_persist_limit
         self.write_calls: list[tuple[str, list[dict], str | None]] = []
         self.heartbeats: list[tuple[str, dict]] = []
+        self.persisted: dict[str, set[str]] = {}
+        self.persisted_total = 0
 
     def table(self, name: str):
         return _FakeQuery(self, name)
 
 
 class _FakeStore:
-    def __init__(self, fail_on_call: int | None = None, strict_json: bool = False):
-        self.client = _FakeClient(fail_on_call=fail_on_call, strict_json=strict_json)
+    def __init__(
+        self,
+        fail_on_call: int | None = None,
+        strict_json: bool = False,
+        silent_persist_limit: int | None = None,
+    ):
+        self.client = _FakeClient(
+            fail_on_call=fail_on_call,
+            strict_json=strict_json,
+            silent_persist_limit=silent_persist_limit,
+        )
         self._flow_persistence_client = self.client
         self.finished: list[dict[str, object]] = []
 
@@ -82,6 +118,7 @@ def test_result_persistence_is_bounded_into_small_batches():
     store=Store(); store.save_results("run-1",_frame(63))
     assert [len(call[1]) for call in store.client.write_calls] == [25,25,13]
     assert all(call[0] == "flow_scan_results" for call in store.client.write_calls)
+    assert len(store.client.persisted["run-1"]) == 63
     assert store.finished == []
 
 
@@ -119,6 +156,16 @@ def test_nested_pandas_numpy_diagnostics_are_strict_json_safe():
     assert payload[0]["diagnostics"]["when"] == "2026-08-14T00:00:00"
     assert payload[1]["diagnostics"]["nested"] == [7,None,None,None]
     assert sorted(payload[1]["diagnostics"]["set_value"]) == ["A","B"]
+
+
+def test_silent_partial_persistence_is_detected_by_exact_database_count():
+    class Store(_FakeStore): pass
+    install_bounded_result_persistence(Store,batch_size=20)
+    store=Store(silent_persist_limit=40)
+    with pytest.raises(RuntimeError, match="expected 63 rows, found 40"):
+        store.save_results("run-partial",_frame(63))
+    assert [len(call[1]) for call in store.client.write_calls] == [20,20,20,3]
+    assert store.finished == [{"run_id":"run-partial","processed_count":40,"error_count":1,"status":"FAILED"}]
 
 
 def test_install_is_idempotent_same_revision_but_replaces_old_revision():
