@@ -9,19 +9,27 @@ import numpy as np
 import pandas as pd
 
 
-DEFAULT_RESULT_BATCH_SIZE = 25
+DEFAULT_RESULT_BATCH_SIZE = 20
 DEFAULT_PERSIST_TIMEOUT_SECONDS = 30.0
-PERSISTENCE_GUARD_REVISION = "v3.17-json-safe-persistence"
+PERSISTENCE_GUARD_REVISION = "v3.18-direct-postgrest-persistence"
+
+_COMPONENT_FIELDS = (
+    "accumulation_score",
+    "operator_dominance_score",
+    "cost_basis_score",
+    "retail_exhaustion_score",
+    "foreign_institutional_score",
+    "supply_concentration_score",
+    "price_flow_divergence_score",
+    "market_context_score",
+    "smc_execution_score",
+    "risk_liquidity_score",
+    "price_data_quality_score",
+)
 
 
 def _json_safe(value: Any) -> Any:
-    """Convert nested pandas/numpy values into strict JSON-compatible objects.
-
-    Scan diagnostics are intentionally rich dictionaries. A single numpy scalar,
-    Timestamp, pd.NA, NaN or infinity nested inside one row can make the HTTP client
-    fail before a PostgREST request is emitted. Keep the evidence values intact
-    where representable and map non-finite/missing values to JSON null.
-    """
+    """Convert nested pandas/numpy values into strict JSON-compatible objects."""
     if value is None:
         return None
     if isinstance(value, dict):
@@ -43,46 +51,56 @@ def _json_safe(value: Any) -> Any:
         pass
     if isinstance(value, (str, int, bool)):
         return value
-    # Diagnostics should never contain executable objects; preserving an unknown
-    # value as text is safer than allowing it to abort the whole production run.
     return str(value)
 
 
-def _sanitize_batch(frame: pd.DataFrame) -> pd.DataFrame:
-    if frame is None or frame.empty:
-        return frame
-    out = frame.copy()
-    for col in out.columns:
-        if out[col].dtype == "object":
-            out[col] = out[col].map(_json_safe)
-    return out
+def _result_records(run_id: str, frame: pd.DataFrame) -> list[dict[str, Any]]:
+    """Build the canonical flow_scan_results payload without calling legacy wrappers."""
+    records: list[dict[str, Any]] = []
+    for row in frame.to_dict("records"):
+        record = {
+            "run_id": run_id,
+            "ticker": row["ticker"],
+            "as_of_date": row["as_of_date"],
+            "final_score": row["final_score"],
+            "phase": row["phase"],
+            "action": row["action"],
+            "evidence_tier": row["evidence_tier"],
+            "evidence_coverage_pct": row["evidence_coverage_pct"],
+            "real_money_state": row["real_money_state"],
+            "distribution_risk": row["distribution_risk"],
+            "estimated_smart_money_cost": row.get("estimated_smart_money_cost"),
+            "premium_to_cost_pct": row.get("premium_to_cost_pct"),
+            "entry_low": row.get("entry_low"),
+            "entry_high": row.get("entry_high"),
+            "invalidation": row.get("invalidation"),
+            "tp1": row.get("tp1"),
+            "tp2": row.get("tp2"),
+            "components": {k: row.get(k) for k in _COMPONENT_FIELDS},
+            "diagnostics": row.get("diagnostics", {}),
+            "guardrail_reason": row.get("guardrail_reason"),
+        }
+        records.append(_json_safe(record))
+    return records
 
 
 def install_bounded_result_persistence(store_cls: type[Any], *, batch_size: int = DEFAULT_RESULT_BATCH_SIZE) -> None:
-    """Bound result persistence and isolate it from the short read/cache timeout.
+    """Install direct bounded PostgREST persistence for scan results.
 
-    The primary Supabase client intentionally uses a short PostgREST timeout so a
-    stalled OHLCV cache read fails quickly. Result persistence is a different I/O
-    profile: ~400 rows with nested diagnostics. Use a dedicated, longer-lived write
-    client and small idempotent batches. Each batch is normalized to strict JSON
-    before the legacy storage serializer sees it, so one exotic nested numpy/pandas
-    value cannot terminate persistence before the HTTP request is sent.
+    Streamlit hot reload can retain an already monkeypatched class across source
+    deployments. Re-wrapping ``store_cls.save_results`` therefore preserves every
+    older wrapper underneath the new one. The production symptom was deterministic:
+    scoring reached 398/400, but only ten 20-row writes (200 rows) reached Supabase.
 
-    If any batch still raises, fail the scan run explicitly before re-raising so
-    the managed gate never leaves a zombie RUNNING row and partial rows remain safe
-    to upsert on the next run. Terminal telemetry reports rows that actually
-    completed persistence, not rows that merely completed scoring.
-
-    The installer is revision-aware because Streamlit can hot-reload source files
-    while retaining an already monkeypatched ``SupabaseStore`` class in the live
-    Python process. A normal rerun with the same revision is idempotent; a deployed
-    implementation revision wraps the currently active method again so the new
-    fail-closed semantics take effect immediately.
+    This revision deliberately does *not* delegate to whatever ``save_results``
+    method is currently attached to the live class. It reconstructs the canonical
+    payload and writes directly with a dedicated Supabase client. That severs the
+    retained wrapper chain while preserving the database contract, bounded batches,
+    idempotent upserts, JSON safety and truthful fail-closed telemetry.
     """
     if getattr(store_cls, "_flow_bounded_result_persistence_revision", None) == PERSISTENCE_GUARD_REVISION:
         return
 
-    original_save_results = store_cls.save_results
     bounded_size = max(1, min(int(batch_size), 100))
 
     def _get_write_client(store: Any) -> Any | None:
@@ -124,30 +142,25 @@ def install_bounded_result_persistence(store_cls: type[Any], *, batch_size: int 
         except Exception:
             pass
 
-    def bounded_save_results(store: Any, run_id: str, frame: pd.DataFrame) -> None:
+    def direct_save_results(store: Any, run_id: str, frame: pd.DataFrame) -> None:
         if frame is None or frame.empty:
-            return original_save_results(store, run_id, frame)
-
-        total = int(len(frame))
+            return
+        records = _result_records(run_id, frame)
+        total = len(records)
         persisted_count = 0
-        original_client = getattr(store, "client", None)
         write_client = _get_write_client(store)
+        if write_client is None:
+            raise RuntimeError("Supabase persistence client unavailable")
         try:
             for start in range(0, total, bounded_size):
-                end = min(start + bounded_size, total)
-                batch = _sanitize_batch(frame.iloc[start:end])
-                try:
-                    if write_client is not None:
-                        store.client = write_client
-                    original_save_results(store, run_id, batch)
-                finally:
-                    if original_client is not None:
-                        store.client = original_client
-                persisted_count = end
-                _heartbeat(write_client or original_client, run_id, persisted_count, total)
+                batch = records[start : start + bounded_size]
+                write_client.table("flow_scan_results").upsert(
+                    batch,
+                    on_conflict="run_id,ticker",
+                ).execute()
+                persisted_count = min(start + len(batch), total)
+                _heartbeat(write_client, run_id, persisted_count, total)
         except Exception:
-            if original_client is not None:
-                store.client = original_client
             try:
                 store.finish_run(
                     run_id,
@@ -159,7 +172,7 @@ def install_bounded_result_persistence(store_cls: type[Any], *, batch_size: int 
                 pass
             raise
 
-    store_cls.save_results = bounded_save_results
+    store_cls.save_results = direct_save_results
     store_cls._flow_bounded_result_persistence_installed = True
     store_cls._flow_bounded_result_persistence_revision = PERSISTENCE_GUARD_REVISION
     store_cls._flow_result_persistence_batch_size = bounded_size
