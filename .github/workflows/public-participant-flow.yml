@@ -1,0 +1,78 @@
+name: Public IDX Participant Flow
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '20 13 * * 1-5'
+  push:
+    paths:
+      - 'scripts/build_public_participant_cache.py'
+      - 'src/idx_flow_scanner/providers/public_idx_participant.py'
+      - 'tests/test_public_idx_participant.py'
+      - '.github/workflows/public-participant-flow.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: public-idx-participant-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -r requirements.txt pytest
+      - name: Run public participant regression
+        env:
+          PYTHONPATH: src
+        run: pytest -q tests/test_public_idx_participant.py
+      - name: Refresh rolling participant cache
+        env:
+          PYTHONPATH: src
+          IDX_PUBLIC_PARTICIPANT_TARGET_DAYS: '20'
+          IDX_PUBLIC_PARTICIPANT_MAX_CALENDAR_DAYS: '45'
+        run: python scripts/build_public_participant_cache.py
+      - name: Validate cache contract
+        env:
+          PYTHONPATH: src
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import gzip
+          import pandas as pd
+
+          path = Path('data/cache/idx_public_participant_30d.csv.gz')
+          if not path.exists():
+              raise SystemExit('PUBLIC_PARTICIPANT_CACHE_MISSING')
+          with gzip.open(path, 'rb') as handle:
+              frame = pd.read_csv(handle)
+          required = {
+              'ticker','trade_date','participant','net_value','net_volume',
+              'side','flow_rank','participant_flow_source','participant_flow_version'
+          }
+          missing = required - set(frame.columns)
+          if missing:
+              raise SystemExit(f'PUBLIC_PARTICIPANT_CACHE_COLUMNS_MISSING:{sorted(missing)}')
+          print(f'rows={len(frame)} tickers={frame.ticker.nunique()} days={frame.trade_date.nunique()}')
+          if len(frame) and frame.ticker.nunique() < 100:
+              raise SystemExit('PUBLIC_PARTICIPANT_CACHE_COVERAGE_LT_100_TICKERS')
+          PY
+      - name: Commit semantic cache changes only
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/cache/idx_public_participant_30d.csv.gz data/cache/public_participant_meta.json
+          if git diff --cached --quiet; then
+            echo 'Participant cache unchanged; no commit.'
+          else
+            git commit -m 'Refresh public IDX participant-flow cache'
+            git push origin HEAD:${GITHUB_REF_NAME}
+          fi
