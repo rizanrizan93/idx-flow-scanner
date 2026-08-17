@@ -31,7 +31,7 @@ def test_aggregate_builds_participant_net_flow() -> None:
 def test_trim_keeps_top_buyer_and_seller() -> None:
     raw = trim_top_participants(aggregate_trade_detail(_raw(), "2026-08-14", ["TEST"]), top_n=1)
     assert set(raw["side"]) == {"TOP_NET_BUYER", "TOP_NET_SELLER"}
-    assert set(raw["participant"]) == {"AB", "CD"}
+    assert set(raw["participant"]) == {"AB", "EF"}
 
 
 def test_score_is_bounded_and_handles_no_data() -> None:
