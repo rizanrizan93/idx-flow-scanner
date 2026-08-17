@@ -11,7 +11,7 @@ import pandas as pd
 
 DEFAULT_RESULT_BATCH_SIZE = 20
 DEFAULT_PERSIST_TIMEOUT_SECONDS = 30.0
-PERSISTENCE_GUARD_REVISION = "v3.18-direct-postgrest-persistence"
+PERSISTENCE_GUARD_REVISION = "v3.21-verified-postgrest-persistence"
 
 _COMPONENT_FIELDS = (
     "accumulation_score",
@@ -94,9 +94,10 @@ def install_bounded_result_persistence(store_cls: type[Any], *, batch_size: int 
 
     This revision deliberately does *not* delegate to whatever ``save_results``
     method is currently attached to the live class. It reconstructs the canonical
-    payload and writes directly with a dedicated Supabase client. That severs the
-    retained wrapper chain while preserving the database contract, bounded batches,
-    idempotent upserts, JSON safety and truthful fail-closed telemetry.
+    payload and writes directly with a dedicated Supabase client. After all bounded
+    upserts, it asks PostgREST for an exact database row count for the run and fails
+    closed unless that count equals the expected result count. A successful HTTP
+    response is therefore never treated as proof of complete persistence by itself.
     """
     if getattr(store_cls, "_flow_bounded_result_persistence_revision", None) == PERSISTENCE_GUARD_REVISION:
         return
@@ -142,6 +143,30 @@ def install_bounded_result_persistence(store_cls: type[Any], *, batch_size: int 
         except Exception:
             pass
 
+    def _exact_persisted_count(client: Any, run_id: str) -> int:
+        response = (
+            client.table("flow_scan_results")
+            .select("ticker", count="exact")
+            .eq("run_id", run_id)
+            .execute()
+        )
+        value = getattr(response, "count", None)
+        if value is None:
+            raise RuntimeError("Supabase exact persistence count unavailable")
+        return int(value)
+
+    def _fail_closed(store: Any, run_id: str, persisted_count: int, message: str) -> None:
+        try:
+            store.finish_run(
+                run_id,
+                processed_count=max(int(persisted_count), 0),
+                error_count=1,
+                status="FAILED",
+            )
+        except Exception:
+            pass
+        raise RuntimeError(message)
+
     def direct_save_results(store: Any, run_id: str, frame: pd.DataFrame) -> None:
         if frame is None or frame.empty:
             return
@@ -171,6 +196,28 @@ def install_bounded_result_persistence(store_cls: type[Any], *, batch_size: int 
             except Exception:
                 pass
             raise
+
+        try:
+            actual_count = _exact_persisted_count(write_client, run_id)
+        except Exception as exc:
+            _fail_closed(
+                store,
+                run_id,
+                persisted_count,
+                f"Persistence verification failed: {type(exc).__name__}: {exc}",
+            )
+            return
+
+        if actual_count != total:
+            _fail_closed(
+                store,
+                run_id,
+                actual_count,
+                f"Persistence integrity mismatch: expected {total} rows, found {actual_count}",
+            )
+            return
+
+        _heartbeat(write_client, run_id, actual_count, total)
 
     store_cls.save_results = direct_save_results
     store_cls._flow_bounded_result_persistence_installed = True
