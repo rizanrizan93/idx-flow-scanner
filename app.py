@@ -14,6 +14,7 @@ from idx_flow_scanner.large_universe_prices import prepare_large_universe_prices
 from idx_flow_scanner.run_metadata_guard import install_truthful_run_metadata
 from idx_flow_scanner.runtime_persistence import install_current_result_persistence
 from idx_flow_scanner.storage import SupabaseStore
+from idx_flow_scanner.ui_contract_guard import install_truthful_output_lanes
 
 # The bundled 400-ticker production run uses a bounded DB transport that fails
 # directly to the local verified seed instead of cascading into hundreds of
@@ -33,6 +34,11 @@ install_current_result_persistence(SupabaseStore, batch_size=20)
 # Persist the architecture that actually ran, including the active direct-writer
 # revision and warm-job ownership of the Index Alpha daily request budget.
 install_truthful_run_metadata(SupabaseStore)
+
+# Keep presentation semantics aligned with the actual production architecture:
+# Streamlit is cache-only for Index Alpha, the guarded selector has no hard score
+# floor, and Broker-Verified Production contains only strict direct/eligible rows.
+install_truthful_output_lanes(streamlit_app)
 
 version_file = ROOT / "VERSION"
 if version_file.exists():
