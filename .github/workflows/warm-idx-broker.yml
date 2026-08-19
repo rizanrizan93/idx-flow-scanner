@@ -7,7 +7,9 @@ on:
   push:
     paths:
       - 'scripts/build_idx_broker_cache.py'
+      - 'scripts/build_public_participant_cache.py'
       - 'src/idx_flow_scanner/providers/idx_official.py'
+      - 'src/idx_flow_scanner/providers/public_idx_participant.py'
       - '.github/workflows/warm-idx-broker.yml'
 
 permissions:
@@ -20,7 +22,7 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -28,7 +30,13 @@ jobs:
           python-version: '3.12'
           cache: pip
       - run: pip install -r requirements.txt
-      - name: Pull universe-wide stock-level IDX broker summary
+      - name: Refresh official public participant cache first
+        env:
+          PYTHONPATH: src
+          IDX_PUBLIC_PARTICIPANT_TARGET_DAYS: '20'
+          IDX_PUBLIC_PARTICIPANT_MAX_CALENDAR_DAYS: '45'
+        run: python scripts/build_public_participant_cache.py
+      - name: Pull universe-wide stock-level IDX broker summary plus participant fallback
         env:
           PYTHONPATH: src
           IDX_BROKER_UNIVERSE_DAILY_BUDGET: '400'
@@ -43,7 +51,7 @@ jobs:
           echo '```json' >> "$GITHUB_STEP_SUMMARY"
           cat data/cache/idx_official_broker_meta.json 2>/dev/null || echo '{"status":"meta_unavailable"}' >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
-      - name: Commit only semantic IDX broker evidence changes
+      - name: Commit semantic IDX evidence changes
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
@@ -51,11 +59,10 @@ jobs:
           git fetch origin "$GITHUB_REF_NAME"
           git reset --hard "origin/$GITHUB_REF_NAME"
           mkdir -p data/cache
-          if test -f /tmp/nonexistent; then true; fi
-          git add data/cache/idx_official_broker_60d.csv.gz
+          git add data/cache/idx_public_participant_30d.csv.gz data/cache/public_participant_meta.json data/cache/idx_official_broker_60d.csv.gz data/cache/idx_official_broker_meta.json
           if git diff --cached --quiet; then
             echo 'IDX broker evidence unchanged; no commit/redeploy'
           else
-            git commit -m 'Refresh universe-wide IDX broker evidence'
+            git commit -m 'Refresh universe-wide IDX participant and broker evidence'
             git push origin HEAD:"$GITHUB_REF_NAME"
           fi
