@@ -60,9 +60,14 @@ jobs:
           missing = required - set(frame.columns)
           if missing:
               raise SystemExit(f'PUBLIC_PARTICIPANT_CACHE_COLUMNS_MISSING:{sorted(missing)}')
-          print(f'rows={len(frame)} tickers={frame.ticker.nunique()} days={frame.trade_date.nunique()}')
-          if len(frame) and frame.ticker.nunique() < 100:
-              raise SystemExit('PUBLIC_PARTICIPANT_CACHE_COVERAGE_LT_100_TICKERS')
+          frame['trade_date'] = pd.to_datetime(frame['trade_date'], errors='coerce').dt.normalize()
+          latest = frame['trade_date'].max()
+          latest_tickers = int(frame.loc[frame['trade_date'].eq(latest), 'ticker'].nunique()) if pd.notna(latest) else 0
+          print({'latest_trade_date': str(latest.date()) if pd.notna(latest) else None, 'latest_tickers': latest_tickers, 'rows': len(frame), 'days': int(frame['trade_date'].nunique())})
+          if latest_tickers < 360:
+              raise SystemExit(f'LATEST_PARTICIPANT_CACHE_COVERAGE_LT_360:{latest_tickers}/400')
+          if int(frame['trade_date'].nunique()) < 1:
+              raise SystemExit('PUBLIC_PARTICIPANT_CACHE_NO_DATES')
           PY
       - name: Commit semantic cache changes only
         run: |
