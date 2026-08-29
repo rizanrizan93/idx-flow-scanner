@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 from idx_flow_scanner.data import normalize_broker_summary
-from idx_flow_scanner.pipeline import scan_one
+from idx_flow_scanner.pipeline import _broker_verified_source_pct, scan_one
 
 
 def _prices(n: int = 110) -> pd.DataFrame:
@@ -47,3 +47,24 @@ def test_official_participant_flow_never_unlocks_broker_direct():
     assert result.evidence_tier == "PRICE_PROXY"
     assert result.diagnostics["broker_alpha_applied"] is False
     assert result.diagnostics["broker_verified_source_pct"] == 0.0
+
+
+def test_mixed_participant_and_direct_rows_apply_eligibility_row_by_row():
+    frame = pd.DataFrame([
+        {
+            "buy_value": 100.0, "sell_value": 100.0,
+            "source_verified": True,
+            "source": "IDX_OFFICIAL_BROKER_SUMMARY",
+            "provenance_state": "VERIFIED_IDX_PUBLIC_TRADING_SUMMARY_STOCK_LEVEL",
+            "direct_broker_eligible": pd.NA,
+        },
+        {
+            "buy_value": 100.0, "sell_value": 100.0,
+            "source_verified": True,
+            "source": "IDX_OFFICIAL_PUBLIC_TRADE_DETAIL_PARTICIPANT_FLOW",
+            "provenance_state": "VERIFIED_IDX_PUBLIC_TRADE_DETAIL_PARTICIPANT_FLOW_NOT_BENEFICIAL_OWNER",
+            "direct_broker_eligible": False,
+        },
+    ])
+
+    assert _broker_verified_source_pct(frame) == 50.0
