@@ -8,7 +8,8 @@ from .data import canonical_ticker, normalize_broker_summary
 # covers the exact same ticker-day. Unknown sources remain usable but lower-priority;
 # provenance gates still decide whether they can ever become BROKER_DIRECT.
 SOURCE_PRIORITY = {
-    "IDX_OFFICIAL_STOCK_BROKER_SUMMARY": 50,
+    "IDX_OFFICIAL_BROKER_SUMMARY": 50,
+    "IDX_OFFICIAL_STOCK_BROKER_SUMMARY": 50,  # legacy persisted alias
     "INDEX_ALPHA_BROKER_SUMMARY": 40,
     "GOAPI_BROKER_SUMMARY_NET": 30,
 }

@@ -108,6 +108,8 @@ def scan_one(
     price_quality = float(qf.get("price_data_quality_score", 0.0) or 0.0)
     staleness = int(qf.get("price_staleness_days", 999) or 0)
     split_like_recent = bool(qf.get("split_like_event_recent", False))
+    zero_volume_20 = float(qf.get("zero_volume_ratio_20d", 1.0) or 0.0)
+    zero_volume_60 = float(qf.get("zero_volume_ratio_60d", 1.0) or 0.0)
     direct = bool(
         len(broker)
         and float(bf["coverage_pct"]) >= config.direct_broker_min_coverage_pct
@@ -117,6 +119,8 @@ def scan_one(
         and verified_source_pct >= config.direct_broker_min_verified_source_pct
         and price_quality >= config.real_money_min_price_quality_score
         and staleness <= config.max_price_staleness_days
+        and zero_volume_20 <= 0.20
+        and zero_volume_60 <= 0.35
         and not split_like_recent
     )
 
@@ -160,6 +164,10 @@ def scan_one(
         )
     if staleness > config.max_price_staleness_days:
         quality_reasons.append(f"price stale {staleness}d > {config.max_price_staleness_days}d")
+    if zero_volume_20 > 0.20:
+        quality_reasons.append(f"zero-volume ratio 20d {zero_volume_20:.0%} > 20%")
+    if zero_volume_60 > 0.35:
+        quality_reasons.append(f"zero-volume ratio 60d {zero_volume_60:.0%} > 35%")
     if split_like_recent:
         quality_reasons.append(
             f"split/corporate-action-like gap detected on {qf.get('split_like_event_date') or 'unknown date'}; "
@@ -259,6 +267,7 @@ def scan_one(
             "price_data_quality_score": qf.get("price_data_quality_score"),
             "price_staleness_days": qf.get("price_staleness_days"),
             "zero_volume_ratio_20d": qf.get("zero_volume_ratio_20d"),
+            "zero_volume_ratio_60d": qf.get("zero_volume_ratio_60d"),
             "unchanged_close_ratio_20d": qf.get("unchanged_close_ratio_20d"),
             "ohlc_geometry_error_ratio": qf.get("ohlc_geometry_error_ratio"),
             "split_like_event_detected": qf.get("split_like_event_detected"),
@@ -293,7 +302,7 @@ def scan_one(
             "execution_target_basis": sf.get("target_basis"),
             "broker_future_rows_filtered": broker_future_rows_filtered,
             "foreign_future_rows_filtered": foreign_future_rows_filtered,
-            "proxy_scoring_lineage_state": "DIRECT_BROKER_MULTI_FACTOR" if direct else "DEDUPLICATED_OHLCV_LATENT_FAMILY_V2",
+            "proxy_scoring_lineage_state": "DIRECT_BROKER_MULTI_FACTOR_DISJOINT_ACCUMULATION_V3" if direct else "DEDUPLICATED_OHLCV_LATENT_FAMILY_V2",
         },
     )
 

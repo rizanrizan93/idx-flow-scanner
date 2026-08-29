@@ -71,6 +71,12 @@ def select_guarded_top5(
     work["price_staleness_days"] = work["diagnostics"].map(
         lambda d: _int_or_default(_diagnostics(d).get("price_staleness_days", 999), 999)
     )
+    work["zero_volume_ratio_20d"] = work["diagnostics"].map(
+        lambda d: float(_diagnostics(d).get("zero_volume_ratio_20d", 1.0) or 0.0)
+    )
+    work["zero_volume_ratio_60d"] = work["diagnostics"].map(
+        lambda d: float(_diagnostics(d).get("zero_volume_ratio_60d", 1.0) or 0.0)
+    )
 
     dist = _numeric(work.get("distribution_risk", pd.Series(index=work.index, dtype=float)), 100.0)
     quality = _numeric(work.get("price_data_quality_score", pd.Series(index=work.index, dtype=float)))
@@ -83,6 +89,8 @@ def select_guarded_top5(
         dist.lt(70.0)
         & quality.ge(float(config.real_money_min_price_quality_score))
         & work["price_staleness_days"].le(int(config.max_price_staleness_days))
+        & work["zero_volume_ratio_20d"].le(0.20)
+        & work["zero_volume_ratio_60d"].le(0.35)
         & foreign_cov.ge(float(minimum_foreign_coverage_pct))
         & phase.ne("DISTRIBUTION")
         & action.ne("REDUCE_AVOID")

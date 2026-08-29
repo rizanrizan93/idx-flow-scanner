@@ -45,6 +45,7 @@ def compute_price_quality_features(price: pd.DataFrame, reference_date: str | pd
             "price_data_quality_score": 0.0,
             "price_staleness_days": 999,
             "zero_volume_ratio_20d": 1.0,
+            "zero_volume_ratio_60d": 1.0,
             "unchanged_close_ratio_20d": 1.0,
             "ohlc_geometry_error_ratio": 1.0,
             "split_like_event_detected": False,
@@ -63,7 +64,9 @@ def compute_price_quality_features(price: pd.DataFrame, reference_date: str | pd
     volume = pd.to_numeric(px.get("volume"), errors="coerce").fillna(0.0)
     last20_close = close.tail(20)
     last20_volume = volume.tail(20)
+    last60_volume = volume.tail(60)
     zero_volume = float((last20_volume <= 0).mean()) if len(last20_volume) else 1.0
+    zero_volume_60 = float((last60_volume <= 0).mean()) if len(last60_volume) else 1.0
     unchanged = float(last20_close.diff().eq(0).mean()) if len(last20_close) >= 2 else 1.0
 
     open_ = pd.to_numeric(px.get("open"), errors="coerce")
@@ -94,6 +97,7 @@ def compute_price_quality_features(price: pd.DataFrame, reference_date: str | pd
         "price_data_quality_score": score,
         "price_staleness_days": staleness,
         "zero_volume_ratio_20d": zero_volume,
+        "zero_volume_ratio_60d": zero_volume_60,
         "unchanged_close_ratio_20d": unchanged,
         "ohlc_geometry_error_ratio": geometry_error,
         "split_like_event_detected": bool(split_detected),

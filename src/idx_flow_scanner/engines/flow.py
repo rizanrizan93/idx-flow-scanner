@@ -129,7 +129,9 @@ def compute_broker_features(broker: pd.DataFrame, price: pd.DataFrame, config: S
     concentration_score = _clip_score(100.0 * concentration20)
     conversion_score = _clip_score(100.0 * min(net_conversion20 / 0.35, 1.0))
     accumulation_quality = _clip_score(0.34*persistence_score + 0.24*intensity_score + 0.18*stability_score + 0.14*concentration_score + 0.10*conversion_score)
-    accumulation_score = _clip_score(0.58*accumulation_quality + 0.22*persistence_score + 0.20*intensity_score)
+    # Do not count persistence/intensity twice. The headline is the single
+    # transparent broker-accumulation quality composite.
+    accumulation_score = accumulation_quality
     operator_dominance_score = _clip_score(0.45*concentration_score + 0.30*hhi_score + 0.25*stability_score)
     supply_concentration_score = _clip_score(0.60*concentration_score + 0.40*hhi_score)
 
