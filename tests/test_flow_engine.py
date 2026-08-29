@@ -28,13 +28,13 @@ def broker_rows(dates, accumulating=True, verified=True):
             sell=3_000_000*scale if accumulating else 10_000_000*scale
             bvol=100_000*scale if accumulating else 30_000*scale
             svol=30_000*scale if accumulating else 100_000*scale
-            rows.append({"ticker":"TEST","trade_date":d,"broker_code":code,"buy_value":buy,"sell_value":sell,"buy_volume":bvol,"sell_volume":svol,"buy_avg":104.0,"sell_avg":105.0,"source":"TEST_DIRECT","source_verified":verified})
+            rows.append({"ticker":"TEST","trade_date":d,"broker_code":code,"buy_value":buy,"sell_value":sell,"buy_volume":bvol,"sell_volume":svol,"buy_avg":104.0,"sell_avg":105.0,"source":"TEST_DIRECT","source_verified":verified,"direct_broker_eligible":verified})
         for code,scale in sellers:
             buy=3_000_000*scale if accumulating else 10_000_000*scale
             sell=10_000_000*scale if accumulating else 3_000_000*scale
             bvol=30_000*scale if accumulating else 100_000*scale
             svol=100_000*scale if accumulating else 30_000*scale
-            rows.append({"ticker":"TEST","trade_date":d,"broker_code":code,"buy_value":buy,"sell_value":sell,"buy_volume":bvol,"sell_volume":svol,"buy_avg":104.0,"sell_avg":105.0,"source":"TEST_DIRECT","source_verified":verified})
+            rows.append({"ticker":"TEST","trade_date":d,"broker_code":code,"buy_value":buy,"sell_value":sell,"buy_volume":bvol,"sell_volume":svol,"buy_avg":104.0,"sell_avg":105.0,"source":"TEST_DIRECT","source_verified":verified,"direct_broker_eligible":verified})
     return normalize_broker_summary(pd.DataFrame(rows))
 
 
@@ -147,9 +147,39 @@ def test_proxy_final_score_ignores_duplicate_ohlcv_votes():
     assert final_score(base, cfg) == final_score(duplicate_extreme, cfg)
 
 
-def test_smc_execution_levels_use_valid_idx_price_fractions():
-    sf = compute_smc_features(prices(start=137.3))
+def _structural_price_frame():
+    dates = pd.bdate_range("2026-01-02", periods=100)
+    close = np.linspace(98.0, 101.0, 100)
+    high = close + 1.0
+    low = close - 1.0
+    # Observed resistance pivots materially above the current execution zone.
+    high[55] = 112.0
+    high[75] = 118.0
+    # Observed recent support provides structural invalidation.
+    low[-6:-1] = 96.0
+    return pd.DataFrame({
+        "date": dates, "open": close - 0.3, "high": high,
+        "low": low, "close": close, "volume": np.full(100, 2_000_000.0),
+    })
+
+
+def test_smc_execution_requires_structural_levels_and_valid_idx_fractions():
+    sf = compute_smc_features(_structural_price_frame())
     assert sf["execution_geometry_valid"] is True
     assert sf["execution_levels_tradeable"] is True
+    assert sf["stop_basis"] == "OBSERVED_SWING_SUPPORT"
+    assert sf["target_basis"] == "OBSERVED_SWING_RESISTANCE"
+    assert sf["execution_rr1"] >= 1.5
+    assert sf["execution_rr2"] >= 2.0
     for key in ("entry_low", "entry_high", "invalidation", "tp1", "tp2"):
         assert is_valid_idx_price(sf[key])
+
+
+def test_smc_does_not_manufacture_r_multiple_targets_without_resistance():
+    px = prices(start=137.3)
+    sf = compute_smc_features(px)
+    if sf["target_candidate_count"] < 2:
+        assert sf["execution_geometry_valid"] is False
+        assert sf["target_basis"] == "STRUCTURE_UNAVAILABLE"
+        assert sf["tp1"] is None
+        assert sf["tp2"] is None
