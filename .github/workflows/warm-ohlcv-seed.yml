@@ -7,6 +7,8 @@ on:
   push:
     paths:
       - 'data/cache/REFRESH_REQUEST.txt'
+      - 'scripts/build_ohlcv_seed.py'
+      - '.github/workflows/warm-ohlcv-seed.yml'
 
 permissions:
   contents: write
@@ -34,7 +36,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/cache/idx_400_ohlcv_1y.csv.gz data/cache/ohlcv_seed_meta.json
+          git add data/cache/idx_400_ohlcv_1y.csv.gz data/cache/idx_400_ohlcv_recent.json data/cache/ohlcv_seed_meta.json
           if git diff --cached --quiet; then
             echo "Seed unchanged"
           else
