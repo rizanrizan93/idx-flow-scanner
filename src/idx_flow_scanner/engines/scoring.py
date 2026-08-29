@@ -84,27 +84,20 @@ def final_score(features: dict[str, object], config: ScannerConfig) -> float:
     if direct:
         score = sum(parts[k] * getattr(w, k) for k in parts)
     else:
-        # PRICE_PROXY uses one latent price-flow family only.  Absorption,
-        # supply-tightness, retail-exhaustion and divergence are diagnostics derived
-        # from the same OHLCV state and must not masquerade as independent votes.
-        # Preserve the relative weight of the genuinely distinct retained families
-        # from the original model, then renormalize them to 100%.
-        retained = {
-            "accumulation": parts["accumulation"],
-            "foreign_institutional": parts["foreign_institutional"],
-            "market_sector": parts["market_sector"],
-            "smc_execution": parts["smc_execution"],
-            "risk_liquidity": parts["risk_liquidity"],
-        }
-        retained_weights = {
-            "accumulation": w.accumulation,
-            "foreign_institutional": w.foreign_institutional,
-            "market_sector": w.market_sector,
-            "smc_execution": w.smc_execution,
-            "risk_liquidity": w.risk_liquidity,
-        }
-        denominator = sum(retained_weights.values())
-        score = sum(retained[k] * retained_weights[k] for k in retained) / max(denominator, 1e-12)
+        # PRICE_PROXY has exactly one OHLCV latent family. Accumulation, SMC
+        # execution and risk/liquidity are useful sub-features, but they are not
+        # independent evidence because all three are derived from the same bars.
+        # Foreign-flow and market context are the only separate evidence families.
+        ohlcv_family = (
+            0.55 * parts["accumulation"]
+            + 0.25 * parts["smc_execution"]
+            + 0.20 * parts["risk_liquidity"]
+        )
+        score = (
+            0.50 * ohlcv_family
+            + 0.30 * parts["foreign_institutional"]
+            + 0.20 * parts["market_sector"]
+        )
     score -= max(0.0, distribution - 55.0) * 0.22
     # Data integrity is not a separate alpha factor. It is a confidence haircut.
     # Healthy data (>=80) is effectively neutral; stale/illiquid/split-like data
