@@ -1,6 +1,6 @@
 import pandas as pd
 
-from idx_flow_scanner.data import _extract_yfinance_symbol, normalize_price_frame
+from idx_flow_scanner.data import _extract_yfinance_symbol, completed_idx_session_frame, normalize_price_frame
 from idx_flow_scanner.database_first import prepare_database_first_prices
 
 
@@ -104,3 +104,13 @@ def test_prepare_database_first_prices_uses_cache_then_batch(monkeypatch):
     assert stats["fetched_valid"] == 1
     assert stats["unavailable"] == 0
     assert store.persisted == [("BBB", "YFINANCE_BATCH", 90)]
+
+
+def test_completed_idx_session_frame_drops_intraday_daily_candle():
+    frame = _price_frame(2)
+    frame["date"] = pd.to_datetime(["2026-08-27", "2026-08-28"])
+    intraday = completed_idx_session_frame(frame, now="2026-08-28T10:00:00+07:00")
+    after_close = completed_idx_session_frame(frame, now="2026-08-28T16:30:00+07:00")
+
+    assert intraday["date"].dt.date.astype(str).tolist() == ["2026-08-27"]
+    assert after_close["date"].dt.date.astype(str).tolist() == ["2026-08-27", "2026-08-28"]
