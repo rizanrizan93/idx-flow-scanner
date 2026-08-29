@@ -11,7 +11,7 @@ def test_broker_contract_rejects_missing_columns():
 
 def test_intraday_current_daily_bar_is_excluded_before_market_close():
     raw = pd.DataFrame({
-        "date": ["2026-08-28", "2026-08-29"],
+        "date": ["2026-08-27", "2026-08-28"],
         "open": [100.0, 110.0],
         "high": [101.0, 150.0],
         "low": [99.0, 90.0],
@@ -21,15 +21,15 @@ def test_intraday_current_daily_bar_is_excluded_before_market_close():
     normalized = normalize_price_frame(raw)
     out = completed_idx_session_frame(
         normalized,
-        now="2026-08-29T10:00:00+07:00",
+        now="2026-08-28T10:00:00+07:00",
     )
 
-    assert out["date"].dt.strftime("%Y-%m-%d").tolist() == ["2026-08-28"]
+    assert out["date"].dt.strftime("%Y-%m-%d").tolist() == ["2026-08-27"]
 
 
 def test_current_daily_bar_is_allowed_only_after_regular_session_close():
     raw = pd.DataFrame({
-        "date": ["2026-08-28", "2026-08-29"],
+        "date": ["2026-08-27", "2026-08-28"],
         "open": [100.0, 101.0],
         "high": [101.0, 103.0],
         "low": [99.0, 100.0],
@@ -39,7 +39,7 @@ def test_current_daily_bar_is_allowed_only_after_regular_session_close():
     normalized = normalize_price_frame(raw)
     out = completed_idx_session_frame(
         normalized,
-        now="2026-08-29T17:00:00+07:00",
+        now="2026-08-28T17:00:00+07:00",
     )
 
-    assert out["date"].dt.strftime("%Y-%m-%d").tolist() == ["2026-08-28", "2026-08-29"]
+    assert out["date"].dt.strftime("%Y-%m-%d").tolist() == ["2026-08-27", "2026-08-28"]
