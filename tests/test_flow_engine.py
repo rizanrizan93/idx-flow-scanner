@@ -5,7 +5,9 @@ import pandas as pd
 
 from idx_flow_scanner.config import ScannerConfig
 from idx_flow_scanner.data import normalize_broker_summary
-from idx_flow_scanner.engines.flow import compute_broker_features
+from idx_flow_scanner.engines.flow import compute_broker_features, compute_official_foreign_features
+from idx_flow_scanner.engines.scoring import final_score
+from idx_flow_scanner.engines.smc import compute_smc_features, is_valid_idx_price
 from idx_flow_scanner.pipeline import scan_one
 
 
@@ -89,3 +91,65 @@ def test_prior_accumulators_reversing_to_sell_triggers_distribution_warning():
     br=normalize_broker_summary(pd.DataFrame(rows)); result=scan_one("TEST",px,br,ScannerConfig())
     assert result.evidence_tier=="BROKER_DIRECT"
     assert result.distribution_risk>=65; assert result.phase=="DISTRIBUTION"; assert result.action=="REDUCE_AVOID"; assert result.real_money_state=="GUARDED"
+
+
+def test_future_broker_rows_cannot_upgrade_historical_scan():
+    px = prices()
+    future_dates = pd.bdate_range(px["date"].max() + pd.Timedelta(days=1), periods=20)
+    future_broker = broker_rows(future_dates, verified=True)
+    result = scan_one("TEST", px, future_broker, ScannerConfig())
+
+    assert result.evidence_tier == "PRICE_PROXY"
+    assert result.real_money_state == "GUARDED"
+    assert result.diagnostics["broker_future_rows_filtered"] == len(future_broker)
+    assert result.diagnostics["broker_days"] == 0
+
+
+def test_future_foreign_rows_do_not_enter_historical_features():
+    px = prices()
+    future_dates = pd.bdate_range(px["date"].max() + pd.Timedelta(days=1), periods=20)
+    flow = pd.DataFrame({
+        "ticker": ["TEST"] * len(future_dates),
+        "trade_date": future_dates,
+        "foreign_buy": [2_000_000] * len(future_dates),
+        "foreign_sell": [100_000] * len(future_dates),
+        "volume": [10_000_000] * len(future_dates),
+        "source": ["IDX_OFFICIAL_STOCK_SUMMARY"] * len(future_dates),
+    })
+    feat = compute_official_foreign_features(flow, px)
+    assert feat["foreign_evidence_coverage_pct"] == 0.0
+    assert feat["foreign_institutional_score"] == 50.0
+
+
+def test_proxy_final_score_ignores_duplicate_ohlcv_votes():
+    cfg = ScannerConfig()
+    base = {
+        "direct_broker": False,
+        "proxy_accumulation_score": 70.0,
+        "proxy_distribution_risk": 50.0,
+        "proxy_absorption_score": 10.0,
+        "proxy_supply_tightness_score": 10.0,
+        "retail_exhaustion_score": 10.0,
+        "price_flow_divergence_score": 10.0,
+        "foreign_institutional_score": 55.0,
+        "market_sector_score": 60.0,
+        "smc_execution_score": 65.0,
+        "risk_liquidity_score": 70.0,
+        "price_data_quality_score": 100.0,
+    }
+    duplicate_extreme = dict(base)
+    duplicate_extreme.update({
+        "proxy_absorption_score": 100.0,
+        "proxy_supply_tightness_score": 100.0,
+        "retail_exhaustion_score": 100.0,
+        "price_flow_divergence_score": 100.0,
+    })
+    assert final_score(base, cfg) == final_score(duplicate_extreme, cfg)
+
+
+def test_smc_execution_levels_use_valid_idx_price_fractions():
+    sf = compute_smc_features(prices(start=137.3))
+    assert sf["execution_geometry_valid"] is True
+    assert sf["execution_levels_tradeable"] is True
+    for key in ("entry_low", "entry_high", "invalidation", "tp1", "tp2"):
+        assert is_valid_idx_price(sf[key])
