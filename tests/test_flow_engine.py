@@ -83,11 +83,11 @@ def test_prior_accumulators_reversing_to_sell_triggers_distribution_warning():
         for code,scale in buyers:
             if reversal: buy,sell,bvol,svol=1_000_000*scale,18_000_000*scale,10_000*scale,180_000*scale
             else: buy,sell,bvol,svol=10_000_000*scale,2_000_000*scale,100_000*scale,20_000*scale
-            rows.append({"ticker":"TEST","trade_date":d,"broker_code":code,"buy_value":buy,"sell_value":sell,"buy_volume":bvol,"sell_volume":svol,"buy_avg":104.0,"sell_avg":108.0,"source":"TEST_DIRECT","source_verified":True})
+            rows.append({"ticker":"TEST","trade_date":d,"broker_code":code,"buy_value":buy,"sell_value":sell,"buy_volume":bvol,"sell_volume":svol,"buy_avg":104.0,"sell_avg":108.0,"source":"TEST_DIRECT","source_verified":True,"direct_broker_eligible":True})
         for code,scale in sellers:
             if reversal: buy,sell,bvol,svol=18_000_000*scale,1_000_000*scale,180_000*scale,10_000*scale
             else: buy,sell,bvol,svol=2_000_000*scale,10_000_000*scale,20_000*scale,100_000*scale
-            rows.append({"ticker":"TEST","trade_date":d,"broker_code":code,"buy_value":buy,"sell_value":sell,"buy_volume":bvol,"sell_volume":svol,"buy_avg":104.0,"sell_avg":108.0,"source":"TEST_DIRECT","source_verified":True})
+            rows.append({"ticker":"TEST","trade_date":d,"broker_code":code,"buy_value":buy,"sell_value":sell,"buy_volume":bvol,"sell_volume":svol,"buy_avg":104.0,"sell_avg":108.0,"source":"TEST_DIRECT","source_verified":True,"direct_broker_eligible":True})
     br=normalize_broker_summary(pd.DataFrame(rows)); result=scan_one("TEST",px,br,ScannerConfig())
     assert result.evidence_tier=="BROKER_DIRECT"
     assert result.distribution_risk>=65; assert result.phase=="DISTRIBUTION"; assert result.action=="REDUCE_AVOID"; assert result.real_money_state=="GUARDED"
@@ -153,8 +153,8 @@ def _structural_price_frame():
     high = close + 1.0
     low = close - 1.0
     # Observed resistance pivots materially above the current execution zone.
-    high[55] = 112.0
-    high[75] = 118.0
+    high[55] = 115.0
+    high[75] = 123.0
     # Observed recent support provides structural invalidation.
     low[-6:-1] = 96.0
     return pd.DataFrame({
