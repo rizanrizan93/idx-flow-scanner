@@ -4,6 +4,62 @@ import numpy as np
 import pandas as pd
 
 
+def idx_tick_size(price: float) -> int:
+    if not np.isfinite(price) or price <= 0:
+        return 1
+    if price < 200:
+        return 1
+    if price < 500:
+        return 2
+    if price < 2000:
+        return 5
+    if price < 5000:
+        return 10
+    return 25
+
+
+def round_idx_price(price: float, mode: str = "nearest") -> float:
+    if not np.isfinite(price) or price <= 0:
+        return np.nan
+    tick = idx_tick_size(float(price))
+    scaled = float(price) / tick
+    if mode == "up":
+        value = np.ceil(scaled - 1e-12) * tick
+    elif mode == "down":
+        value = np.floor(scaled + 1e-12) * tick
+    else:
+        value = np.round(scaled) * tick
+    # Re-evaluate at a price-band boundary where the legal tick may change.
+    tick2 = idx_tick_size(float(value))
+    scaled2 = float(value) / tick2
+    if mode == "up":
+        value = np.ceil(scaled2 - 1e-12) * tick2
+    elif mode == "down":
+        value = np.floor(scaled2 + 1e-12) * tick2
+    else:
+        value = np.round(scaled2) * tick2
+    return float(max(1.0, value))
+
+
+def is_valid_idx_price(price: float | None) -> bool:
+    if price is None:
+        return False
+    value = float(price)
+    if not np.isfinite(value) or value < 50:
+        return False
+    tick = idx_tick_size(value)
+    return bool(abs(value / tick - round(value / tick)) <= 1e-9)
+
+
+def idx_daily_price_band(reference_price: float) -> tuple[float, float]:
+    ara = 0.35 if reference_price <= 200 else 0.25 if reference_price <= 5000 else 0.20
+    arb = 0.15
+    return (
+        round_idx_price(reference_price * (1.0 - arb), "up"),
+        round_idx_price(reference_price * (1.0 + ara), "down"),
+    )
+
+
 def _atr(frame: pd.DataFrame, n: int = 14) -> pd.Series:
     h, l, c = frame["high"], frame["low"], frame["close"]
     prev = c.shift(1)
@@ -54,9 +110,19 @@ def compute_smc_features(price: pd.DataFrame) -> dict[str, object]:
     else:
         entry_low, entry_high = close - 0.35*atr, close + 0.15*atr
     invalidation = min(prev5_low, entry_low - 0.8*atr)
-    risk = max((entry_low + entry_high)/2 - invalidation, atr*0.5)
-    mid = (entry_low + entry_high)/2
-    tp1, tp2 = mid + 2.0*risk, mid + 3.2*risk
+
+    # Convert every actionable level to a legal IDX regular-market price fraction.
+    entry_low = round_idx_price(entry_low, "down")
+    entry_high = round_idx_price(entry_high, "up")
+    invalidation = round_idx_price(invalidation, "down")
+    mid = (entry_low + entry_high) / 2.0
+    risk = max(mid - invalidation, atr * 0.5)
+    tp1 = round_idx_price(mid + 2.0 * risk, "up")
+    tp2 = round_idx_price(mid + 3.2 * risk, "up")
+
+    lower_band, upper_band = idx_daily_price_band(close)
+    entry_band_valid = bool(lower_band <= entry_low <= upper_band and lower_band <= entry_high <= upper_band)
+    levels_tradeable = all(is_valid_idx_price(v) for v in (entry_low, entry_high, invalidation, tp1, tp2))
 
     geometry = np.array([entry_low, entry_high, invalidation, tp1, tp2, risk], dtype=float)
     execution_geometry_valid = bool(
@@ -66,6 +132,8 @@ def compute_smc_features(price: pd.DataFrame) -> dict[str, object]:
         and invalidation < entry_low
         and tp1 > entry_high
         and tp2 > tp1
+        and levels_tradeable
+        and entry_band_valid
     )
     if not execution_geometry_valid:
         entry_low = entry_high = invalidation = tp1 = tp2 = None
@@ -86,4 +154,8 @@ def compute_smc_features(price: pd.DataFrame) -> dict[str, object]:
         "ema20": float(last["ema20"]),
         "ema50": float(last["ema50"]),
         "execution_geometry_valid": execution_geometry_valid,
+        "execution_levels_tradeable": bool(levels_tradeable),
+        "entry_within_next_session_price_band": bool(entry_band_valid),
+        "execution_entry_policy": "NEXT_COMPLETED_SESSION_OR_LATER",
+        "target_basis": "R_MULTIPLE_RESEARCH_TARGETS_NOT_STRUCTURAL_RESISTANCE",
     }
