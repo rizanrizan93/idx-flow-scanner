@@ -27,7 +27,7 @@ def _latest_weekday() -> object:
     import pandas as pd
     day = pd.Timestamp.now(tz="Asia/Jakarta").normalize().tz_localize(None)
     while day.weekday() >= 5:
-        day -= pd.Timedelta(days=1)
+        day -= pd.to_timedelta(1, unit="D")
     return day.date()
 
 
