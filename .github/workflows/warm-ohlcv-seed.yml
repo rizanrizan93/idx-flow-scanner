@@ -11,6 +11,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: warm-ohlcv-seed-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   build-seed:
     runs-on: ubuntu-latest
@@ -35,5 +39,6 @@ jobs:
             echo "Seed unchanged"
           else
             git commit -m "Refresh bundled 400-ticker OHLCV seed [skip ci]"
-            git push
+            git pull --rebase origin "$GITHUB_REF_NAME"
+            git push origin HEAD:"$GITHUB_REF_NAME"
           fi
