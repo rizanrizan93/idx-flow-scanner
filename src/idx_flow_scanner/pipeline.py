@@ -293,7 +293,7 @@ def scan_one(
             "execution_target_basis": sf.get("target_basis"),
             "broker_future_rows_filtered": broker_future_rows_filtered,
             "foreign_future_rows_filtered": foreign_future_rows_filtered,
-            "proxy_scoring_lineage_state": "DIRECT_BROKER_MULTI_FACTOR" if direct else "DEDUPLICATED_PRICE_FLOW_FAMILY_V1",
+            "proxy_scoring_lineage_state": "DIRECT_BROKER_MULTI_FACTOR" if direct else "DEDUPLICATED_OHLCV_LATENT_FAMILY_V2",
         },
     )
 
