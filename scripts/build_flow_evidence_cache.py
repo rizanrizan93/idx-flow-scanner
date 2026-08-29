@@ -53,6 +53,7 @@ UNIVERSE_PATH = ROOT / "data" / "universe" / "idx_400_syariah.csv"
 CACHE_DIR = ROOT / "data" / "cache"
 DIRECT_IDX_CACHE = CACHE_DIR / "idx_official_flow_60d.csv.gz"
 ZAPI_FOREIGN_CACHE = CACHE_DIR / "zapi_idx_foreign_60d.csv.gz"
+ZAPI_FOREIGN_JSON = CACHE_DIR / "zapi_idx_foreign_60d.json"
 GOAPI_BROKER_CACHE = CACHE_DIR / "goapi_broker_60d.csv.gz"
 INDEX_ALPHA_BROKER_CACHE = CACHE_DIR / "indexalpha_broker_60d.csv.gz"
 META_PATH = CACHE_DIR / "flow_evidence_meta.json"
@@ -225,6 +226,30 @@ def main() -> int:
         "refresh_mode": "INCREMENTAL_AFTER_BOOTSTRAP",
         **_stats(merged_zapi),
     }
+    if merged_zapi is not None and not merged_zapi.empty:
+        mirror = merged_zapi.copy()
+        mirror["trade_date"] = pd.to_datetime(mirror["trade_date"], errors="raise").dt.strftime("%Y-%m-%d")
+        mirror["source_verified"] = True
+        mirror["flow_unit"] = "SHARES"
+        mirror["market_type"] = "ALL"
+        mirror["source_url"] = mirror["source"].map({
+            "ZAPI_IDX_FOREIGN_FLOW": "https://api.zpi.web.id/v1/finance:idx/foreign-flow",
+            "ZAPI_IDX_STOCK_SUMMARY": "https://api.zpi.web.id/v1/finance:idx/stock-summary",
+        }).fillna("")
+        mirror["provenance_state"] = "VERIFIED_ZAPI_IDX_SHARE_FLOW_NOT_BROKER_IDENTITY"
+        cols = [
+            "ticker", "trade_date", "foreign_buy", "foreign_sell", "foreign_net",
+            "volume", "traded_value", "flow_unit", "market_type", "source",
+            "source_verified", "source_url", "provenance_state",
+        ]
+        for column in ("volume", "traded_value"):
+            if column not in mirror.columns:
+                mirror[column] = 0.0
+        ZAPI_FOREIGN_JSON.write_text(
+            mirror[cols].sort_values(["ticker", "trade_date", "source"], kind="stable")
+            .to_json(orient="records", double_precision=15) + "\n",
+            encoding="utf-8",
+        )
 
     # IDX GetBrokerSummary is market-wide only: useful source-health telemetry,
     # never stock-level direct evidence.
