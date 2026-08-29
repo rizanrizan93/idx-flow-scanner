@@ -183,3 +183,26 @@ def test_smc_does_not_manufacture_r_multiple_targets_without_resistance():
         assert sf["target_basis"] == "STRUCTURE_UNAVAILABLE"
         assert sf["tp1"] is None
         assert sf["tp2"] is None
+
+
+
+def test_proxy_ohlcv_family_cannot_create_high_conviction_with_neutral_external_evidence():
+    cfg = ScannerConfig()
+    features = {
+        "direct_broker": False,
+        "proxy_accumulation_score": 100.0,
+        "proxy_distribution_risk": 50.0,
+        "proxy_absorption_score": 100.0,
+        "proxy_supply_tightness_score": 100.0,
+        "retail_exhaustion_score": 100.0,
+        "price_flow_divergence_score": 100.0,
+        "foreign_institutional_score": 50.0,
+        "market_sector_score": 50.0,
+        "smc_execution_score": 100.0,
+        "risk_liquidity_score": 100.0,
+        "price_data_quality_score": 100.0,
+    }
+
+    score = final_score(features, cfg)
+
+    assert score < 75.0
