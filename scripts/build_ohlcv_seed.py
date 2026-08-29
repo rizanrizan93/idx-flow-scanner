@@ -18,8 +18,10 @@ UNIVERSE_PATH = ROOT / "data" / "universe" / "idx_400_syariah.csv"
 OUT_DIR = ROOT / "data" / "cache"
 OUT_PATH = OUT_DIR / "idx_400_ohlcv_1y.csv.gz"
 META_PATH = OUT_DIR / "ohlcv_seed_meta.json"
+RECENT_JSON_PATH = OUT_DIR / "idx_400_ohlcv_recent.json"
 MIN_BARS = 80
 MIN_VALID_RATIO = 0.90
+RECENT_MIRROR_BARS = 10
 
 
 def main() -> int:
@@ -73,10 +75,27 @@ def main() -> int:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     tmp_data = OUT_PATH.with_name(OUT_PATH.name + ".tmp")
     tmp_meta = META_PATH.with_name(META_PATH.name + ".tmp")
+    tmp_recent = RECENT_JSON_PATH.with_name(RECENT_JSON_PATH.name + ".tmp")
     combined = pd.concat(accepted, ignore_index=True)
     combined.to_csv(tmp_data, index=False, compression="gzip")
+
+    recent = (
+        combined.sort_values(["ticker", "date"], kind="stable")
+        .groupby("ticker", group_keys=False)
+        .tail(RECENT_MIRROR_BARS)
+        .reset_index(drop=True)
+    )
+    recent["date"] = pd.to_datetime(recent["date"], errors="raise").dt.strftime("%Y-%m-%d")
+    tmp_recent.write_text(
+        recent[["ticker", "date", "open", "high", "low", "close", "volume"]]
+        .to_json(orient="records", double_precision=15) + "\n",
+        encoding="utf-8",
+    )
+    meta["recent_mirror_rows"] = int(len(recent))
+    meta["recent_mirror_bars_per_ticker"] = RECENT_MIRROR_BARS
     tmp_meta.write_text(json.dumps(meta, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     tmp_data.replace(OUT_PATH)
+    tmp_recent.replace(RECENT_JSON_PATH)
     tmp_meta.replace(META_PATH)
     return 0
 
