@@ -79,18 +79,20 @@ jobs:
       - name: Commit semantic cache changes only
         run: |
           set -euo pipefail
+          if [ ! -f data/cache/idx_public_participant_30d.csv.gz ]; then
+            echo 'No participant evidence cache produced; telemetry-only run, no commit/redeploy.'
+            exit 0
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          for path in data/cache/idx_public_participant_30d.csv.gz data/cache/public_participant_meta.json; do
-            if [ -e "$path" ]; then
-              git add "$path"
-            else
-              echo "Optional participant artifact absent: $path"
-            fi
-          done
+          git add data/cache/idx_public_participant_30d.csv.gz
+          if [ -f data/cache/public_participant_meta.json ]; then
+            git add data/cache/public_participant_meta.json
+          fi
           if git diff --cached --quiet; then
             echo 'Participant cache unchanged; no commit.'
           else
             git commit -m 'Refresh public IDX participant-flow cache'
+            git pull --rebase origin "$GITHUB_REF_NAME"
             git push origin HEAD:${GITHUB_REF_NAME}
           fi
