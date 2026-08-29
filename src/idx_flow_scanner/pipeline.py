@@ -34,25 +34,24 @@ def _broker_verified_source_pct(broker: pd.DataFrame) -> float:
 
     source = broker.get("source", pd.Series("", index=broker.index)).fillna("").astype(str).str.upper()
     provenance = broker.get("provenance_state", pd.Series("", index=broker.index)).fillna("").astype(str).str.upper()
-    explicit_eligible = broker.get("direct_broker_eligible", pd.Series(pd.NA, index=broker.index))
-    if explicit_eligible.notna().any():
-        if pd.api.types.is_bool_dtype(explicit_eligible):
-            direct_kind = explicit_eligible.fillna(False)
-        else:
-            direct_kind = explicit_eligible.astype(str).str.strip().str.lower().isin({"1", "true", "yes", "y", "eligible"})
-    else:
-        direct_kind = (
-            (
-                source.eq("IDX_OFFICIAL_BROKER_SUMMARY")
-                & provenance.eq("VERIFIED_IDX_PUBLIC_TRADING_SUMMARY_STOCK_LEVEL")
-            )
-            |
-            (
-                source.eq("INDEX_ALPHA_BROKER_SUMMARY")
-                & provenance.str.startswith("VERIFIED_VENDOR_API_EXACT_DAY_")
-                & provenance.str.endswith("_VOLUME_UNIT_PROVIDER_NATIVE")
-            )
+    allowlisted_kind = (
+        (
+            source.eq("IDX_OFFICIAL_BROKER_SUMMARY")
+            & provenance.eq("VERIFIED_IDX_PUBLIC_TRADING_SUMMARY_STOCK_LEVEL")
         )
+        |
+        (
+            source.eq("INDEX_ALPHA_BROKER_SUMMARY")
+            & provenance.str.startswith("VERIFIED_VENDOR_API_EXACT_DAY_")
+            & provenance.str.endswith("_VOLUME_UNIT_PROVIDER_NATIVE")
+        )
+    )
+    explicit_eligible = broker.get("direct_broker_eligible", pd.Series(pd.NA, index=broker.index))
+    direct_kind = allowlisted_kind.copy()
+    explicit_mask = explicit_eligible.notna()
+    if explicit_mask.any():
+        explicit_value = explicit_eligible.astype(str).str.strip().str.lower().isin({"1", "true", "yes", "y", "eligible"})
+        direct_kind.loc[explicit_mask] = explicit_value.loc[explicit_mask]
 
     buy = pd.to_numeric(broker.get("buy_value"), errors="coerce").fillna(0.0).clip(lower=0.0)
     sell = pd.to_numeric(broker.get("sell_value"), errors="coerce").fillna(0.0).clip(lower=0.0)
