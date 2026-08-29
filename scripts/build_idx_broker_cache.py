@@ -44,6 +44,7 @@ def _participant_to_broker_rows(frame: pd.DataFrame) -> pd.DataFrame:
     out["market_type"] = "RG"
     out["source"] = "IDX_OFFICIAL_PUBLIC_TRADE_DETAIL_PARTICIPANT_FLOW"
     out["source_verified"] = True
+    out["direct_broker_eligible"] = False
     out["source_url"] = "https://www.idxdata3.co.id/IDX%20Reporting%20PSPP/Revitalisasi/Trade-Detail-Publik_{date}.csv"
     out["provenance_state"] = "VERIFIED_IDX_PUBLIC_TRADE_DETAIL_PARTICIPANT_FLOW_NOT_BENEFICIAL_OWNER"
     out["buy_avg"] = pd.to_numeric(out["buy_value"], errors="coerce").div(pd.to_numeric(out["buy_volume"], errors="coerce").replace(0.0, pd.NA))
@@ -51,7 +52,7 @@ def _participant_to_broker_rows(frame: pd.DataFrame) -> pd.DataFrame:
     keep = [
         "ticker", "trade_date", "broker_code", "market_type", "buy_value", "sell_value",
         "buy_volume", "sell_volume", "buy_avg", "sell_avg", "source", "source_verified",
-        "source_url", "provenance_state",
+        "source_url", "provenance_state", "direct_broker_eligible",
     ]
     return out[keep].drop_duplicates(["ticker", "trade_date", "broker_code", "source"], keep="last")
 
