@@ -225,6 +225,94 @@ def fetch_idx_stock_summary(trade_date: date | str, *, retries: int = 3, timeout
     return normalize_idx_stock_summary_payload(payload, trade_date)
 
 
+def fetch_idx_market_broker_summary(
+    trade_date: date | str,
+    *,
+    retries: int = 2,
+    timeout: float = 25.0,
+) -> pd.DataFrame:
+    """Fetch market-wide IDX broker summary for source-health telemetry only.
+
+    This endpoint has no stock dimension and must never be promoted to
+    stock-level BROKER_DIRECT evidence.
+    """
+    payload = _fetch_idx_summary(
+        IDX_BROKER_SUMMARY_URL,
+        IDX_BROKER_REFERER,
+        trade_date,
+        retries=retries,
+        timeout=timeout,
+    )
+    return normalize_idx_broker_summary_payload(payload, trade_date)
+
+
+def fetch_idx_official_flow_history(
+    universe: Iterable[str],
+    *,
+    end_date: date | str,
+    target_trading_days: int = 20,
+    max_calendar_days: int = 45,
+    request_delay_seconds: float = 1.0,
+    retries: int = 2,
+    timeout: float = 25.0,
+    raise_on_block: bool = False,
+) -> pd.DataFrame:
+    """Collect date-major official foreign-flow history from IDX StockSummary.
+
+    One StockSummary request covers the market for a trading day, so this function
+    never issues one request per ticker.  Access blocks terminate immediately.
+    Empty/holiday responses do not count toward the trading-day target.
+    """
+    names = {canonical_ticker(t) for t in universe if canonical_ticker(t)}
+    if not names:
+        return pd.DataFrame()
+
+    cursor = pd.Timestamp(end_date).date()
+    collected_days = 0
+    calendar_scanned = 0
+    parts: list[pd.DataFrame] = []
+
+    while (
+        collected_days < max(1, int(target_trading_days))
+        and calendar_scanned < max(1, int(max_calendar_days))
+    ):
+        day = cursor
+        cursor -= timedelta(days=1)
+        calendar_scanned += 1
+        if day.weekday() >= 5:
+            continue
+        try:
+            frame = fetch_idx_stock_summary(day, retries=retries, timeout=timeout)
+        except IdxOfficialAccessBlocked:
+            if raise_on_block:
+                raise
+            break
+        if frame is None or frame.empty:
+            if request_delay_seconds > 0:
+                time.sleep(float(request_delay_seconds))
+            continue
+
+        frame = frame.copy()
+        frame["ticker"] = frame["ticker"].map(canonical_ticker)
+        frame = frame.loc[frame["ticker"].isin(names)].copy()
+        if not frame.empty:
+            parts.append(frame)
+            collected_days += 1
+        if request_delay_seconds > 0 and collected_days < int(target_trading_days):
+            time.sleep(float(request_delay_seconds))
+
+    if not parts:
+        return pd.DataFrame()
+    out = pd.concat(parts, ignore_index=True)
+    out["trade_date"] = pd.to_datetime(out["trade_date"], errors="coerce").dt.normalize()
+    out = out.dropna(subset=["ticker", "trade_date"])
+    return (
+        out.drop_duplicates(["ticker", "trade_date", "source"], keep="last")
+        .sort_values(["ticker", "trade_date"], kind="stable")
+        .reset_index(drop=True)
+    )
+
+
 def fetch_idx_broker_stock_summary(ticker: str, trade_date: date | str, *, retries: int = 2, timeout: float = 25.0) -> pd.DataFrame:
     symbol = canonical_ticker(ticker)
     if not symbol:
