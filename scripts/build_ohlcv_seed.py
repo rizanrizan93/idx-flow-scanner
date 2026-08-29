@@ -63,16 +63,21 @@ def main() -> int:
         "source": "Yahoo Finance public chart/download endpoints",
     }
 
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
-    META_PATH.write_text(json.dumps(meta, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    if accepted:
-        combined = pd.concat(accepted, ignore_index=True)
-        combined.to_csv(OUT_PATH, index=False, compression="gzip")
-
     print(json.dumps({k: v for k, v in meta.items() if k != "rejected"}, indent=2))
-    if valid_ratio < MIN_VALID_RATIO:
-        print(f"Seed integrity gate failed: {valid_count}/{len(universe)} valid", file=sys.stderr)
+    if valid_ratio < MIN_VALID_RATIO or not accepted:
+        print(f"Seed integrity gate failed: {valid_count}/{len(universe)} valid; tracked seed preserved", file=sys.stderr)
         return 2
+
+    # Write atomically only after the integrity gate. Provider outages must never
+    # replace a known-good seed with a partial/empty artifact.
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    tmp_data = OUT_PATH.with_name(OUT_PATH.name + ".tmp")
+    tmp_meta = META_PATH.with_name(META_PATH.name + ".tmp")
+    combined = pd.concat(accepted, ignore_index=True)
+    combined.to_csv(tmp_data, index=False, compression="gzip")
+    tmp_meta.write_text(json.dumps(meta, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    tmp_data.replace(OUT_PATH)
+    tmp_meta.replace(META_PATH)
     return 0
 
 

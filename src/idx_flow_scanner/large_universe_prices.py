@@ -14,6 +14,19 @@ LARGE_UNIVERSE_THRESHOLD = 100
 DB_CHUNK_SIZE = 8
 DB_ROW_LIMIT = 120
 MAX_CONSECUTIVE_EMPTY_DB_CHUNKS = 2
+MAX_CACHE_CALENDAR_AGE_DAYS = 7
+
+
+def _frame_recent_enough(frame: pd.DataFrame, *, max_age_days: int = MAX_CACHE_CALENDAR_AGE_DAYS) -> bool:
+    """Reject stale cache/seed histories before they define the market reference date."""
+    if frame is None or frame.empty or "date" not in frame.columns:
+        return False
+    latest = pd.to_datetime(frame["date"], errors="coerce").max()
+    if pd.isna(latest):
+        return False
+    today = pd.Timestamp.now(tz="Asia/Jakarta").tz_localize(None).normalize()
+    age = max(0, int((today - pd.Timestamp(latest).normalize()).days))
+    return age <= int(max_age_days)
 
 
 def _bounded_db_prices(
@@ -64,7 +77,7 @@ def _bounded_db_prices(
                 )
             except Exception:
                 continue
-            if len(frame) >= int(min_rows):
+            if len(frame) >= int(min_rows) and _frame_recent_enough(frame):
                 out[ticker] = frame.tail(DB_ROW_LIMIT).reset_index(drop=True)
                 chunk_hits += 1
 
@@ -133,7 +146,7 @@ def prepare_large_universe_prices(
         seed_map = load_bundled_price_seed(seed_path, min_rows=min_rows)
         for ticker in missing_after_db:
             frame = seed_map.get(ticker, pd.DataFrame())
-            if len(frame) >= int(min_rows):
+            if len(frame) >= int(min_rows) and _frame_recent_enough(frame):
                 frames[ticker] = frame
                 seed_hits += 1
         if status:
@@ -147,7 +160,7 @@ def prepare_large_universe_prices(
         fresh_map = fetch_yfinance_prices_batch(missing, period=period)
         for ticker in missing:
             frame = fresh_map.get(ticker, pd.DataFrame())
-            if len(frame) >= int(min_rows):
+            if len(frame) >= int(min_rows) and _frame_recent_enough(frame):
                 frames[ticker] = frame
                 fetched_valid += 1
         if status:
@@ -176,5 +189,6 @@ def prepare_large_universe_prices(
         "unavailable": len(failures),
         "unavailable_tickers": failures,
         "large_universe_fast_fail": True,
+        "cache_freshness_contract": f"MAX_{MAX_CACHE_CALENDAR_AGE_DAYS}_CALENDAR_DAYS",
     }
     return load, stats

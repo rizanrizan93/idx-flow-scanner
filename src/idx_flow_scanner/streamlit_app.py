@@ -378,6 +378,8 @@ def run() -> None:
                         "indexalpha_live_pull_manual_only": True,
                         "zapi_primary_foreign": bool(use_foreign),
                         "market_context": "CROSS_SECTIONAL_400_PRESERVED_IN_BROKER_PASS",
+                        "universe_point_in_time_state": "CURRENT_SNAPSHOT_ONLY_NOT_HISTORICAL_MEMBERSHIP",
+                        "universe_snapshot_date": "2026-08-29",
                     },
                 )
                 store.update_run_progress(run_id, 0, "OHLCV_PREP")
@@ -457,7 +459,12 @@ def run() -> None:
         st.session_state.last_run_id = run_id
 
         valid_ratio = len(proxy_results) / max(len(universe), 1)
-        final_status = "COMPLETED" if valid_ratio >= MANAGED_MIN_VALID_RATIO else "FAILED"
+        if len(proxy_results) == len(universe):
+            final_status = "COMPLETED"
+        elif valid_ratio >= MANAGED_MIN_VALID_RATIO:
+            final_status = "COMPLETED_PARTIAL"
+        else:
+            final_status = "FAILED"
         outcome_stats = {"checked": 0, "updated": 0, "complete": 0, "seeded": 0, "mode": "SKIPPED", "status": "SKIPPED"}
 
         if persist and store is not None and run_record_created:
@@ -482,7 +489,9 @@ def run() -> None:
                     },
                 )
                 if final_status == "COMPLETED":
-                    st.success(f"Persisted • {len(proxy_results)}/{len(universe)} valid • Final Guarded Top {len(guarded_top5)}")
+                    st.success(f"Persisted • full universe {len(proxy_results)}/{len(universe)} valid • Final Guarded Top {len(guarded_top5)}")
+                elif final_status == "COMPLETED_PARTIAL":
+                    st.warning(f"Persisted PARTIAL • {len(proxy_results)}/{len(universe)} valid ({valid_ratio:.1%}) • missing tickers remain explicit")
                 else:
                     st.error(f"Run FAILED integrity gate • valid {len(proxy_results)}/{len(universe)} ({valid_ratio:.1%})")
             except Exception as exc:
@@ -549,7 +558,7 @@ def run() -> None:
         st.dataframe(proxy_display[[c for c in base_cols if c in proxy_display.columns]], width="stretch", hide_index=True)
 
         st.subheader("2. Final Guarded Top 5")
-        st.caption("Cohort ini dipilih sebelum Index Alpha. Foreign coverage minimum 70%, score ≥65, distribution <70, dan price-quality/staleness gate harus lolos.")
+        st.caption("Cohort ini dipilih sebelum broker enrichment. Foreign coverage minimum 70%, distribution <70, price-quality/freshness/zero-volume gates harus lolos; final_score menentukan urutan Top-N, bukan floor tersembunyi.")
         if guarded_display.empty:
             st.warning("Tidak ada kandidat yang lolos Final Guarded gate. Index Alpha tidak dipanggil.")
         else:

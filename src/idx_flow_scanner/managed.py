@@ -85,7 +85,7 @@ def decide_managed_run(
         if heartbeat and now - heartbeat <= timedelta(minutes=active_timeout_minutes):
             return ManagedDecision(False, "managed scan already running", str(run.get("id") or ""))
 
-    terminal = [r for r in managed if str(r.get("status") or "").upper() in {"COMPLETED", "FAILED", "CANCELLED"}]
+    terminal = [r for r in managed if str(r.get("status") or "").upper() in {"COMPLETED", "COMPLETED_PARTIAL", "FAILED", "CANCELLED"}]
     terminal.sort(key=lambda r: _parse_time(r.get("completed_at")) or _parse_time(r.get("started_at")) or datetime.min.replace(tzinfo=timezone.utc), reverse=True)
     if terminal:
         latest = terminal[0]
@@ -93,7 +93,7 @@ def decide_managed_run(
         status = str(latest.get("status") or "").upper()
         processed = int(latest.get("processed_count") or 0)
         success_ratio = processed / max(int(universe_count), 1)
-        if status == "COMPLETED" and success_ratio >= float(min_success_ratio):
+        if status in {"COMPLETED", "COMPLETED_PARTIAL"} and success_ratio >= float(min_success_ratio):
             if when and now - when <= timedelta(hours=success_fresh_hours):
                 return ManagedDecision(False, f"fresh managed scan already valid ({processed}/{universe_count})", str(latest.get("id") or ""))
         if when and now - when <= timedelta(minutes=failure_cooldown_minutes):

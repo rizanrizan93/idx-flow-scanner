@@ -2,6 +2,8 @@ name: Warm OHLCV Seed
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '30 12 * * 1-5'
   push:
     paths:
       - 'data/cache/REFRESH_REQUEST.txt'
