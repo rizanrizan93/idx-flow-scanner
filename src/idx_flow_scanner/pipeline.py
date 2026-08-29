@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 
 from .config import ScannerConfig
-from .data import canonical_ticker
+from .data import canonical_ticker, completed_idx_session_frame
 from .data_quality import compute_price_quality_features
 from .engines.flow import compute_broker_features, compute_official_foreign_features, compute_price_flow_features
 from .engines.smc import compute_smc_features
@@ -52,8 +52,22 @@ def scan_one(
 ) -> ScanResult:
     config = config or ScannerConfig()
     ticker = canonical_ticker(ticker)
+    price = completed_idx_session_frame(price)
     broker = broker if broker is not None else pd.DataFrame()
     official_flow = official_flow if official_flow is not None else pd.DataFrame()
+
+    price_as_of = pd.to_datetime(price["date"], errors="coerce").max() if not price.empty and "date" in price.columns else pd.NaT
+    broker_rows_before_asof = int(len(broker))
+    foreign_rows_before_asof = int(len(official_flow))
+    if pd.notna(price_as_of):
+        if not broker.empty and "trade_date" in broker.columns:
+            broker_dates = pd.to_datetime(broker["trade_date"], errors="coerce")
+            broker = broker.loc[broker_dates.le(pd.Timestamp(price_as_of))].copy()
+        if not official_flow.empty and "trade_date" in official_flow.columns:
+            foreign_dates = pd.to_datetime(official_flow["trade_date"], errors="coerce")
+            official_flow = official_flow.loc[foreign_dates.le(pd.Timestamp(price_as_of))].copy()
+    broker_future_rows_filtered = broker_rows_before_asof - int(len(broker))
+    foreign_future_rows_filtered = foreign_rows_before_asof - int(len(official_flow))
     market_features = market_features or {
         "market_sector_score": 50.0,
         "market_regime_score": 50.0,
@@ -133,6 +147,19 @@ def scan_one(
     if quality_reasons:
         state = "GUARDED"
         reason = "; ".join([part for part in [reason, *quality_reasons] if part])
+        if phase != "DISTRIBUTION":
+            action = "WATCHLIST" if direct else "RESEARCH_ONLY"
+
+    execution_reasons: list[str] = []
+    if not bool(sf.get("execution_geometry_valid", False)):
+        execution_reasons.append("execution geometry invalid")
+    if not bool(sf.get("execution_levels_tradeable", False)):
+        execution_reasons.append("execution levels are not valid IDX price fractions")
+    if not bool(sf.get("entry_within_next_session_price_band", False)):
+        execution_reasons.append("entry zone outside next-session IDX price band")
+    if execution_reasons:
+        state = "GUARDED"
+        reason = "; ".join([part for part in [reason, *execution_reasons] if part])
         if phase != "DISTRIBUTION":
             action = "WATCHLIST" if direct else "RESEARCH_ONLY"
 
@@ -232,6 +259,13 @@ def scan_one(
             "fvg_low": sf["fvg_low"],
             "fvg_high": sf["fvg_high"],
             "execution_geometry_valid": sf.get("execution_geometry_valid"),
+            "execution_levels_tradeable": sf.get("execution_levels_tradeable"),
+            "entry_within_next_session_price_band": sf.get("entry_within_next_session_price_band"),
+            "execution_entry_policy": sf.get("execution_entry_policy"),
+            "execution_target_basis": sf.get("target_basis"),
+            "broker_future_rows_filtered": broker_future_rows_filtered,
+            "foreign_future_rows_filtered": foreign_future_rows_filtered,
+            "proxy_scoring_lineage_state": "DIRECT_BROKER_MULTI_FACTOR" if direct else "DEDUPLICATED_PRICE_FLOW_FAMILY_V1",
         },
     )
 
@@ -260,7 +294,7 @@ def scan_universe(
     for ticker in universe:
         t = canonical_ticker(ticker)
         try:
-            price_map[t] = price_loader(t)
+            price_map[t] = completed_idx_session_frame(price_loader(t))
         except Exception as exc:
             price_map[t] = pd.DataFrame()
             loader_errors[t] = str(exc)
