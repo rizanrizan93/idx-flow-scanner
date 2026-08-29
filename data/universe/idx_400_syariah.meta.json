@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "snapshot_date": "2026-08-29",
+  "state": "CURRENT_SNAPSHOT_ONLY_NOT_HISTORICAL_MEMBERSHIP",
+  "point_in_time_historical_membership_verified": false,
+  "note": "Current production universe snapshot only. Do not use it as historical membership evidence in survivorship-sensitive backtests."
+}

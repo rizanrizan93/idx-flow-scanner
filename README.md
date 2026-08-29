@@ -1,5 +1,7 @@
 # IDX Flow Scanner
 
+Current production contract: **v0.3.26**.
+
 Third scanner in the IDX research stack. It is a **clean-room implementation** of public bandarmology / market-operator concepts and is not affiliated with, endorsed by, or a copy of any proprietary Creative Trader / MM Detector formula.
 
 ## Objective
@@ -10,7 +12,7 @@ Find transitions in stock ownership/flow before or during markup:
 
 The scanner is deliberately evidence-aware. A price/volume proxy is **never** labeled as direct broker evidence.
 
-## v0.1.1 engines
+## Current engines
 
 - Direct broker-summary normalization and coverage measurement.
 - 5D/20D/60D net-flow windows.
@@ -88,7 +90,7 @@ Designed for Streamlit Community Cloud:
 
 ## Scoring policy
 
-Initial research weights (subject to walk-forward/OOS calibration):
+The first pass is strictly PRICE_PROXY + verified foreign evidence. Broker evidence is finalist-only. PRICE_PROXY scoring collapses correlated OHLCV observations before combining them with external evidence. The configured direct-evidence weights remain subject to walk-forward/OOS calibration:
 
 - accumulation 25%
 - operator dominance 15%
@@ -105,7 +107,8 @@ Weights are explicitly **not** claimed to reproduce any proprietary formula. Bef
 
 ## Free-tier stock-level broker evidence
 
-- Index Alpha is an optional Bearer-token provider for stock-level broker summary.
+- Index Alpha is an optional Bearer-token provider for stock-level broker summary; plan/quota failure is treated as provider unavailability, never as evidence.
+- Broker enrichment occurs only after the guarded Top-5 has been selected, so stronger direct evidence cannot remove a ticker from the proxy shortlist.
 - The free policy is pinned to five tickers and at most five exact-day requests per day.
 - Production requests always use `from == to`; a multi-day aggregate is never expanded into synthetic daily rows.
 - Cached rows carry `INDEX_ALPHA_BROKER_SUMMARY`, verified vendor provenance, and regular-market (`RG`) scope.
@@ -119,6 +122,14 @@ Weights are explicitly **not** claimed to reproduce any proprietary formula. Bef
 - Foreign buy/sell/net remain share-unit evidence and are never promoted to broker-direct evidence or bandar cost.
 - Direct IDX HTTP remains preferred on equal coverage, but cloud 403/Cloudflare failures fail closed.
 - GOAPI is optional; the scanner remains fully operational in PRICE_PROXY/GUARDED mode when stock-level broker evidence is absent.
+
+## Production integrity gates
+
+- `COMPLETED` means full requested-universe completion; `COMPLETED_PARTIAL` is explicit for >=90% but <100%.
+- Price cache/seed frames older than seven calendar days are rejected before they can define the cross-sectional reference date.
+- Zero-volume density above 20% over 20D or 35% over 60D blocks guarded broker-budget promotion and direct authorization.
+- The OHLCV seed refresh is scheduled on weekdays and replaces the tracked seed only after the integrity gate passes.
+- `idx_400_syariah.csv` is a current snapshot, not point-in-time historical membership evidence.
 
 ## Next production gates
 

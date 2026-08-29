@@ -170,6 +170,8 @@ def collect_recent_days(
     attempted = 0
     succeeded = 0
     source_urls: list[str] = []
+    failure_counts: dict[str, int] = {}
+    last_error = ""
     for offset in range(max(1, int(max_calendar_days))):
         day = end - timedelta(days=offset)
         if day.weekday() >= 5:
@@ -182,13 +184,16 @@ def collect_recent_days(
                 parts.append(aggregated)
                 succeeded += 1
                 source_urls.append(url)
-        except Exception:
+        except Exception as exc:
+            key = type(exc).__name__
+            failure_counts[key] = failure_counts.get(key, 0) + 1
+            last_error = f"{key}: {str(exc)[:160]}"
             continue
         if succeeded >= int(target_trading_days):
             break
     frame = pd.concat(parts, ignore_index=True) if parts else pd.DataFrame()
     meta = {
-        "status": "UPDATED" if not frame.empty else "NO_DATA",
+        "status": "UPDATED" if not frame.empty else "NO_DATA_PROVIDER_ERRORS" if failure_counts else "NO_DATA",
         "attempted_days": attempted,
         "succeeded_days": succeeded,
         "rows": int(len(frame)),
@@ -196,6 +201,8 @@ def collect_recent_days(
         "latest_trade_date": str(pd.to_datetime(frame["trade_date"], errors="coerce").max().date()) if not frame.empty else None,
         "source": SOURCE_NAME,
         "source_urls": source_urls[-5:],
+        "failure_counts": failure_counts,
+        "last_error": last_error,
         "provenance": "OFFICIAL_IDX_PUBLIC_EOD_TRADE_DETAIL_PARTICIPANT_FLOW_NOT_BENEFICIAL_OWNER",
         "version": VERSION,
     }
