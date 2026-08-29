@@ -77,6 +77,11 @@ def compute_broker_features(broker: pd.DataFrame, price: pd.DataFrame, config: S
     if broker is None or broker.empty:
         return empty
     b = broker.sort_values("trade_date").copy()
+    if price is not None and not price.empty and "date" in price.columns:
+        price_as_of = pd.to_datetime(price["date"], errors="coerce").max()
+        if pd.notna(price_as_of):
+            b_dates = pd.to_datetime(b["trade_date"], errors="coerce")
+            b = b.loc[b_dates.le(pd.Timestamp(price_as_of))].copy()
     unique_days = pd.DatetimeIndex(pd.to_datetime(b["trade_date"], errors="coerce").dropna().unique())
     if len(unique_days) == 0:
         return empty
@@ -179,6 +184,9 @@ def compute_official_foreign_features(flow: pd.DataFrame, price: pd.DataFrame, l
     default = {"foreign_institutional_score":50.0,"foreign_evidence_coverage_pct":0.0,"official_foreign_coverage_pct":0.0,"foreign_evidence_source":"UNAVAILABLE","foreign_net_5d":0.0,"foreign_net_20d":0.0,"foreign_persistence_20d":0.0,"foreign_intensity_20d":0.0}
     if flow is None or flow.empty or price is None or price.empty: return default
     f=flow.copy(); f["trade_date"]=pd.to_datetime(f["trade_date"],errors="coerce").dt.normalize(); f=f.dropna(subset=["trade_date"]).sort_values("trade_date")
+    price_as_of = pd.to_datetime(price["date"], errors="coerce").max() if "date" in price.columns else pd.NaT
+    if pd.notna(price_as_of):
+        f = f.loc[f["trade_date"].le(pd.Timestamp(price_as_of).normalize())].copy()
     if f.empty: return default
     source_col = "foreign_evidence_source" if "foreign_evidence_source" in f.columns else "source" if "source" in f.columns else None
     foreign_source = str(f[source_col].dropna().iloc[-1]) if source_col and not f[source_col].dropna().empty else "UNKNOWN"
