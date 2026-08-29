@@ -90,7 +90,7 @@ def main() -> int:
     universe = load_bundled_universe(UNIVERSE)
     end_date = pd.Timestamp.now(tz="Asia/Jakarta").normalize().tz_localize(None)
     while end_date.weekday() >= 5:
-        end_date -= pd.Timedelta(days=1)
+        end_date -= pd.to_timedelta(1, unit="D")
 
     existing = load_bundled_idx_official_broker_flows(universe, CACHE, lookback_calendar_days=180)
     budget = max(0, int(os.getenv("IDX_BROKER_UNIVERSE_DAILY_BUDGET", "400") or "400"))
