@@ -1,7 +1,7 @@
 {
   "budget_requests": 400,
   "days": 0,
-  "generated_at": "2026-08-29T02:45:40.850879+00:00",
+  "generated_at": "2026-08-29T02:53:50.847272+00:00",
   "max_calendar_days": 45,
   "provider": "IDX_OFFICIAL_BROKER_SUMMARY_PLUS_PUBLIC_TRADE_DETAIL_PARTICIPANT_FLOW",
   "public_participant_cache_path": "/home/runner/work/idx-flow-scanner/idx-flow-scanner/data/cache/idx_public_participant_30d.csv.gz",
