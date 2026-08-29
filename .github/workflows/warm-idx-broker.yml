@@ -56,13 +56,24 @@ jobs:
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git fetch origin "$GITHUB_REF_NAME"
-          git reset --hard "origin/$GITHUB_REF_NAME"
           mkdir -p data/cache
-          git add data/cache/idx_public_participant_30d.csv.gz data/cache/public_participant_meta.json data/cache/idx_official_broker_60d.csv.gz data/cache/idx_official_broker_meta.json
+          for path in \
+            data/cache/idx_public_participant_30d.csv.gz \
+            data/cache/public_participant_meta.json \
+            data/cache/idx_official_broker_60d.csv.gz \
+            data/cache/idx_official_broker_meta.json
+          do
+            if [ -e "$path" ]; then
+              git add "$path"
+            else
+              echo "Optional cache artifact absent; preserving prior state: $path"
+            fi
+          done
           if git diff --cached --quiet; then
             echo 'IDX broker evidence unchanged; no commit/redeploy'
           else
             git commit -m 'Refresh universe-wide IDX participant and broker evidence'
+            # Rebase rather than resetting away the evidence generated above.
+            git pull --rebase origin "$GITHUB_REF_NAME"
             git push origin HEAD:"$GITHUB_REF_NAME"
           fi
