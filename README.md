@@ -126,6 +126,8 @@ Weights are explicitly **not** claimed to reproduce any proprietary formula. Bef
 ## Production integrity gates
 
 - `COMPLETED` means full requested-universe completion; `COMPLETED_PARTIAL` is explicit for >=90% but <100%.
+- The canonical 10-session OHLCV mirror and verified ZAPI foreign-flow mirror are pulled into Supabase by backend-only `service_role` cron functions; stale DB cache therefore no longer depends on a user scan to refresh.
+- Mirror pull-sync functions validate date bounds, OHLC geometry, units and provenance before upsert, and are revoked from `public`, `anon`, and `authenticated`.
 - Price cache/seed frames older than seven calendar days are rejected before they can define the cross-sectional reference date.
 - Zero-volume density above 20% over 20D or 35% over 60D blocks guarded broker-budget promotion and direct authorization.
 - The OHLCV seed refresh is scheduled on weekdays and replaces the tracked seed only after the integrity gate passes.
