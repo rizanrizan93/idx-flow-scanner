@@ -51,29 +51,23 @@ jobs:
           echo '```json' >> "$GITHUB_STEP_SUMMARY"
           cat data/cache/idx_official_broker_meta.json 2>/dev/null || echo '{"status":"meta_unavailable"}' >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
-      - name: Commit semantic IDX evidence changes
+      - name: Commit semantic IDX broker evidence changes
         run: |
           set -euo pipefail
+          if [ ! -f data/cache/idx_official_broker_60d.csv.gz ]; then
+            echo 'No broker evidence cache produced; source unavailable/blocked. Telemetry-only run, no commit/redeploy.'
+            exit 0
+          fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          mkdir -p data/cache
-          for path in \
-            data/cache/idx_public_participant_30d.csv.gz \
-            data/cache/public_participant_meta.json \
-            data/cache/idx_official_broker_60d.csv.gz \
-            data/cache/idx_official_broker_meta.json
-          do
-            if [ -e "$path" ]; then
-              git add "$path"
-            else
-              echo "Optional cache artifact absent; preserving prior state: $path"
-            fi
-          done
+          git add data/cache/idx_official_broker_60d.csv.gz
+          if [ -f data/cache/idx_official_broker_meta.json ]; then
+            git add data/cache/idx_official_broker_meta.json
+          fi
           if git diff --cached --quiet; then
             echo 'IDX broker evidence unchanged; no commit/redeploy'
           else
-            git commit -m 'Refresh universe-wide IDX participant and broker evidence'
-            # Rebase rather than resetting away the evidence generated above.
+            git commit -m 'Refresh universe-wide IDX broker evidence'
             git pull --rebase origin "$GITHUB_REF_NAME"
             git push origin HEAD:"$GITHUB_REF_NAME"
           fi
