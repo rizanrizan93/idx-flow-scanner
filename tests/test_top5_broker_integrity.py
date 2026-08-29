@@ -47,6 +47,7 @@ def _one_day_pending_broker(trade_date) -> pd.DataFrame:
                 "sell_avg": 105.0,
                 "source": "TEST_DIRECT",
                 "source_verified": True,
+                "direct_broker_eligible": True,
             }
         )
     return normalize_broker_summary(pd.DataFrame(rows))
