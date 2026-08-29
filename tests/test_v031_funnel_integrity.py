@@ -70,6 +70,7 @@ def _one_day_balanced_broker(trade_date: pd.Timestamp) -> pd.DataFrame:
                 "sell_avg": 105.0,
                 "source": "TEST_DIRECT",
                 "source_verified": True,
+                "direct_broker_eligible": True,
             }
         )
     for code, scale in sellers:
@@ -86,6 +87,7 @@ def _one_day_balanced_broker(trade_date: pd.Timestamp) -> pd.DataFrame:
                 "sell_avg": 105.0,
                 "source": "TEST_DIRECT",
                 "source_verified": True,
+                "direct_broker_eligible": True,
             }
         )
     return normalize_broker_summary(pd.DataFrame(rows))
