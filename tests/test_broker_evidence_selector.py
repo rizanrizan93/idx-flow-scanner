@@ -58,3 +58,13 @@ def test_selector_can_assemble_history_from_different_providers_without_same_day
         "INDEX_ALPHA_BROKER_SUMMARY": 1,
         "GOAPI_BROKER_SUMMARY_NET": 1,
     }
+
+
+def test_official_idx_broker_summary_wins_same_day_over_indexalpha():
+    frame = pd.concat([
+        _rows("INDEX_ALPHA_BROKER_SUMMARY", "2026-08-14", brokers=("YP", "CC", "PD")),
+        _rows("IDX_OFFICIAL_BROKER_SUMMARY", "2026-08-14", brokers=("YP", "CC")),
+    ], ignore_index=True)
+    out, stats = select_broker_evidence(frame)
+    assert set(out["source"]) == {"IDX_OFFICIAL_BROKER_SUMMARY"}
+    assert stats["source_ticker_days"] == {"IDX_OFFICIAL_BROKER_SUMMARY": 1}

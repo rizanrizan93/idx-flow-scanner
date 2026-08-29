@@ -206,3 +206,10 @@ def test_proxy_ohlcv_family_cannot_create_high_conviction_with_neutral_external_
     score = final_score(features, cfg)
 
     assert score < 75.0
+
+
+def test_direct_accumulation_headline_does_not_double_count_persistence_and_intensity():
+    px = prices()
+    br = broker_rows(px["date"].tail(60))
+    feat = compute_broker_features(br, px, ScannerConfig())
+    assert feat["accumulation_score"] == feat["accumulation_quality_score"]

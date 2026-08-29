@@ -50,3 +50,11 @@ def test_oos_sql_requires_exact_baseline_and_excludes_forward_corporate_actions(
     assert "CORPORATE_ACTION_LIKE_GAP_IN_FORWARD_WINDOW" in text
     assert "'EXCLUDED'" in text
     assert "o.evaluation_status in ('PENDING','PARTIAL')" in text
+
+
+def test_zero_volume_ratios_are_explicit_across_20d_and_60d_windows():
+    price = _split_frame(total=100, event_index=20)
+    price.loc[price.index[-15:], "volume"] = 0.0
+    q = compute_price_quality_features(price, reference_date=price["date"].iloc[-1])
+    assert q["zero_volume_ratio_20d"] == 0.75
+    assert q["zero_volume_ratio_60d"] == 0.25

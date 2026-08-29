@@ -41,6 +41,8 @@ def _row(ticker: str, score: float, *, dist: float = 30.0, foreign_cov: float = 
         "diagnostics": {
             "foreign_evidence_coverage_pct": foreign_cov,
             "price_staleness_days": 0,
+            "zero_volume_ratio_20d": 0.0,
+            "zero_volume_ratio_60d": 0.0,
             "market_regime_score": 57.0,
             "market_regime_label": "NEUTRAL",
             "market_breadth_20d": 52.0,
@@ -109,3 +111,11 @@ def test_merge_verified_finalists_replaces_only_finalist_rows():
     assert by_ticker.loc["AAAA", "evidence_tier"] == "BROKER_DIRECT"
     assert by_ticker.loc["BBBB", "final_score"] == 70
     assert by_ticker.loc["CCCC", "final_score"] == 60
+
+
+def test_guarded_top5_rejects_extreme_zero_volume_candidate_before_broker_budget():
+    good = _row("GOOD", 70)
+    bad = _row("ILLQ", 99)
+    bad["diagnostics"]["zero_volume_ratio_20d"] = 0.25
+    result = funnel.select_guarded_top5(pd.DataFrame([bad, good]), ScannerConfig(), top_n=5)
+    assert result["ticker"].tolist() == ["GOOD"]

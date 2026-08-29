@@ -66,3 +66,16 @@ def test_stale_cleanup_default_is_aligned_and_larger_override_is_capped():
 def test_universe_signature_stable_and_order_sensitive():
     assert universe_signature(["ABMM", "ELSA"]) == universe_signature(["ABMM", "ELSA"])
     assert universe_signature(["ABMM", "ELSA"]) != universe_signature(["ELSA", "ABMM"])
+
+
+def test_managed_gate_accepts_recent_completed_partial_above_integrity_floor():
+    now = datetime(2026, 8, 16, 1, 0, tzinfo=timezone.utc)
+    d = decide_managed_run(
+        [_run("COMPLETED_PARTIAL", 10, 398)],
+        version="0.1.3",
+        universe_count=400,
+        signature="abc",
+        now=now,
+    )
+    assert d.should_run is False
+    assert "398/400" in d.reason
