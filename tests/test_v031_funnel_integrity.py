@@ -32,7 +32,7 @@ def _guarded_row(
         "distribution_risk": dist,
         "diagnostics": {
             "foreign_evidence_coverage_pct": 100.0,
-            "price_staleness_days": 0,
+            "price_staleness_days": 0, "zero_volume_ratio_20d": 0.0, "zero_volume_ratio_60d": 0.0,
         },
     }
 

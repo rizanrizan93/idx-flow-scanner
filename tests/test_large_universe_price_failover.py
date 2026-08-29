@@ -52,6 +52,7 @@ class _Store:
 
 
 def test_large_universe_rpc_failure_goes_directly_to_seed(monkeypatch):
+    monkeypatch.setattr(lup, "_frame_recent_enough", lambda frame, **kwargs: True)
     names = [f"T{i:03d}" for i in range(100)]
     seed = {ticker: _frame(ticker) for ticker in names}
     monkeypatch.setattr(lup, "load_bundled_price_seed", lambda *a, **k: seed)
@@ -69,6 +70,7 @@ def test_large_universe_rpc_failure_goes_directly_to_seed(monkeypatch):
 
 
 def test_large_universe_repeated_empty_rpc_is_bounded(monkeypatch):
+    monkeypatch.setattr(lup, "_frame_recent_enough", lambda frame, **kwargs: True)
     names = [f"T{i:03d}" for i in range(100)]
     seed = {ticker: _frame(ticker) for ticker in names}
     monkeypatch.setattr(lup, "load_bundled_price_seed", lambda *a, **k: seed)
@@ -81,3 +83,15 @@ def test_large_universe_repeated_empty_rpc_is_bounded(monkeypatch):
     assert stats["seed_hits"] == 100
     assert stats["unavailable"] == 0
     assert stats["bulk_cache_transport"] == "DB_EMPTY_FAST_TO_SEED"
+
+
+def test_large_universe_rejects_stale_seed_before_market_reference(monkeypatch):
+    names = [f"T{i:03d}" for i in range(100)]
+    stale = _seed(names)
+    monkeypatch.setattr(lup, "load_bundled_price_seed", lambda *args, **kwargs: stale)
+    monkeypatch.setattr(lup, "fetch_yfinance_prices_batch", lambda *args, **kwargs: {})
+    store = _FailingStore()
+    load, stats = lup.prepare_large_universe_prices(names, store, period="1y", min_rows=80)
+    assert stats["seed_hits"] == 0
+    assert stats["unavailable"] == 100
+    assert stats["cache_freshness_contract"] == "MAX_7_CALENDAR_DAYS"
