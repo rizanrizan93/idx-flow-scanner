@@ -102,6 +102,7 @@ jobs:
           cp data/cache/flow_evidence_meta.json /tmp/flow-evidence-cache/
           test ! -f data/cache/idx_official_flow_60d.csv.gz || cp data/cache/idx_official_flow_60d.csv.gz /tmp/flow-evidence-cache/
           test ! -f data/cache/zapi_idx_foreign_60d.csv.gz || cp data/cache/zapi_idx_foreign_60d.csv.gz /tmp/flow-evidence-cache/
+          test ! -f data/cache/zapi_idx_foreign_60d.json || cp data/cache/zapi_idx_foreign_60d.json /tmp/flow-evidence-cache/
           test ! -f data/cache/goapi_broker_60d.csv.gz || cp data/cache/goapi_broker_60d.csv.gz /tmp/flow-evidence-cache/
           test ! -f data/cache/indexalpha_broker_60d.csv.gz || cp data/cache/indexalpha_broker_60d.csv.gz /tmp/flow-evidence-cache/
           test ! -f data/cache/indexalpha_broker_60d.json || cp data/cache/indexalpha_broker_60d.json /tmp/flow-evidence-cache/
@@ -185,6 +186,15 @@ jobs:
                   shutil.copy2(new_json, old_json)
                   evidence_changed = True
 
+          new_zapi_json = fresh / "zapi_idx_foreign_60d.json"
+          old_zapi_json = cache / "zapi_idx_foreign_60d.json"
+          if new_zapi_json.exists():
+              if old_zapi_json.exists() and new_zapi_json.read_bytes() == old_zapi_json.read_bytes():
+                  print("zapi_idx_foreign_60d.json: semantic evidence unchanged; preserving tracked mirror")
+              else:
+                  shutil.copy2(new_zapi_json, old_zapi_json)
+                  evidence_changed = True
+
           new_meta = fresh / "flow_evidence_meta.json"
           old_meta = cache / "flow_evidence_meta.json"
           if evidence_changed and new_meta.exists():
@@ -197,6 +207,7 @@ jobs:
           git add data/cache/flow_evidence_meta.json
           test ! -f data/cache/idx_official_flow_60d.csv.gz || git add data/cache/idx_official_flow_60d.csv.gz
           test ! -f data/cache/zapi_idx_foreign_60d.csv.gz || git add data/cache/zapi_idx_foreign_60d.csv.gz
+          test ! -f data/cache/zapi_idx_foreign_60d.json || git add data/cache/zapi_idx_foreign_60d.json
           test ! -f data/cache/goapi_broker_60d.csv.gz || git add data/cache/goapi_broker_60d.csv.gz
           test ! -f data/cache/indexalpha_broker_60d.csv.gz || git add data/cache/indexalpha_broker_60d.csv.gz
           test ! -f data/cache/indexalpha_broker_60d.json || git add data/cache/indexalpha_broker_60d.json
