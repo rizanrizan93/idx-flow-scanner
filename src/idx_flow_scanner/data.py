@@ -143,6 +143,40 @@ def parse_yahoo_chart_payload(payload: dict, ticker: str) -> pd.DataFrame:
     return normalize_price_frame(frame, ticker)
 
 
+
+def completed_idx_session_frame(
+    frame: pd.DataFrame,
+    *,
+    now: object | None = None,
+    market_close_hour: int = 16,
+    market_close_minute: int = 15,
+) -> pd.DataFrame:
+    """Return only daily IDX bars that are causally complete at `now`.
+
+    Yahoo/yfinance may expose the current daily candle while the regular/post-close
+    session is still forming.  That bar must not drive EOD flow, structure or ranking.
+    Future-dated bars are always rejected.  The contract is intentionally applied again
+    in the pipeline so cached historical payloads cannot bypass it.
+    """
+    if frame is None or frame.empty:
+        return pd.DataFrame(columns=getattr(frame, "columns", None))
+    if "date" not in frame.columns:
+        raise ValueError("Price frame requires normalized date column before completed-session filtering")
+
+    local = frame.copy()
+    dates = pd.to_datetime(local["date"], errors="coerce").dt.normalize()
+    current = pd.Timestamp.now(tz="Asia/Jakarta") if now is None else pd.Timestamp(now)
+    current = current.tz_localize("Asia/Jakarta") if current.tzinfo is None else current.tz_convert("Asia/Jakarta")
+    today = current.tz_localize(None).normalize()
+    session_complete = (current.hour, current.minute) >= (int(market_close_hour), int(market_close_minute))
+
+    eligible = dates.lt(today)
+    if session_complete:
+        eligible = eligible | dates.eq(today)
+    eligible = eligible & dates.notna()
+    return local.loc[eligible].sort_values("date").reset_index(drop=True)
+
+
 def fetch_yahoo_chart_price(
     ticker: str,
     period: str = "1y",
