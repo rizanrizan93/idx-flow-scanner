@@ -48,9 +48,16 @@ jobs:
           import gzip
           import pandas as pd
 
+          import json
           path = Path('data/cache/idx_public_participant_30d.csv.gz')
+          meta_path = Path('data/cache/public_participant_meta.json')
           if not path.exists():
-              raise SystemExit('PUBLIC_PARTICIPANT_CACHE_MISSING')
+              meta = json.loads(meta_path.read_text()) if meta_path.exists() else {}
+              state = str(meta.get('status') or '').upper()
+              if state in {'NO_DATA', 'BLOCKED', 'SOURCE_UNAVAILABLE'} and int(meta.get('cache_rows') or 0) == 0:
+                  print({'participant_cache_state':'SOURCE_UNAVAILABLE_FAIL_CLOSED', **meta})
+                  raise SystemExit(0)
+              raise SystemExit(f'PUBLIC_PARTICIPANT_CACHE_MISSING_UNEXPECTED:{meta}')
           with gzip.open(path, 'rb') as handle:
               frame = pd.read_csv(handle)
           required = {
@@ -74,7 +81,13 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/cache/idx_public_participant_30d.csv.gz data/cache/public_participant_meta.json
+          for path in data/cache/idx_public_participant_30d.csv.gz data/cache/public_participant_meta.json; do
+            if [ -e "$path" ]; then
+              git add "$path"
+            else
+              echo "Optional participant artifact absent: $path"
+            fi
+          done
           if git diff --cached --quiet; then
             echo 'Participant cache unchanged; no commit.'
           else
