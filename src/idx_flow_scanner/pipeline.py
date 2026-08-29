@@ -18,11 +18,11 @@ from .models import ScanResult
 
 
 def _broker_verified_source_pct(broker: pd.DataFrame) -> float:
-    """Gross-value weighted provenance coverage for direct broker evidence.
+    """Gross-value weighted direct-broker-eligible provenance coverage.
 
-    A complete-looking CSV is not enough to become BROKER_DIRECT. Rows need an
-    explicit verified provenance flag. Missing provenance is deliberately treated
-    as unverified/fail-closed.
+    Authentic source verification is not enough. Official public Trade Detail
+    participant codes are valid flow evidence but are not stock-level broker
+    summary / beneficial-owner identity, so they cannot unlock BROKER_DIRECT.
     """
     if broker is None or broker.empty or "source_verified" not in broker.columns:
         return 0.0
@@ -31,15 +31,37 @@ def _broker_verified_source_pct(broker: pd.DataFrame) -> float:
         verified = raw.fillna(False)
     else:
         verified = raw.astype(str).str.strip().str.lower().isin({"1", "true", "yes", "y", "verified"})
+
+    source = broker.get("source", pd.Series("", index=broker.index)).fillna("").astype(str).str.upper()
+    provenance = broker.get("provenance_state", pd.Series("", index=broker.index)).fillna("").astype(str).str.upper()
+    explicit_eligible = broker.get("direct_broker_eligible", pd.Series(pd.NA, index=broker.index))
+    if explicit_eligible.notna().any():
+        if pd.api.types.is_bool_dtype(explicit_eligible):
+            direct_kind = explicit_eligible.fillna(False)
+        else:
+            direct_kind = explicit_eligible.astype(str).str.strip().str.lower().isin({"1", "true", "yes", "y", "eligible"})
+    else:
+        direct_kind = (
+            (
+                source.eq("IDX_OFFICIAL_BROKER_SUMMARY")
+                & provenance.eq("VERIFIED_IDX_PUBLIC_TRADING_SUMMARY_STOCK_LEVEL")
+            )
+            |
+            (
+                source.eq("INDEX_ALPHA_BROKER_SUMMARY")
+                & provenance.str.startswith("VERIFIED_VENDOR_API_EXACT_DAY_")
+                & provenance.str.endswith("_VOLUME_UNIT_PROVIDER_NATIVE")
+            )
+        )
+
     buy = pd.to_numeric(broker.get("buy_value"), errors="coerce").fillna(0.0).clip(lower=0.0)
     sell = pd.to_numeric(broker.get("sell_value"), errors="coerce").fillna(0.0).clip(lower=0.0)
     gross = buy + sell
     total = float(gross.sum())
     if not np.isfinite(total) or total <= 0:
         return 0.0
-    verified_value = float(gross[verified].sum())
-    return float(np.clip(100.0 * verified_value / total, 0.0, 100.0))
-
+    verified_direct_value = float(gross[verified & direct_kind].sum())
+    return float(np.clip(100.0 * verified_direct_value / total, 0.0, 100.0))
 
 def scan_one(
     ticker: str,
