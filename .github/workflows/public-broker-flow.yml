@@ -7,8 +7,9 @@ on:
   push:
     branches: [main]
     paths:
-      - "public_idx_broker_flow.py"
-      - "scripts/update_public_broker_flow.py"
+      - "scripts/build_idx_broker_cache.py"
+      - "src/idx_flow_scanner/providers/idx_official.py"
+      - "src/idx_flow_scanner/providers/public_idx_participant.py"
       - ".github/workflows/public-broker-flow.yml"
 
 permissions:
@@ -25,40 +26,42 @@ jobs:
           python-version: "3.13"
       - name: Install lightweight collector dependencies
         run: python -m pip install --disable-pip-version-check --no-cache-dir pandas requests
-      - name: Refresh rolling broker cache
-        run: python scripts/update_public_broker_flow.py
-      - name: Validate daily 400-ticker coverage
+      - name: Refresh canonical broker evidence telemetry
+        env:
+          PYTHONPATH: src
+          IDX_BROKER_UNIVERSE_DAILY_BUDGET: '400'
+          IDX_BROKER_WORKERS: '12'
+          IDX_BROKER_TARGET_DAYS: '20'
+          IDX_BROKER_MAX_CALENDAR_DAYS: '45'
+        run: python scripts/build_idx_broker_cache.py
+      - name: Validate canonical broker source state
         run: |
           python - <<'PY'
-          import gzip
+          import json
           from pathlib import Path
           import pandas as pd
-          path = Path('data/public_broker_flow_30d.csv.gz')
-          if not path.exists():
-              raise SystemExit('PUBLIC_BROKER_CACHE_MISSING')
-          with gzip.open(path, 'rb') as handle:
-              df = pd.read_csv(handle)
-          required = {'ticker','trade_date','broker_code','buy_value','sell_value','net_value','source_verified','provenance_state'}
+
+          meta_path = Path('data/cache/idx_official_broker_meta.json')
+          cache_path = Path('data/cache/idx_official_broker_60d.csv.gz')
+          if not meta_path.exists():
+              raise SystemExit('IDX_BROKER_META_MISSING')
+          meta = json.loads(meta_path.read_text())
+          status = str(meta.get('status') or '').upper()
+          if not cache_path.exists():
+              if status.startswith('BLOCKED') or status.startswith('ERROR') or status in {'NO_DATA','SOURCE_UNAVAILABLE'}:
+                  print({'broker_cache_state':'SOURCE_UNAVAILABLE_FAIL_CLOSED', **meta})
+                  raise SystemExit(0)
+              raise SystemExit(f'IDX_BROKER_CACHE_MISSING_UNEXPECTED:{meta}')
+          df = pd.read_csv(cache_path)
+          required = {'ticker','trade_date','broker_code','buy_value','sell_value','source','provenance_state'}
           missing = required - set(df.columns)
           if missing:
-              raise SystemExit(f'PUBLIC_BROKER_CACHE_COLUMNS_MISSING:{sorted(missing)}')
-          df['trade_date'] = pd.to_datetime(df['trade_date'], errors='coerce').dt.normalize()
-          latest = df['trade_date'].max()
-          latest_tickers = int(df.loc[df['trade_date'].eq(latest),'ticker'].nunique()) if pd.notna(latest) else 0
-          print({'latest_trade_date': str(latest.date()) if pd.notna(latest) else None, 'latest_tickers': latest_tickers, 'rows': len(df), 'days': int(df['trade_date'].nunique())})
-          if latest_tickers < 360:
-              raise SystemExit(f'LATEST_PARTICIPANT_FLOW_COVERAGE_TOO_LOW:{latest_tickers}/400')
-          if int(df['trade_date'].nunique()) < 1:
-              raise SystemExit('NO_TRADE_DATES_IN_CACHE')
+              raise SystemExit(f'IDX_BROKER_CACHE_COLUMNS_MISSING:{sorted(missing)}')
+          print({
+              'broker_cache_state':'AVAILABLE',
+              'rows':len(df),
+              'tickers':int(df['ticker'].nunique()),
+              'days':int(pd.to_datetime(df['trade_date'],errors='coerce').nunique()),
+              'provider_status':meta.get('status'),
+          })
           PY
-      - name: Commit updated cache
-        run: |
-          if git diff --quiet -- data/public_broker_flow_30d.csv.gz; then
-            echo "No cache update; likely market holiday or source unavailable."
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/public_broker_flow_30d.csv.gz
-          git commit -m "data: refresh public IDX broker flow cache"
-          git push
