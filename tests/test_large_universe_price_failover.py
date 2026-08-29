@@ -87,10 +87,10 @@ def test_large_universe_repeated_empty_rpc_is_bounded(monkeypatch):
 
 def test_large_universe_rejects_stale_seed_before_market_reference(monkeypatch):
     names = [f"T{i:03d}" for i in range(100)]
-    stale = _seed(names)
+    stale = {ticker: _frame(ticker) for ticker in names}
     monkeypatch.setattr(lup, "load_bundled_price_seed", lambda *args, **kwargs: stale)
     monkeypatch.setattr(lup, "fetch_yfinance_prices_batch", lambda *args, **kwargs: {})
-    store = _FailingStore()
+    store = _Store(raises=True)
     load, stats = lup.prepare_large_universe_prices(names, store, period="1y", min_rows=80)
     assert stats["seed_hits"] == 0
     assert stats["unavailable"] == 100
