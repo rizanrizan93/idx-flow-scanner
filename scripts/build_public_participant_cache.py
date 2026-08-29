@@ -53,7 +53,7 @@ def main() -> int:
     if not merged.empty:
         merged["trade_date"] = pd.to_datetime(merged["trade_date"], errors="coerce").dt.normalize()
         merged = merged.drop_duplicates(["ticker", "trade_date", "participant", "side", "flow_rank"], keep="last")
-        cutoff = pd.Timestamp(end_date) - pd.Timedelta(days=45)
+        cutoff = pd.Timestamp(end_date) - pd.to_timedelta(45, unit="D")
         merged = merged[merged["trade_date"].ge(cutoff)].sort_values(
             ["ticker", "trade_date", "side", "flow_rank", "participant"], kind="stable"
         ).reset_index(drop=True)
