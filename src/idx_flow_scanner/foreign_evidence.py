@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 
 from .data import canonical_ticker
+from .provider_semantics import EvidenceProvenance, ProviderStatus
 
 DIRECT_IDX_SOURCE = "IDX_OFFICIAL_STOCK_SUMMARY"
 ZAPI_IDX_SOURCE = "ZAPI_IDX_FOREIGN_FLOW"
@@ -113,6 +114,8 @@ def _empty_evaluation(provider: str, source: str | None, requested: int) -> dict
         "freshness": "MISSING",
         "duplicate_state": "NONE",
         "error_state": "NO_DATA",
+        "provider_result_status": ProviderStatus.MISSING.value,
+        "canonical_provenance": EvidenceProvenance.MISSING.value,
         "net_total": None,
         "flow_unit": "SHARES",
         "measurement_definition": "NET_FOREIGN_SHARES",
@@ -214,6 +217,7 @@ def _evaluate_source(
         else pd.Series(False, index=rows.index)
     )
     malformed = (~parse_valid) & (in_window | rows["trade_date"].isna())
+    provider_error_relevant = provider_error & (in_window | rows["trade_date"].isna())
     usable = rows.loc[parse_valid & in_window].drop_duplicates("trade_date", keep="last").copy()
     observed = int(usable["trade_date"].nunique())
     requested = int(len(requested_days))
@@ -257,6 +261,28 @@ def _evaluate_source(
                 else "OK"
                 if observed > 0
                 else "WINDOW_MISMATCH"
+            ),
+            "provider_result_status": (
+                ProviderStatus.PROVIDER_ERROR.value
+                if provider_error_relevant.any()
+                else ProviderStatus.INVALID.value
+                if not bool(
+                    observed > 0
+                    and semantic_consistent
+                    and semantic_supported
+                    and not inconsistent_duplicates
+                    and not malformed.any()
+                )
+                else ProviderStatus.SUCCESS.value
+                if state == FOREIGN_FULL
+                else ProviderStatus.PARTIAL.value
+            ),
+            "canonical_provenance": (
+                EvidenceProvenance.DIRECT_OR_OFFICIAL.value
+                if provider == PROVIDER_IDX_DIRECT
+                else EvidenceProvenance.VERIFIED.value
+                if provider == PROVIDER_ZAPI
+                else EvidenceProvenance.MISSING.value
             ),
             "net_total": float(usable["foreign_net"].sum()) if not usable.empty else None,
             "flow_unit": flow_unit,
@@ -349,6 +375,8 @@ def _public_evaluation(evaluation: dict[str, object]) -> dict[str, object]:
             "freshness",
             "duplicate_state",
             "error_state",
+            "provider_result_status",
+            "canonical_provenance",
             "net_total",
             "flow_unit",
             "measurement_definition",
@@ -490,6 +518,18 @@ def prepare_foreign_evidence(
             "foreign_data_freshness": str(chosen.get("freshness")) if chosen else "MISSING",
             "foreign_data_available": bool(chosen and chosen.get("available")),
             "foreign_data_valid": bool(chosen and chosen.get("valid")),
+            "foreign_provider_result_status": (
+                ProviderStatus.CONFLICT.value
+                if chosen is not None and conflict
+                else str(chosen.get("provider_result_status"))
+                if chosen is not None
+                else ProviderStatus.MISSING.value
+            ),
+            "foreign_canonical_provenance": (
+                str(chosen.get("canonical_provenance"))
+                if chosen is not None
+                else EvidenceProvenance.MISSING.value
+            ),
             "foreign_provider_evidence": {
                 PROVIDER_IDX_DIRECT: _public_evaluation(direct),
                 PROVIDER_ZAPI: _public_evaluation(zapi),

@@ -4,6 +4,8 @@ import numpy as np
 import pandas as pd
 
 from .data import canonical_ticker
+from .idx_trading_calendar import trading_session_age
+from .provider_semantics import ProviderStatus, aggregate_provenance
 
 BROKER_FRESH = "FRESH"
 BROKER_STALE = "STALE"
@@ -20,19 +22,22 @@ def evaluate_broker_freshness(
 ) -> dict[str, object]:
     """Return fail-closed, row-local broker validity and latest-age metadata.
 
-    Calendar-day age deliberately reuses the repository's existing staleness
-    tolerance. A shared IDX holiday/session calendar is outside this batch.
+    Existing thresholds are preserved, but age is measured in completed IDX
+    sessions so weekends and exchange closures do not manufacture staleness.
     """
     frame = broker.copy() if broker is not None else pd.DataFrame()
     if frame.empty:
         return {
             "broker_latest_observation": None,
             "broker_latest_age_days": None,
+            "broker_latest_age_sessions": None,
             "broker_freshness_state": BROKER_MISSING,
             "broker_data_available": False,
             "broker_data_valid": False,
             "broker_provider": None,
             "broker_provenance": [],
+            "broker_provider_result_status": ProviderStatus.MISSING.value,
+            "broker_canonical_provenance": "MISSING",
         }
 
     providers = (
@@ -48,11 +53,14 @@ def evaluate_broker_freshness(
     base = {
         "broker_latest_observation": None,
         "broker_latest_age_days": None,
+        "broker_latest_age_sessions": None,
         "broker_freshness_state": BROKER_UNKNOWN,
         "broker_data_available": True,
         "broker_data_valid": False,
         "broker_provider": ",".join(providers) if providers else "UNKNOWN",
         "broker_provenance": provenance,
+        "broker_provider_result_status": ProviderStatus.INVALID.value,
+        "broker_canonical_provenance": aggregate_provenance(*provenance).value,
     }
     required = {"ticker", "trade_date", "broker_code", "buy_value", "sell_value"}
     if not required.issubset(frame.columns):
@@ -84,9 +92,21 @@ def evaluate_broker_freshness(
     if not valid or pd.isna(latest) or pd.isna(price_as_of):
         return base
 
-    age_days = max(0, int((pd.Timestamp(price_as_of).normalize() - pd.Timestamp(latest)).days))
+    age_days = trading_session_age(latest, price_as_of)
+    if age_days is None:
+        return base
+    age_days = int(age_days)
     base["broker_latest_age_days"] = age_days
+    base["broker_latest_age_sessions"] = age_days
+    if age_days < 0:
+        base["broker_data_valid"] = False
+        return base
     base["broker_freshness_state"] = (
         BROKER_FRESH if age_days <= max(0, int(max_age_days)) else BROKER_STALE
+    )
+    base["broker_provider_result_status"] = (
+        ProviderStatus.SUCCESS.value
+        if base["broker_freshness_state"] == BROKER_FRESH
+        else ProviderStatus.STALE.value
     )
     return base
