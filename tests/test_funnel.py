@@ -40,6 +40,11 @@ def _row(ticker: str, score: float, *, dist: float = 30.0, foreign_cov: float = 
         "guardrail_reason": "direct broker evidence unavailable",
         "diagnostics": {
             "foreign_evidence_coverage_pct": foreign_cov,
+            "foreign_provider_selected": "IDX_DIRECT",
+            "foreign_provider_selection_state": "IDX_DIRECT",
+            "foreign_provider_reconciliation_state": "SINGLE_PROVIDER",
+            "foreign_provider_conflict": False,
+            "foreign_window_state": "FULL" if foreign_cov == 100 else "PARTIAL",
             "price_staleness_days": 0,
             "zero_volume_ratio_20d": 0.0,
             "zero_volume_ratio_60d": 0.0,
@@ -85,7 +90,19 @@ def test_verify_guarded_top5_preserves_400_ticker_market_context(monkeypatch):
                 "evidence_coverage_pct": 90.0 if direct else 10.0,
                 "real_money_state": "ELIGIBLE" if direct else "GUARDED",
                 "action": "BUY_ON_WEAKNESS" if direct else "RESEARCH_ONLY",
-                "diagnostics": {"broker_days": 12 if direct else 1, "broker_verified_source_pct": 100.0 if direct else 100.0},
+                "diagnostics": {
+                    "broker_days": 12 if direct else 1,
+                    "broker_verified_source_pct": 100.0,
+                    "broker_data_valid": True,
+                    "broker_freshness_state": "FRESH",
+                    "foreign_provider_selected": "IDX_DIRECT",
+                    "foreign_provider_selection_state": "IDX_DIRECT",
+                    "foreign_provider_reconciliation_state": "SINGLE_PROVIDER",
+                    "foreign_provider_conflict": False,
+                    "foreign_window_state": "FULL",
+                    "foreign_data_valid": True,
+                    "foreign_data_freshness": "FRESH",
+                },
             }
         )
 

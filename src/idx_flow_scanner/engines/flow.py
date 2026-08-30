@@ -177,23 +177,59 @@ def compute_broker_features(broker: pd.DataFrame, price: pd.DataFrame, config: S
     }
 
 
-def compute_official_foreign_features(flow: pd.DataFrame, price: pd.DataFrame, lookback: int = 20) -> dict[str, float | int]:
+def compute_official_foreign_features(flow: pd.DataFrame, price: pd.DataFrame, lookback: int = 20) -> dict[str, object]:
     """Score official per-stock foreign flow with dimensionally consistent units.
 
     IDX ``ForeignBuy``/``ForeignSell`` are shares. Therefore foreign intensity is
     net foreign shares divided by total traded shares, never divided by traded IDR.
     """
-    default = {"foreign_institutional_score":50.0,"foreign_evidence_coverage_pct":0.0,"official_foreign_coverage_pct":0.0,"foreign_evidence_source":"UNAVAILABLE","foreign_net_5d":0.0,"foreign_net_20d":0.0,"foreign_persistence_20d":0.0,"foreign_intensity_20d":0.0}
+    default = {
+        "foreign_institutional_score":50.0,"foreign_evidence_coverage_pct":0.0,
+        "official_foreign_coverage_pct":0.0,"foreign_evidence_source":"UNAVAILABLE",
+        "foreign_net_5d":0.0,"foreign_net_20d":0.0,"foreign_persistence_20d":0.0,
+        "foreign_intensity_20d":0.0,"foreign_provider_selected":"NONE",
+        "foreign_provider_selected_source":None,"foreign_provider_alternate":None,
+        "foreign_provider_alternate_source":None,"foreign_alternate_latest_observation":None,
+        "foreign_alternate_latest_age":None,"foreign_alternate_window_state":"MISSING",
+        "foreign_alternate_data_freshness":"MISSING","foreign_provider_selection_state":"NO_VALID_PROVIDER",
+        "foreign_provider_selection_reason":"foreign evidence unavailable",
+        "foreign_provider_reconciliation_state":"UNKNOWN",
+        "foreign_provider_reconciliation_reason":"foreign evidence unavailable","foreign_provider_conflict":None,
+        "foreign_requested_observations":0,"foreign_observed_observations":0,
+        "foreign_window_coverage_ratio":0.0,"foreign_window_complete":False,
+        "foreign_window_state":"MISSING","foreign_latest_observation":None,
+        "foreign_latest_age":None,"foreign_data_freshness":"MISSING",
+        "foreign_data_available":False,"foreign_data_valid":False,
+        "foreign_provider_evidence":{},
+    }
     if flow is None or flow.empty or price is None or price.empty: return default
-    f=flow.copy(); f["trade_date"]=pd.to_datetime(f["trade_date"],errors="coerce").dt.normalize(); f=f.dropna(subset=["trade_date"]).sort_values("trade_date")
+    raw=flow.copy()
+    metadata_columns = [name for name in default if name.startswith("foreign_provider_") or name.startswith("foreign_window_") or name.startswith("foreign_alternate_") or name in {"foreign_requested_observations", "foreign_observed_observations", "foreign_latest_observation", "foreign_latest_age", "foreign_data_freshness", "foreign_data_available", "foreign_data_valid"}]
+    metadata: dict[str, object] = {}
+    for name in metadata_columns:
+        if name not in raw.columns:
+            continue
+        values = raw[name].dropna()
+        if not values.empty:
+            metadata[name] = values.iloc[0]
+    if "foreign_evidence_selected" in raw.columns:
+        selected = raw["foreign_evidence_selected"]
+        if not pd.api.types.is_bool_dtype(selected):
+            selected = selected.fillna(False).astype(str).str.strip().str.lower().isin({"1", "true", "yes"})
+        raw = raw.loc[selected.fillna(False)].copy()
+    if raw.empty:
+        return {**default, **metadata}
+    f=raw.copy(); f["trade_date"]=pd.to_datetime(f["trade_date"],errors="coerce").dt.normalize(); f=f.dropna(subset=["trade_date"]).sort_values("trade_date")
     price_as_of = pd.to_datetime(price["date"], errors="coerce").max() if "date" in price.columns else pd.NaT
     if pd.notna(price_as_of):
         f = f.loc[f["trade_date"].le(pd.Timestamp(price_as_of).normalize())].copy()
-    if f.empty: return default
+    if f.empty: return {**default, **metadata}
     source_col = "foreign_evidence_source" if "foreign_evidence_source" in f.columns else "source" if "source" in f.columns else None
     foreign_source = str(f[source_col].dropna().iloc[-1]) if source_col and not f[source_col].dropna().empty else "UNKNOWN"
     px_days=pd.DatetimeIndex(pd.to_datetime(price["date"],errors="coerce").dropna().unique())[-lookback:]
-    coverage=100.0*len(px_days.intersection(pd.DatetimeIndex(f["trade_date"].unique())))/max(len(px_days),1)
+    observed=len(px_days.intersection(pd.DatetimeIndex(f["trade_date"].unique())))
+    requested=len(px_days)
+    coverage=100.0*observed/max(requested,1)
     if "volume" not in f.columns:
         f["volume"] = 0.0
     daily=f.groupby("trade_date",observed=True).agg(foreign_buy=("foreign_buy","sum"),foreign_sell=("foreign_sell","sum"),volume=("volume","sum")).sort_index()
@@ -202,7 +238,33 @@ def compute_official_foreign_features(flow: pd.DataFrame, price: pd.DataFrame, l
     volume20=float(d20["volume"].sum()) if not d20.empty else 0.0; intensity20=net20/max(volume20,1.0)
     persistence20=float((d20["foreign_net"]>0).mean()) if len(d20) else 0.0
     score=_clip_score(0.58*_sigmoid_score(intensity20,0.035)+42.0*persistence20); confidence=float(np.clip(coverage/80.0,0.0,1.0)); score=50.0+confidence*(score-50.0)
-    return {"foreign_institutional_score":score,"foreign_evidence_coverage_pct":coverage,"official_foreign_coverage_pct":coverage if foreign_source=="IDX_OFFICIAL_STOCK_SUMMARY" else 0.0,"foreign_evidence_source":foreign_source,"foreign_net_5d":net5,"foreign_net_20d":net20,"foreign_persistence_20d":persistence20,"foreign_intensity_20d":intensity20}
+    if observed <= 0 or requested <= 0:
+        derived_window = "MISSING"
+    elif observed >= requested:
+        derived_window = "FULL"
+    elif observed / requested >= 0.70:
+        derived_window = "PARTIAL"
+    else:
+        derived_window = "INSUFFICIENT"
+    latest = f["trade_date"].max()
+    latest_age = int((px_days > latest).sum()) if pd.notna(latest) else None
+    derived = {
+        "foreign_requested_observations":requested,
+        "foreign_observed_observations":observed,
+        "foreign_window_coverage_ratio":observed/max(requested,1),
+        "foreign_window_complete":derived_window == "FULL",
+        "foreign_window_state":derived_window,
+        "foreign_latest_observation":pd.Timestamp(latest).date().isoformat() if pd.notna(latest) else None,
+        "foreign_latest_age":latest_age,
+        "foreign_data_freshness":"FRESH" if latest_age == 0 else "STALE" if latest_age is not None else "MISSING",
+    }
+    return {
+        **default, **derived, **metadata,
+        "foreign_institutional_score":score,"foreign_evidence_coverage_pct":coverage,
+        "official_foreign_coverage_pct":coverage if foreign_source=="IDX_OFFICIAL_STOCK_SUMMARY" else 0.0,
+        "foreign_evidence_source":foreign_source,"foreign_net_5d":net5,"foreign_net_20d":net20,
+        "foreign_persistence_20d":persistence20,"foreign_intensity_20d":intensity20,
+    }
 
 
 def compute_price_flow_features(price: pd.DataFrame, broker_features: dict[str, object]) -> dict[str, float]:

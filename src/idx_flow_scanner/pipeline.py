@@ -6,6 +6,8 @@ from typing import Callable
 import numpy as np
 import pandas as pd
 
+from .authorization import apply_production_authorization
+from .broker_freshness import evaluate_broker_freshness
 from .config import ScannerConfig
 from .data import canonical_ticker, completed_idx_session_frame
 from .data_quality import compute_price_quality_features
@@ -98,6 +100,12 @@ def scan_one(
         raise ValueError(f"{ticker}: insufficient price history ({len(price)} bars)")
 
     bf = compute_broker_features(broker, price, config)
+    broker_recency = evaluate_broker_freshness(
+        broker,
+        price,
+        ticker,
+        max_age_days=config.max_price_staleness_days,
+    )
     ff = compute_official_foreign_features(official_flow, price)
     sf = compute_smc_features(price)
     qf = compute_price_quality_features(price, reference_date=reference_date)
@@ -112,6 +120,8 @@ def scan_one(
     zero_volume_60 = float(qf.get("zero_volume_ratio_60d", 1.0) or 0.0)
     direct = bool(
         len(broker)
+        and broker_recency["broker_data_valid"] is True
+        and broker_recency["broker_freshness_state"] == "FRESH"
         and float(bf["coverage_pct"]) >= config.direct_broker_min_coverage_pct
         and int(bf["broker_days"]) >= config.minimum_broker_days
         and distinct_brokers >= config.direct_broker_min_distinct_brokers
@@ -230,8 +240,10 @@ def scan_one(
         tp2=round(float(sf["tp2"]), 2) if sf["tp2"] is not None else None,
         real_money_state=state,
         guardrail_reason=reason,
+        production_authorized=False,
         diagnostics={
             "broker_days": bf["broker_days"],
+            **broker_recency,
             "distinct_brokers": distinct_brokers,
             "broker_verified_source_pct": verified_source_pct,
             "broker_alpha_applied": direct,
@@ -256,6 +268,30 @@ def scan_one(
             "foreign_net_20d": ff.get("foreign_net_20d"),
             "foreign_persistence_20d": ff.get("foreign_persistence_20d"),
             "foreign_intensity_20d": ff.get("foreign_intensity_20d"),
+            "foreign_provider_selected": ff.get("foreign_provider_selected"),
+            "foreign_provider_selected_source": ff.get("foreign_provider_selected_source"),
+            "foreign_provider_alternate": ff.get("foreign_provider_alternate"),
+            "foreign_provider_alternate_source": ff.get("foreign_provider_alternate_source"),
+            "foreign_alternate_latest_observation": ff.get("foreign_alternate_latest_observation"),
+            "foreign_alternate_latest_age": ff.get("foreign_alternate_latest_age"),
+            "foreign_alternate_window_state": ff.get("foreign_alternate_window_state"),
+            "foreign_alternate_data_freshness": ff.get("foreign_alternate_data_freshness"),
+            "foreign_provider_selection_state": ff.get("foreign_provider_selection_state"),
+            "foreign_provider_selection_reason": ff.get("foreign_provider_selection_reason"),
+            "foreign_provider_reconciliation_state": ff.get("foreign_provider_reconciliation_state"),
+            "foreign_provider_reconciliation_reason": ff.get("foreign_provider_reconciliation_reason"),
+            "foreign_provider_conflict": ff.get("foreign_provider_conflict"),
+            "foreign_requested_observations": ff.get("foreign_requested_observations"),
+            "foreign_observed_observations": ff.get("foreign_observed_observations"),
+            "foreign_window_coverage_ratio": ff.get("foreign_window_coverage_ratio"),
+            "foreign_window_complete": ff.get("foreign_window_complete"),
+            "foreign_window_state": ff.get("foreign_window_state"),
+            "foreign_latest_observation": ff.get("foreign_latest_observation"),
+            "foreign_latest_age": ff.get("foreign_latest_age"),
+            "foreign_data_freshness": ff.get("foreign_data_freshness"),
+            "foreign_data_available": ff.get("foreign_data_available"),
+            "foreign_data_valid": ff.get("foreign_data_valid"),
+            "foreign_provider_evidence": ff.get("foreign_provider_evidence"),
             "market_regime_score": market_features.get("market_regime_score"),
             "market_regime_label": market_features.get("market_regime_label"),
             "market_breadth_20d": market_features.get("market_breadth_20d"),
@@ -303,6 +339,7 @@ def scan_one(
             "broker_future_rows_filtered": broker_future_rows_filtered,
             "foreign_future_rows_filtered": foreign_future_rows_filtered,
             "proxy_scoring_lineage_state": "DIRECT_BROKER_MULTI_FACTOR_DISJOINT_ACCUMULATION_V3" if direct else "DEDUPLICATED_OHLCV_LATENT_FAMILY_V2",
+            "production_authorized": False,
         },
     )
 
@@ -370,4 +407,4 @@ def scan_universe(
             ascending=[True, False, True],
             kind="stable",
         )
-    return run_id, out.reset_index(drop=True), errors
+    return run_id, apply_production_authorization(out.reset_index(drop=True)), errors

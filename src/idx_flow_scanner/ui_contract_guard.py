@@ -5,7 +5,7 @@ from typing import Any
 import pandas as pd
 
 
-UI_CONTRACT_REVISION = "v0.3.23-truthful-output-lanes"
+UI_CONTRACT_REVISION = "v0.3.24-explicit-production-authorization"
 
 
 def install_truthful_output_lanes(streamlit_app: Any) -> None:
@@ -117,7 +117,17 @@ def install_truthful_output_lanes(streamlit_app: Any) -> None:
             status = frame.get("broker_verification_status", pd.Series(index=frame.index, dtype=object)).astype(str)
             tier = frame.get("evidence_tier", pd.Series(index=frame.index, dtype=object)).astype(str)
             state = frame.get("real_money_state", pd.Series(index=frame.index, dtype=object)).astype(str)
-            frame = frame[status.eq("BROKER_VERIFIED") & tier.eq("BROKER_DIRECT") & state.eq("ELIGIBLE")].copy()
+            authorized = frame.get(
+                "production_authorized", pd.Series(False, index=frame.index, dtype=bool)
+            ).fillna(False)
+            if not pd.api.types.is_bool_dtype(authorized):
+                authorized = authorized.map(lambda value: value is True)
+            frame = frame[
+                authorized
+                & status.eq("BROKER_VERIFIED")
+                & tier.eq("BROKER_DIRECT")
+                & state.eq("ELIGIBLE")
+            ].copy()
             if frame.empty:
                 return original_info(
                     "Belum ada Broker-Verified Production. Kandidat broker masih pending/guarded/reject atau strict direct gate belum terpenuhi."

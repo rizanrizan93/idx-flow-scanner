@@ -88,12 +88,21 @@ def test_broker_verified_production_filters_pending_and_noneligible_rows():
                 "broker_verification_status": "BROKER_VERIFIED",
                 "evidence_tier": "BROKER_DIRECT",
                 "real_money_state": "ELIGIBLE",
+                "production_authorized": True,
             },
             {
                 "ticker": "NOTELIG",
                 "broker_verification_status": "BROKER_VERIFIED",
                 "evidence_tier": "BROKER_DIRECT",
                 "real_money_state": "GUARDED",
+                "production_authorized": False,
+            },
+            {
+                "ticker": "SPOOFED",
+                "broker_verification_status": "BROKER_VERIFIED",
+                "evidence_tier": "BROKER_DIRECT",
+                "real_money_state": "ELIGIBLE",
+                "production_authorized": False,
             },
         ]
     )

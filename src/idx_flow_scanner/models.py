@@ -34,6 +34,7 @@ class ScanResult:
     tp2: float | None
     real_money_state: str
     guardrail_reason: str
+    production_authorized: bool
     diagnostics: dict[str, Any]
 
     def to_dict(self) -> dict[str, Any]:

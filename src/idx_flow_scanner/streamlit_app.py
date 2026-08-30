@@ -7,6 +7,7 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
+from .authorization import apply_production_authorization, export_scan_csv
 from .broker_evidence import select_broker_evidence
 from .config import ScannerConfig
 from .database_first import prepare_database_first_prices
@@ -90,7 +91,7 @@ def _diag(value: object) -> dict[str, object]:
 def recover_funnel_views(results: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     if results is None or results.empty or "diagnostics" not in results.columns:
         return pd.DataFrame(), pd.DataFrame()
-    rows = results.copy()
+    rows = apply_production_authorization(results)
     rows["guarded_rank"] = rows["diagnostics"].map(lambda d: _diag(d).get("guarded_rank"))
     rows["guarded_score"] = rows["diagnostics"].map(lambda d: _diag(d).get("guarded_score"))
     rows["broker_verification_status"] = rows["diagnostics"].map(lambda d: _diag(d).get("broker_verification_status"))
@@ -107,7 +108,7 @@ def recover_funnel_views(results: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFr
 def _decorate(frame: pd.DataFrame) -> pd.DataFrame:
     if frame is None or frame.empty:
         return pd.DataFrame()
-    display = frame.copy()
+    display = apply_production_authorization(frame)
     if "diagnostics" in display.columns:
         for name in (
             "broker_verified_source_pct",
@@ -123,6 +124,17 @@ def _decorate(frame: pd.DataFrame) -> pd.DataFrame:
             "guarded_rank",
             "guarded_score",
             "broker_verification_status",
+            "broker_latest_observation",
+            "broker_latest_age_days",
+            "broker_freshness_state",
+            "broker_data_available",
+            "broker_data_valid",
+            "foreign_provider_selected",
+            "foreign_provider_selection_state",
+            "foreign_provider_reconciliation_state",
+            "foreign_provider_conflict",
+            "foreign_window_state",
+            "foreign_window_coverage_ratio",
         ):
             if name not in display.columns:
                 display[name] = display["diagnostics"].map(lambda value, key=name: _diag(value).get(key))
@@ -138,46 +150,34 @@ def _zapi_first_foreign(
     store: SupabaseStore | None,
     load_price,
 ) -> tuple[pd.DataFrame, dict[str, object], dict[str, object], dict[str, object]]:
-    """Use ZAPI whenever available; direct IDX cached data is fallback only."""
+    """Load both cached providers, then compare them before row-local selection.
+
+    The historical function name is retained for compatibility with older app
+    imports. It no longer encodes provider priority.
+    """
     db_zapi = load_zapi_vendor_foreign_flows(store, universe, lookback_calendar_days=120) if store is not None else pd.DataFrame()
     bundled_zapi = load_bundled_zapi_foreign_flows(universe, lookback_calendar_days=120)
     zapi_candidates = pd.concat([f for f in (db_zapi, bundled_zapi) if f is not None and not f.empty], ignore_index=True) if any(f is not None and not f.empty for f in (db_zapi, bundled_zapi)) else pd.DataFrame()
-    if not zapi_candidates.empty:
-        zapi_candidates = zapi_candidates.drop_duplicates(["ticker", "trade_date", "source"], keep="last")
     if store is not None and bundled_zapi is not None and not bundled_zapi.empty:
         try:
             upsert_zapi_vendor_foreign_flows(store, bundled_zapi)
         except Exception:
             pass
 
-    zapi_flow, zapi_selection = prepare_foreign_evidence(universe, zapi_candidates, load_price, lookback=20)
-    selected_zapi = set(zapi_flow["ticker"].unique()) if not zapi_flow.empty else set()
-    missing = [t for t in universe if t not in selected_zapi]
+    db_direct = load_cached_idx_official_flows(store, universe, lookback_calendar_days=120) if store is not None else pd.DataFrame()
+    bundled_direct = load_bundled_idx_official_flows(universe, lookback_calendar_days=120)
+    valid_direct = [f for f in (db_direct, bundled_direct) if f is not None and not f.empty]
+    direct_candidates = pd.concat(valid_direct, ignore_index=True) if valid_direct else pd.DataFrame()
 
-    direct_flow = pd.DataFrame()
-    direct_selection = {"idx_direct_selected_tickers": 0, "foreign_unavailable_tickers": len(missing), "median_selected_coverage_pct": 0.0}
-    direct_candidates = pd.DataFrame()
-    if missing:
-        db_direct = load_cached_idx_official_flows(store, missing, lookback_calendar_days=120) if store is not None else pd.DataFrame()
-        bundled_direct = load_bundled_idx_official_flows(missing, lookback_calendar_days=120)
-        valid_direct = [f for f in (db_direct, bundled_direct) if f is not None and not f.empty]
-        direct_candidates = pd.concat(valid_direct, ignore_index=True) if valid_direct else pd.DataFrame()
-        if not direct_candidates.empty:
-            direct_candidates = direct_candidates.drop_duplicates(["ticker", "trade_date", "source"], keep="last")
-        direct_flow, direct_selection = prepare_foreign_evidence(missing, direct_candidates, load_price, lookback=20)
-
-    selected = [f for f in (zapi_flow, direct_flow) if f is not None and not f.empty]
-    foreign_flow = pd.concat(selected, ignore_index=True) if selected else pd.DataFrame()
+    provider_frames = [
+        value for value in (zapi_candidates, direct_candidates) if value is not None and not value.empty
+    ]
+    all_candidates = pd.concat(provider_frames, ignore_index=True) if provider_frames else pd.DataFrame()
+    foreign_flow, selection_stats = prepare_foreign_evidence(
+        universe, all_candidates, load_price, lookback=20
+    )
     zapi_stats = {**data_stats(zapi_candidates), "source": "ZAPI_IDX_FOREIGN_FLOW"}
-    direct_stats = {**data_stats(direct_candidates), "source": "IDX_OFFICIAL_STOCK_SUMMARY_FALLBACK"}
-    selected_count = int(foreign_flow["ticker"].nunique()) if not foreign_flow.empty else 0
-    selection_stats = {
-        "zapi_selected_tickers": int(len(selected_zapi)),
-        "idx_direct_selected_tickers": int(direct_flow["ticker"].nunique()) if not direct_flow.empty else 0,
-        "foreign_unavailable_tickers": max(0, len(universe) - selected_count),
-        "median_selected_coverage_pct": float(zapi_selection.get("median_selected_coverage_pct", 0.0) or direct_selection.get("median_selected_coverage_pct", 0.0) or 0.0),
-        "policy": "ZAPI_FIRST_IDX_FALLBACK",
-    }
+    direct_stats = {**data_stats(direct_candidates), "source": "IDX_OFFICIAL_STOCK_SUMMARY"}
     return foreign_flow, zapi_stats, direct_stats, selection_stats
 
 
@@ -269,7 +269,7 @@ def run() -> None:
     st.set_page_config(page_title="IDX Flow Scanner", page_icon="📡", layout="wide")
     st.title("IDX Flow Scanner")
     st.caption(
-        f"v{APP_VERSION} • 400 ticker → PRICE_PROXY → ZAPI foreign flow → Final Guarded Top 5 → "
+        f"v{APP_VERSION} • 400 ticker → PRICE_PROXY → IDX/ZAPI foreign comparison → Final Guarded Top 5 → "
         "Index Alpha broker → Broker-Verified Top 5"
     )
     st.info(
@@ -406,7 +406,7 @@ def run() -> None:
         direct_idx_stats = {"rows": 0, "tickers": 0, "days": 0, "freshest": None, "source": "DISABLED"}
         foreign_selection_stats = {"zapi_selected_tickers": 0, "idx_direct_selected_tickers": 0, "foreign_unavailable_tickers": len(universe), "median_selected_coverage_pct": 0.0}
         if use_foreign:
-            status_box.caption("Stage 2/5 • ZAPI foreign evidence")
+            status_box.caption("Stage 2/5 • IDX/ZAPI foreign evidence comparison")
             try:
                 foreign_flow, zapi_stats, direct_idx_stats, foreign_selection_stats = _zapi_first_foreign(universe, store, load_price)
             except Exception as exc:
@@ -417,7 +417,7 @@ def run() -> None:
 
         def progress(i: int, total: int, ticker: str) -> None:
             bar.progress(i / max(total, 1), text=f"Stage 1-3/5 • {i}/{total} • {ticker}")
-            status_box.caption(f"Proxy + ZAPI scoring {ticker} • {i}/{total}")
+            status_box.caption(f"Proxy + selected foreign evidence scoring {ticker} • {i}/{total}")
             if store is not None and run_record_created and (i == 1 or i % 20 == 0 or i == total):
                 store.update_run_progress(run_id, i, ticker)
 
@@ -595,7 +595,7 @@ def run() -> None:
 
         st.download_button(
             "Download scan CSV",
-            data=final_display.drop(columns=["diagnostics", "components"], errors="ignore").to_csv(index=False).encode(),
+            data=export_scan_csv(final_display),
             file_name=f"idx_flow_scan_{st.session_state.last_run_id}.csv",
             mime="text/csv",
         )

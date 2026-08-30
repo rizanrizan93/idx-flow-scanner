@@ -5,6 +5,7 @@ from typing import Callable
 
 import pandas as pd
 
+from .authorization import apply_production_authorization, derive_production_authorized
 from .config import ScannerConfig
 from .data import canonical_ticker
 from .pipeline import scan_one
@@ -77,6 +78,18 @@ def select_guarded_top5(
     work["zero_volume_ratio_60d"] = work["diagnostics"].map(
         lambda d: float(_diagnostics(d).get("zero_volume_ratio_60d", 1.0) or 0.0)
     )
+    work["foreign_window_state"] = work["diagnostics"].map(
+        lambda d: str(_diagnostics(d).get("foreign_window_state") or "UNKNOWN")
+    )
+    work["foreign_provider_selection_state"] = work["diagnostics"].map(
+        lambda d: str(_diagnostics(d).get("foreign_provider_selection_state") or "UNKNOWN")
+    )
+    work["foreign_provider_reconciliation_state"] = work["diagnostics"].map(
+        lambda d: str(_diagnostics(d).get("foreign_provider_reconciliation_state") or "UNKNOWN")
+    )
+    work["foreign_provider_conflict"] = work["diagnostics"].map(
+        lambda d: _diagnostics(d).get("foreign_provider_conflict") is True
+    )
 
     dist = _numeric(work.get("distribution_risk", pd.Series(index=work.index, dtype=float)), 100.0)
     quality = _numeric(work.get("price_data_quality_score", pd.Series(index=work.index, dtype=float)))
@@ -92,6 +105,10 @@ def select_guarded_top5(
         & work["zero_volume_ratio_20d"].le(0.20)
         & work["zero_volume_ratio_60d"].le(0.35)
         & foreign_cov.ge(float(minimum_foreign_coverage_pct))
+        & work["foreign_window_state"].eq("FULL")
+        & work["foreign_provider_selection_state"].isin({"IDX_DIRECT", "ZAPI"})
+        & work["foreign_provider_reconciliation_state"].isin({"AGREED", "SINGLE_PROVIDER"})
+        & ~work["foreign_provider_conflict"]
         & phase.ne("DISTRIBUTION")
         & action.ne("REDUCE_AVOID")
         & evidence_tier.eq("PRICE_PROXY")
@@ -111,7 +128,7 @@ def select_guarded_top5(
     finalists["guarded_rank"] = range(1, len(finalists) + 1)
     finalists["guarded_status"] = "GUARDED_FINALIST"
     finalists["guarded_score"] = pd.to_numeric(finalists["final_score"], errors="coerce")
-    return finalists
+    return apply_production_authorization(finalists)
 
 
 def verify_guarded_top5(
@@ -170,19 +187,38 @@ def verify_guarded_top5(
                 market_features=market_features,
                 reference_date=str(source_row.get("as_of_date") or "") or None,
             ).to_dict()
-            if verified.get("evidence_tier") != "BROKER_DIRECT":
+            verified_diagnostics = _diagnostics(verified.get("diagnostics"))
+            broker_freshness = str(verified_diagnostics.get("broker_freshness_state") or "UNKNOWN")
+            broker_valid = verified_diagnostics.get("broker_data_valid") is True
+            authorization_candidate = {
+                **verified,
+                "broker_verification_status": "BROKER_VERIFIED",
+                "diagnostics": {
+                    **verified_diagnostics,
+                    "broker_verification_status": "BROKER_VERIFIED",
+                },
+            }
+            canonically_ready = derive_production_authorized(authorization_candidate)
+            if (
+                verified.get("evidence_tier") != "BROKER_DIRECT"
+                or not broker_valid
+                or broker_freshness != "FRESH"
+            ):
                 status = "BROKER_PENDING"
             elif verified.get("phase") == "DISTRIBUTION" or verified.get("action") == "REDUCE_AVOID" or float(verified.get("distribution_risk", 100.0) or 100.0) >= 70.0:
                 status = "BROKER_REJECT"
-            elif verified.get("real_money_state") == "ELIGIBLE":
+            elif canonically_ready:
                 status = "BROKER_VERIFIED"
             else:
                 status = "BROKER_GUARDED"
 
+            if status != "BROKER_VERIFIED" and verified.get("real_money_state") == "ELIGIBLE":
+                verified["real_money_state"] = "GUARDED"
+
             verified["guarded_rank"] = int(source_row.get("guarded_rank", 0) or 0)
             verified["guarded_score"] = float(source_row.get("guarded_score", source_row.get("final_score", 0.0)) or 0.0)
             verified["broker_verification_status"] = status
-            diagnostics = _diagnostics(verified.get("diagnostics"))
+            diagnostics = verified_diagnostics
             diagnostics.update(
                 {
                     "guarded_rank": verified["guarded_rank"],
@@ -211,13 +247,15 @@ def verify_guarded_top5(
         kind="stable",
     ).drop(columns="_status_order").reset_index(drop=True)
     out["broker_rank"] = range(1, len(out) + 1)
-    return out, errors
+    return apply_production_authorization(out), errors
 
 
 def merge_verified_finalists(base_results: pd.DataFrame, broker_results: pd.DataFrame) -> pd.DataFrame:
     """Replace only finalist rows in the 400-row research result set."""
     if base_results is None or base_results.empty or broker_results is None or broker_results.empty:
-        return base_results.copy() if isinstance(base_results, pd.DataFrame) else pd.DataFrame()
+        return apply_production_authorization(
+            base_results.copy() if isinstance(base_results, pd.DataFrame) else pd.DataFrame()
+        )
     out = base_results.copy()
     replacements = broker_results.set_index("ticker", drop=False)
     for idx, ticker in out["ticker"].items():
@@ -229,8 +267,9 @@ def merge_verified_finalists(base_results: pd.DataFrame, broker_results: pd.Data
         for col in out.columns:
             if col in row.index:
                 out.at[idx, col] = row[col]
-    return out.sort_values(
+    out = out.sort_values(
         ["real_money_state", "final_score", "ticker"],
         ascending=[True, False, True],
         kind="stable",
     ).reset_index(drop=True)
+    return apply_production_authorization(out)

@@ -32,6 +32,11 @@ def _guarded_row(
         "distribution_risk": dist,
         "diagnostics": {
             "foreign_evidence_coverage_pct": 100.0,
+            "foreign_provider_selected": "IDX_DIRECT",
+            "foreign_provider_selection_state": "IDX_DIRECT",
+            "foreign_provider_reconciliation_state": "SINGLE_PROVIDER",
+            "foreign_provider_conflict": False,
+            "foreign_window_state": "FULL",
             "price_staleness_days": 0, "zero_volume_ratio_20d": 0.0, "zero_volume_ratio_60d": 0.0,
         },
     }

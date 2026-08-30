@@ -8,6 +8,7 @@ import pytest
 
 from idx_flow_scanner.persistence_guard import (
     PERSISTENCE_GUARD_REVISION,
+    _result_records,
     install_bounded_result_persistence,
 )
 
@@ -156,6 +157,14 @@ def test_nested_pandas_numpy_diagnostics_are_strict_json_safe():
     assert payload[0]["diagnostics"]["when"] == "2026-08-14T00:00:00"
     assert payload[1]["diagnostics"]["nested"] == [7,None,None,None]
     assert sorted(payload[1]["diagnostics"]["set_value"]) == ["A","B"]
+
+
+def test_persistence_mirrors_fail_closed_authorization_inside_existing_diagnostics_json():
+    frame = _frame(1)
+    frame["production_authorized"] = True
+    records = _result_records("run-auth", frame)
+    assert "production_authorized" not in records[0]
+    assert records[0]["diagnostics"]["production_authorized"] is False
 
 
 def test_silent_partial_persistence_is_detected_by_exact_database_count():

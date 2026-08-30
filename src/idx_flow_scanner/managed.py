@@ -8,6 +8,7 @@ from typing import Any
 
 import pandas as pd
 
+from .authorization import apply_production_authorization
 from .data import parse_universe
 
 
@@ -136,7 +137,7 @@ def load_persisted_results(store: Any, run_id: str) -> pd.DataFrame:
     )
     for name in component_names:
         frame[name] = frame["components"].map(lambda value: (value or {}).get(name) if isinstance(value, dict) else None)
-    return frame
+    return apply_production_authorization(frame)
 
 
 def mark_stale_managed_runs(store: Any, *, max_age_minutes: int = MANAGED_ACTIVE_TIMEOUT_MINUTES) -> int:

@@ -8,6 +8,8 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
+from .authorization import apply_production_authorization
+
 
 DEFAULT_RESULT_BATCH_SIZE = 20
 DEFAULT_PERSIST_TIMEOUT_SECONDS = 30.0
@@ -57,7 +59,7 @@ def _json_safe(value: Any) -> Any:
 def _result_records(run_id: str, frame: pd.DataFrame) -> list[dict[str, Any]]:
     """Build the canonical flow_scan_results payload without calling legacy wrappers."""
     records: list[dict[str, Any]] = []
-    for row in frame.to_dict("records"):
+    for row in apply_production_authorization(frame).to_dict("records"):
         record = {
             "run_id": run_id,
             "ticker": row["ticker"],
