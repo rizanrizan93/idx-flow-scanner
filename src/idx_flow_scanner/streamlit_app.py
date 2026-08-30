@@ -34,7 +34,7 @@ from .providers.indexalpha import (
     merge_indexalpha_broker_frames,
 )
 from .providers.zapi import load_bundled_zapi_foreign_flows
-from .storage import SupabaseStore
+from .storage import DuplicateActiveUniverseRunError, SupabaseStore
 from .vendor_foreign_store import load_zapi_vendor_foreign_flows, upsert_zapi_vendor_foreign_flows
 
 APP_VERSION = "0.3.0"
@@ -42,6 +42,28 @@ ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_UNIVERSE_PATH = ROOT / "data" / "universe" / "idx_400_syariah.csv"
 MANAGED_MIN_VALID_RATIO = 0.90
 FINALIST_COUNT = 5
+
+
+def create_durable_run_record(
+    store: SupabaseStore,
+    run_id: str,
+    universe_count: int,
+    config: dict[str, object],
+) -> bool:
+    """Create the tracked lifecycle record, stopping only duplicate executions."""
+    try:
+        store.create_run(run_id, universe_count, config)
+        store.update_run_progress(run_id, 0, "OHLCV_PREP")
+        return True
+    except DuplicateActiveUniverseRunError:
+        st.error(
+            "Scan tidak dimulai: run aktif yang sudah ada masih memiliki lock universe ini. "
+            "Lanjutkan atau tunggu run tersebut; eksekusi duplikat dihentikan sebelum pipeline OHLCV."
+        )
+        st.stop()
+    except Exception as exc:
+        st.warning(f"Could not create RUNNING record in Supabase: {exc}")
+        return False
 
 
 def _secret(name: str) -> str | None:
@@ -362,30 +384,26 @@ def run() -> None:
         run_mode = "manual" if run_manual else "managed"
 
         if persist and store is not None:
-            try:
-                store.create_run(
-                    run_id,
-                    len(universe),
-                    {
-                        "period": period,
-                        "version": APP_VERSION,
-                        "mode": run_mode,
-                        "universe_signature": signature,
-                        "pipeline": "400_PROXY__ZAPI__GUARDED_TOP5__INDEX_ALPHA__BROKER_VERIFIED_TOP5",
-                        "broker_scope": "FINAL_GUARDED_TOP5_ONLY",
-                        "broker_provider": INDEX_ALPHA_SOURCE,
-                        "broker_min_days": config.minimum_broker_days,
-                        "indexalpha_live_pull_manual_only": True,
-                        "zapi_primary_foreign": bool(use_foreign),
-                        "market_context": "CROSS_SECTIONAL_400_PRESERVED_IN_BROKER_PASS",
-                        "universe_point_in_time_state": "CURRENT_SNAPSHOT_ONLY_NOT_HISTORICAL_MEMBERSHIP",
-                        "universe_snapshot_date": "2026-08-29",
-                    },
-                )
-                store.update_run_progress(run_id, 0, "OHLCV_PREP")
-                run_record_created = True
-            except Exception as exc:
-                st.warning(f"Could not create RUNNING record in Supabase: {exc}")
+            run_record_created = create_durable_run_record(
+                store,
+                run_id,
+                len(universe),
+                {
+                    "period": period,
+                    "version": APP_VERSION,
+                    "mode": run_mode,
+                    "universe_signature": signature,
+                    "pipeline": "400_PROXY__ZAPI__GUARDED_TOP5__INDEX_ALPHA__BROKER_VERIFIED_TOP5",
+                    "broker_scope": "FINAL_GUARDED_TOP5_ONLY",
+                    "broker_provider": INDEX_ALPHA_SOURCE,
+                    "broker_min_days": config.minimum_broker_days,
+                    "indexalpha_live_pull_manual_only": True,
+                    "zapi_primary_foreign": bool(use_foreign),
+                    "market_context": "CROSS_SECTIONAL_400_PRESERVED_IN_BROKER_PASS",
+                    "universe_point_in_time_state": "CURRENT_SNAPSHOT_ONLY_NOT_HISTORICAL_MEMBERSHIP",
+                    "universe_snapshot_date": "2026-08-29",
+                },
+            )
 
         def price_status(text: str) -> None:
             status_box.caption(text)

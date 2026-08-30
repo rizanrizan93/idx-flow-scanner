@@ -3,14 +3,86 @@ from __future__ import annotations
 import base64
 import os
 import zlib
+from collections.abc import Mapping
 from datetime import date, datetime, timedelta, timezone
 from io import StringIO
-from typing import Iterable
+from typing import Any, Iterable
 
 import numpy as np
 import pandas as pd
 
 from .data import canonical_ticker, normalize_broker_summary, normalize_price_frame
+
+
+ACTIVE_UNIVERSE_RUN_CONSTRAINT = "flow_scan_runs_single_active_universe_idx"
+
+
+class DuplicateActiveUniverseRunError(RuntimeError):
+    """A different RUNNING row already owns the single-universe lock."""
+
+
+def _contains_exact_active_run_constraint(value: Any) -> bool:
+    """Find an exact ``constraint`` field in bounded structured diagnostics."""
+    pending = [value]
+    seen: set[int] = set()
+    while pending:
+        current = pending.pop()
+        if isinstance(current, Mapping):
+            identity = id(current)
+            if identity in seen:
+                continue
+            seen.add(identity)
+            constraint = current.get("constraint")
+            if isinstance(constraint, str) and constraint == ACTIVE_UNIVERSE_RUN_CONSTRAINT:
+                return True
+            pending.extend(
+                nested
+                for nested in current.values()
+                if isinstance(nested, (Mapping, list, tuple))
+            )
+        elif isinstance(current, (list, tuple)):
+            identity = id(current)
+            if identity in seen:
+                continue
+            seen.add(identity)
+            pending.extend(
+                nested
+                for nested in current
+                if isinstance(nested, (Mapping, list, tuple))
+            )
+    return False
+
+
+def is_duplicate_active_run_error(error: BaseException) -> bool:
+    """Recognize only the named active-run unique collision."""
+    if isinstance(getattr(error, "constraint", None), str) and (
+        error.constraint == ACTIVE_UNIVERSE_RUN_CONSTRAINT
+    ):
+        return True
+
+    args = getattr(error, "args", ())
+    structured_sources = [
+        getattr(error, "details", None),
+        getattr(error, "_raw_error", None),
+        args[0] if args and isinstance(args[0], Mapping) else None,
+    ]
+    if any(_contains_exact_active_run_constraint(value) for value in structured_sources):
+        return True
+
+    code = getattr(error, "code", None)
+    parts: list[str] = []
+    if not args or isinstance(args[0], str):
+        parts.append(str(error))
+    for name in ("message", "details", "hint"):
+        value: Any = getattr(error, name, None)
+        if isinstance(value, str):
+            parts.append(value)
+    text = " ".join(parts).lower()
+    if ACTIVE_UNIVERSE_RUN_CONSTRAINT.lower() not in text:
+        return False
+    if code not in (None, ""):
+        return str(code) == "23505"
+    return "23505" in text or ("duplicate key" in text and "unique constraint" in text)
 
 
 def _records(frame: pd.DataFrame) -> list[dict]:
@@ -81,10 +153,17 @@ class SupabaseStore:
         self.postgrest_timeout_seconds = timeout_seconds
 
     def create_run(self, run_id: str, universe_count: int, config: dict) -> None:
-        self.client.table("flow_scan_runs").upsert({
-            "id": run_id, "status": "RUNNING", "universe_count": int(universe_count),
-            "started_at": datetime.now(timezone.utc).isoformat(), "config": config,
-        }).execute()
+        try:
+            self.client.table("flow_scan_runs").upsert({
+                "id": run_id, "status": "RUNNING", "universe_count": int(universe_count),
+                "started_at": datetime.now(timezone.utc).isoformat(), "config": config,
+            }).execute()
+        except Exception as exc:
+            if is_duplicate_active_run_error(exc):
+                raise DuplicateActiveUniverseRunError(
+                    "An existing RUNNING scan owns this universe."
+                ) from exc
+            raise
 
     def update_run_progress(self, run_id: str, attempted_count: int, current_ticker: str) -> None:
         try:
