@@ -6,7 +6,7 @@
     "status": "BLOCKED: IDX official TradingSummary access blocked with HTTP 403 (Cloudflare challenge)",
     "tickers": 0
   },
-  "generated_at": "2026-08-30T16:56:33.084269+00:00",
+  "generated_at": "2026-08-31T19:13:55.427426+00:00",
   "goapi_broker_direct": {
     "budget_requests": 5,
     "days": 0,
@@ -24,14 +24,14 @@
   "indexalpha_broker_direct": {
     "budget_requests": 5,
     "contract": "STOCK_LEVEL_GROSS_BUY_SELL_EXACT_DAY_RG_ALL",
-    "days": 3,
-    "freshest": "2026-08-28",
+    "days": 4,
+    "freshest": "2026-08-31",
     "jobs_planned": 5,
     "provider": "INDEX_ALPHA_BROKER_SUMMARY",
-    "requests_attempted": 1,
-    "requests_succeeded": 0,
-    "rows": 328,
-    "status": "PLAN_LIMIT: Index Alpha plan does not allow broker summary",
+    "requests_attempted": 5,
+    "requests_succeeded": 5,
+    "rows": 440,
+    "status": "UPDATED",
     "target_history_days": 20,
     "targets": [
       "MMIX",
@@ -50,15 +50,15 @@
     "rows": 0,
     "status": "BLOCKED: IDX official TradingSummary access blocked with HTTP 403 (Cloudflare challenge)"
   },
-  "target_trade_date": "2026-08-28",
+  "target_trade_date": "2026-09-01",
   "universe_count": 400,
   "zapi_idx_foreign": {
-    "days": 21,
+    "days": 22,
     "flow_unit": "SHARES",
-    "freshest": "2026-08-28",
+    "freshest": "2026-08-31",
     "refresh_mode": "INCREMENTAL_AFTER_BOOTSTRAP",
-    "rows": 8400,
-    "status": "PRESERVED",
+    "rows": 8800,
+    "status": "UPDATED",
     "target_history_days": 20,
     "tickers": 400,
     "token_present": true
