@@ -6,7 +6,7 @@
     "status": "BLOCKED: IDX official TradingSummary access blocked with HTTP 403 (Cloudflare challenge)",
     "tickers": 0
   },
-  "generated_at": "2026-08-31T19:13:55.427426+00:00",
+  "generated_at": "2026-09-01T16:53:22.993799+00:00",
   "goapi_broker_direct": {
     "budget_requests": 5,
     "days": 0,
@@ -28,10 +28,10 @@
     "freshest": "2026-08-31",
     "jobs_planned": 5,
     "provider": "INDEX_ALPHA_BROKER_SUMMARY",
-    "requests_attempted": 5,
-    "requests_succeeded": 5,
+    "requests_attempted": 1,
+    "requests_succeeded": 0,
     "rows": 440,
-    "status": "UPDATED",
+    "status": "PLAN_LIMIT: Index Alpha plan does not allow broker summary",
     "target_history_days": 20,
     "targets": [
       "MMIX",
@@ -53,11 +53,11 @@
   "target_trade_date": "2026-09-01",
   "universe_count": 400,
   "zapi_idx_foreign": {
-    "days": 22,
+    "days": 23,
     "flow_unit": "SHARES",
-    "freshest": "2026-08-31",
+    "freshest": "2026-09-01",
     "refresh_mode": "INCREMENTAL_AFTER_BOOTSTRAP",
-    "rows": 8800,
+    "rows": 9200,
     "status": "UPDATED",
     "target_history_days": 20,
     "tickers": 400,
