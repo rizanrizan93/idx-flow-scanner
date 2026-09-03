@@ -1,30 +1,86 @@
 {
   "architecture": "ZAPI_ONLY_NO_BROKER_DIRECT",
+  "generated_at": "2026-09-03T07:07:06+00:00",
+  "target_trade_date": "2026-09-02",
+  "universe_count": 400,
   "broker_direct": {
     "enabled": false,
     "status": "RETIRED",
     "providers": []
   },
-  "migration_note": "v0.4 runtime/warm job no longer consumes broker-direct evidence; next ZAPI warm run will refresh full telemetry",
-  "universe_count": 400,
   "zapi_idx_foreign": {
-    "days": 24,
-    "freshest": "2026-09-02",
+    "status": "PRESERVED",
+    "token_present": true,
     "flow_unit": "SHARES",
-    "rows": 9600,
-    "status": "PRESERVED_FROM_LAST_VERIFIED_CACHE",
     "target_history_days": 20,
-    "tickers": 400
+    "refresh_mode": "INCREMENTAL_AFTER_BOOTSTRAP",
+    "rows": 9600,
+    "tickers": 400,
+    "days": 24,
+    "freshest": "2026-09-02"
   },
   "zapi_stock_summary": {
-    "status": "CACHE_PRESENT_REVALIDATE_ON_NEXT_WARM_RUN"
+    "status": "UPDATED",
+    "token_present": true,
+    "selected_trade_date": "2026-09-02",
+    "free_float_structure_rows": 400,
+    "rows": 400,
+    "tickers": 400,
+    "days": 1,
+    "freshest": "2026-09-02"
   },
   "zapi_ownership": {
-    "status": "PENDING_FIRST_V0_4_WARM_REFRESH",
-    "refresh_policy": "WEEKLY_OR_MISSING"
+    "status": "UPDATED_PROFILE_FALLBACK",
+    "token_present": true,
+    "refresh_policy": "WEEKLY_WEEKDAY_0_OR_MISSING",
+    "rows": 344,
+    "tickers": 40,
+    "report_periods": 1,
+    "latest_report_date": "2026-09-02",
+    "primary": {
+      "source": "ZAPI_OWNERSHIP_FILES",
+      "status": "UNAVAILABLE_HTTP_403"
+    },
+    "fallback": {
+      "source": "ZAPI_COMPANY_PROFILE_SHAREHOLDERS",
+      "requests_attempted": 40,
+      "requests_succeeded": 40,
+      "tickers_requested": 40,
+      "tickers_with_rows": 40,
+      "snapshot_date": "2026-09-02",
+      "provenance_state": "VERIFIED_IDX_COMPANY_PROFILE_VIA_ZAPI"
+    }
   },
   "zapi_capital_actions": {
-    "status": "PENDING_FIRST_V0_4_WARM_REFRESH",
-    "horizon": "RECENT_PLUS_UPCOMING"
+    "status": "UPDATED",
+    "token_present": true,
+    "rows": 140,
+    "tickers": 108,
+    "days": 80,
+    "freshest": "2026-09-03",
+    "upcoming_events": 8,
+    "feeds": {
+      "issued-history": {
+        "api_calls": 4,
+        "provider_rows": 1801
+      },
+      "additional-listings": {
+        "api_calls": 4,
+        "normalized_rows": 28
+      },
+      "rights-offerings": {
+        "api_calls": 4,
+        "normalized_rows": 0
+      },
+      "stock-splits": {
+        "api_calls": 4,
+        "normalized_rows": 3
+      }
+    }
+  },
+  "verification": {
+    "ci": "PASSED",
+    "live_zapi_warm_run": "PASSED",
+    "supabase_mutated": false
   }
 }
