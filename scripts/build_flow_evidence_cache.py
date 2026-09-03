@@ -27,6 +27,7 @@ from idx_flow_scanner.providers.zapi import (
 from idx_flow_scanner.providers.zapi_slow import (
     fetch_latest_zapi_ownership,
     fetch_zapi_capital_actions,
+    fetch_zapi_company_profile_ownership,
 )
 from idx_flow_scanner.slow_evidence import (
     load_bundled_zapi_capital_actions,
@@ -160,6 +161,65 @@ def _write_json_foreign(frame: pd.DataFrame) -> None:
     )
 
 
+def _ownership_profile_candidates(
+    universe: list[str],
+    foreign: pd.DataFrame,
+    stock: pd.DataFrame,
+    *,
+    limit: int,
+) -> list[str]:
+    """Prioritize ownership fallback budget toward live accumulation candidates.
+
+    Ranking uses 20-session net foreign shares normalized by tradable shares
+    when available. Missing/invalid denominators fall back to raw net shares.
+    """
+    cap = max(1, int(limit))
+    names = [str(t).strip().upper() for t in universe if str(t).strip()]
+    if foreign is None or foreign.empty or "ticker" not in foreign.columns:
+        return names[:cap]
+
+    flow = foreign.copy()
+    flow["ticker"] = flow["ticker"].astype(str).str.upper()
+    flow["trade_date"] = pd.to_datetime(flow.get("trade_date"), errors="coerce")
+    flow["foreign_net"] = pd.to_numeric(flow.get("foreign_net"), errors="coerce")
+    flow = flow.dropna(subset=["ticker", "trade_date", "foreign_net"])
+    if flow.empty:
+        return names[:cap]
+
+    latest_dates = sorted(flow["trade_date"].dt.normalize().dropna().unique(), reverse=True)[:20]
+    flow = flow[flow["trade_date"].dt.normalize().isin(latest_dates)]
+    net20 = flow.groupby("ticker", observed=True)["foreign_net"].sum().rename("foreign_net_20d")
+
+    scores = net20.to_frame().reset_index()
+    if stock is not None and not stock.empty and {"ticker", "tradable_shares"}.issubset(stock.columns):
+        st = stock.copy()
+        st["ticker"] = st["ticker"].astype(str).str.upper()
+        st["tradable_shares"] = pd.to_numeric(st["tradable_shares"], errors="coerce")
+        st = st.dropna(subset=["ticker"]).drop_duplicates("ticker", keep="last")
+        scores = scores.merge(st[["ticker", "tradable_shares"]], on="ticker", how="left")
+        valid_float = scores["tradable_shares"].gt(0)
+        scores["priority"] = scores["foreign_net_20d"]
+        scores.loc[valid_float, "priority"] = (
+            scores.loc[valid_float, "foreign_net_20d"]
+            / scores.loc[valid_float, "tradable_shares"]
+        )
+    else:
+        scores["priority"] = scores["foreign_net_20d"]
+
+    scores = scores[scores["ticker"].isin(names)].copy()
+    scores["positive_flow"] = scores["foreign_net_20d"].gt(0)
+    scores = scores.sort_values(
+        ["positive_flow", "priority", "foreign_net_20d", "ticker"],
+        ascending=[False, False, False, True],
+        kind="stable",
+    )
+    selected = scores["ticker"].drop_duplicates().head(cap).tolist()
+    if len(selected) < cap:
+        selected_set = set(selected)
+        selected.extend([ticker for ticker in names if ticker not in selected_set][: cap - len(selected)])
+    return selected[:cap]
+
+
 def _fetch_stock_snapshot(universe: list[str], target: pd.Timestamp) -> tuple[pd.DataFrame, str]:
     # A holiday can fall on a weekday. Walk backward only until a real ZAPI stock
     # summary session is found; do not synthesize a date.
@@ -288,18 +348,80 @@ def main() -> int:
     ownership = existing_ownership
     ownership_details: dict[str, object] = {}
     if refresh_ownership:
+        direct_file_error: str | None = None
+        fresh_ownership = pd.DataFrame()
         try:
             fresh_ownership, ownership_details = fetch_latest_zapi_ownership()
-            ownership = _merge_ownership(existing_ownership, fresh_ownership)
-            if not ownership.empty:
-                ownership.to_csv(ZAPI_OWNERSHIP_CACHE, index=False, compression="gzip")
-            ownership_status = str(ownership_details.get("status") or "UPDATED")
         except ZapiQuotaExhausted as exc:
             ownership_status = f"QUOTA_EXHAUSTED: {exc}"
         except ZapiUnavailable as exc:
-            ownership_status = f"UNAVAILABLE: {exc}"
+            direct_file_error = str(exc)
         except Exception as exc:
-            ownership_status = f"ERROR: {type(exc).__name__}: {exc}"
+            direct_file_error = f"{type(exc).__name__}: {exc}"
+
+        # GitHub/cloud egress is sometimes denied by the linked IDX/KSEI XLSX
+        # even though ZAPI's ownership index itself is healthy. In that case,
+        # use ZAPI company-profile shareholders for a bounded high-priority
+        # cohort. This remains ZAPI-only and avoids pretending a 403 means the
+        # evidence does not exist.
+        if fresh_ownership.empty and key_present and not ownership_status.startswith("QUOTA_EXHAUSTED"):
+            profile_limit = max(
+                1,
+                int(os.getenv("ZAPI_OWNERSHIP_PROFILE_FALLBACK_LIMIT", "40") or "40"),
+            )
+            candidates = _ownership_profile_candidates(
+                universe,
+                merged_foreign,
+                stock_snapshot,
+                limit=profile_limit,
+            )
+            try:
+                profile_rows, profile_meta = fetch_zapi_company_profile_ownership(
+                    candidates,
+                    observed_on=target.date(),
+                    max_tickers=profile_limit,
+                )
+                fresh_ownership = profile_rows
+                ownership_details = {
+                    "primary": {
+                        "status": (
+                            f"UNAVAILABLE: {direct_file_error}"
+                            if direct_file_error
+                            else "NO_FILE_ROWS"
+                        ),
+                        "source": "ZAPI_OWNERSHIP_FILES",
+                    },
+                    "fallback": profile_meta,
+                }
+                ownership_status = (
+                    "UPDATED_PROFILE_FALLBACK"
+                    if not profile_rows.empty
+                    else "UNAVAILABLE"
+                )
+            except ZapiQuotaExhausted as exc:
+                ownership_status = f"QUOTA_EXHAUSTED: {exc}"
+                ownership_details = {
+                    "primary_error": direct_file_error,
+                    "fallback_status": ownership_status,
+                }
+            except ZapiUnavailable as exc:
+                ownership_status = f"UNAVAILABLE: {exc}"
+                ownership_details = {
+                    "primary_error": direct_file_error,
+                    "fallback_status": ownership_status,
+                }
+            except Exception as exc:
+                ownership_status = f"ERROR: {type(exc).__name__}: {exc}"
+                ownership_details = {
+                    "primary_error": direct_file_error,
+                    "fallback_status": ownership_status,
+                }
+        elif not fresh_ownership.empty:
+            ownership_status = str(ownership_details.get("status") or "UPDATED")
+
+        ownership = _merge_ownership(existing_ownership, fresh_ownership)
+        if not ownership.empty:
+            ownership.to_csv(ZAPI_OWNERSHIP_CACHE, index=False, compression="gzip")
     report_dates = (
         pd.to_datetime(ownership.get("report_date"), errors="coerce")
         if not ownership.empty
