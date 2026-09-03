@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import date, datetime, timezone
 from io import BytesIO
 import hashlib
+import json
 import math
 import re
 from typing import Any, Iterable, Mapping
@@ -14,6 +15,7 @@ from ..data import canonical_ticker
 from .zapi import ZapiQuotaExhausted, ZapiUnavailable, _key
 
 OWNERSHIP_INDEX_URL = "https://api.zpi.web.id/v1/finance:idx/ownership-files"
+COMPANY_PROFILE_URL = "https://api.zpi.web.id/v1/finance:idx/company-profile"
 OWNERSHIP_CATEGORIES = ("lima-persen", "satu-persen", "klasifikasi", "tipe")
 OWNERSHIP_INDEX_PAGE_SIZE = 200
 OWNERSHIP_MAX_INDEX_PAGES = 3
@@ -382,6 +384,166 @@ def fetch_latest_zapi_ownership(
         ).sort_values(["category", "report_date", "ticker"], kind="stable").reset_index(drop=True)
     return merged, {"status": "UPDATED" if output else "NO_DATA", "categories": category_meta}
 
+
+
+def fetch_zapi_company_profile_ownership(
+    tickers: Iterable[str],
+    *,
+    observed_on: date | str,
+    api_key: str | None = None,
+    max_tickers: int = 40,
+    timeout: float = 30.0,
+) -> tuple[pd.DataFrame, dict[str, object]]:
+    """Fallback ownership snapshot from ZAPI's structured company-profile endpoint.
+
+    This path is used only when the linked IDX/KSEI XLSX cannot be downloaded
+    from cloud egress. It preserves truthful semantics: the acquisition date is
+    an observed snapshot date, not an official KSEI report date.
+    """
+    key = _key(api_key)
+    if not key:
+        return pd.DataFrame(), {
+            "status": "NO_TOKEN",
+            "requests_attempted": 0,
+            "tickers_requested": 0,
+        }
+
+    snapshot_date = pd.Timestamp(observed_on).date()
+    normalized_tickers: list[str] = []
+    seen: set[str] = set()
+    for raw in tickers:
+        ticker = canonical_ticker(raw)
+        if ticker and ticker not in seen:
+            seen.add(ticker)
+            normalized_tickers.append(ticker)
+        if len(normalized_tickers) >= max(1, int(max_tickers)):
+            break
+
+    rows: list[dict[str, object]] = []
+    telemetry: dict[str, object] = {}
+    attempted = 0
+    succeeded = 0
+
+    for ticker in normalized_tickers:
+        attempted += 1
+        try:
+            payload = _request_json(
+                COMPANY_PROFILE_URL,
+                {"code": ticker},
+                api_key=key,
+                timeout=timeout,
+            )
+            root = _unwrap_object(payload)
+            provider = _clean(root.get("provider")).lower()
+            dataset = _clean(root.get("dataset")).lower()
+            payload_ticker = canonical_ticker(root.get("code"))
+            if provider != "idx" or dataset != "company-profile" or payload_ticker != ticker:
+                raise ZapiUnavailable(
+                    f"company-profile provenance mismatch for {ticker}"
+                )
+
+            holders = root.get("shareholders")
+            if holders is None:
+                holders = []
+            if not isinstance(holders, list) or any(
+                not isinstance(item, Mapping) for item in holders
+            ):
+                raise ZapiUnavailable(
+                    f"company-profile shareholders malformed for {ticker}"
+                )
+
+            payload_hash = hashlib.sha256(
+                json.dumps(
+                    dict(root),
+                    sort_keys=True,
+                    separators=(",", ":"),
+                    ensure_ascii=True,
+                    default=str,
+                ).encode("utf-8")
+            ).hexdigest()
+
+            accepted = 0
+            for item in holders:
+                holder = _clean(item.get("name"))
+                shares = _number(item.get("shares"))
+                percentage = _number(item.get("sharePct"), percentage=True)
+                classification = _clean(item.get("category"))
+                if not holder or (shares is None and percentage is None):
+                    continue
+                if shares is not None and shares < 0:
+                    raise ZapiUnavailable(
+                        f"company-profile negative shares for {ticker}"
+                    )
+                if percentage is not None and not 0 <= percentage <= 100:
+                    raise ZapiUnavailable(
+                        f"company-profile ownership percent outside 0..100 for {ticker}"
+                    )
+                rows.append(
+                    {
+                        "ticker": ticker,
+                        "category": "company-profile",
+                        "holder_identity_hash": _holder_identity(
+                            "company-profile",
+                            ticker,
+                            holder,
+                            classification,
+                            "",
+                            "",
+                        ),
+                        "holder_name": holder,
+                        "shares_held": shares,
+                        "ownership_percentage": percentage,
+                        "holder_classification": classification or None,
+                        "holder_type": None,
+                        "local_foreign_state": None,
+                        "report_date": snapshot_date.isoformat(),
+                        "report_date_kind": "OBSERVED_PROFILE_SNAPSHOT",
+                        "publication_date": None,
+                        "source_url": f"{COMPANY_PROFILE_URL}?code={ticker}",
+                        "source_file_hash": payload_hash,
+                        "source_verified": True,
+                        "provenance_state": (
+                            "VERIFIED_IDX_COMPANY_PROFILE_VIA_ZAPI"
+                        ),
+                    }
+                )
+                accepted += 1
+            succeeded += 1
+            telemetry[ticker] = {
+                "status": "UPDATED" if accepted else "NO_SHAREHOLDERS",
+                "rows": accepted,
+            }
+        except (ZapiQuotaExhausted, ZapiUnavailable):
+            raise
+        except Exception as exc:
+            telemetry[ticker] = {
+                "status": f"ERROR: {type(exc).__name__}: {exc}",
+                "rows": 0,
+            }
+
+    frame = pd.DataFrame(rows)
+    if not frame.empty:
+        frame = frame.drop_duplicates(
+            ["source_file_hash", "ticker", "holder_identity_hash"],
+            keep="last",
+        ).sort_values(
+            ["report_date", "ticker", "holder_name"],
+            kind="stable",
+        ).reset_index(drop=True)
+
+    return frame, {
+        "status": "UPDATED" if not frame.empty else "NO_DATA",
+        "source": "ZAPI_COMPANY_PROFILE_SHAREHOLDERS",
+        "snapshot_date": snapshot_date.isoformat(),
+        "requests_attempted": attempted,
+        "requests_succeeded": succeeded,
+        "tickers_requested": len(normalized_tickers),
+        "tickers_with_rows": (
+            int(frame["ticker"].nunique()) if not frame.empty else 0
+        ),
+        "rows": int(len(frame)),
+        "per_ticker": telemetry,
+    }
 
 def _capital_feed_rows(payload: Mapping[str, Any], *, feed: str) -> tuple[list[Mapping[str, Any]], bool]:
     root: Mapping[str, Any] = payload
