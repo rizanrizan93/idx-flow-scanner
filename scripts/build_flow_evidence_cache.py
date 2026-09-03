@@ -5,7 +5,6 @@ import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Callable
 
 import pandas as pd
 
@@ -15,366 +14,346 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from idx_flow_scanner.managed import load_bundled_universe
-from idx_flow_scanner.providers.goapi import (
-    GoApiQuotaExhausted,
-    GoApiUnavailable,
-    choose_goapi_backfill_jobs,
-    fetch_goapi_broker_summary,
-    load_bundled_goapi_broker_flows,
-    merge_goapi_broker_frames,
-    write_goapi_broker_cache,
-)
-from idx_flow_scanner.providers.indexalpha import (
-    IndexAlphaQuotaExhausted,
-    IndexAlphaUnavailable,
-    choose_indexalpha_daily_jobs,
-    fetch_indexalpha_broker_summary,
-    load_bundled_indexalpha_broker_flows,
-    load_indexalpha_targets,
-    merge_indexalpha_broker_frames,
-    write_indexalpha_broker_cache,
-)
-from idx_flow_scanner.providers.idx_official import (
-    IdxOfficialAccessBlocked,
-    fetch_idx_market_broker_summary,
-    fetch_idx_official_flow_history,
-    load_bundled_idx_official_flows,
-    merge_official_flow_frames,
-)
 from idx_flow_scanner.providers.zapi import (
     ZapiQuotaExhausted,
     ZapiUnavailable,
     fetch_zapi_foreign_flow_history,
+    fetch_zapi_stock_summary_day,
     load_bundled_zapi_foreign_flows,
+    load_bundled_zapi_stock_summary,
     write_zapi_foreign_cache,
+    write_zapi_stock_summary_cache,
+)
+from idx_flow_scanner.providers.zapi_slow import (
+    fetch_latest_zapi_ownership,
+    fetch_zapi_capital_actions,
+)
+from idx_flow_scanner.slow_evidence import (
+    load_bundled_zapi_capital_actions,
+    load_bundled_zapi_ownership,
 )
 
 UNIVERSE_PATH = ROOT / "data" / "universe" / "idx_400_syariah.csv"
 CACHE_DIR = ROOT / "data" / "cache"
-DIRECT_IDX_CACHE = CACHE_DIR / "idx_official_flow_60d.csv.gz"
 ZAPI_FOREIGN_CACHE = CACHE_DIR / "zapi_idx_foreign_60d.csv.gz"
 ZAPI_FOREIGN_JSON = CACHE_DIR / "zapi_idx_foreign_60d.json"
-GOAPI_BROKER_CACHE = CACHE_DIR / "goapi_broker_60d.csv.gz"
-INDEX_ALPHA_BROKER_CACHE = CACHE_DIR / "indexalpha_broker_60d.csv.gz"
+ZAPI_STOCK_SUMMARY_CACHE = CACHE_DIR / "zapi_stock_summary_latest.csv.gz"
+ZAPI_OWNERSHIP_CACHE = CACHE_DIR / "zapi_ownership_latest.csv.gz"
+ZAPI_CAPITAL_ACTION_CACHE = CACHE_DIR / "zapi_capital_actions.csv.gz"
 META_PATH = CACHE_DIR / "flow_evidence_meta.json"
 
 
-def _latest_weekday() -> pd.Timestamp:
-    day = pd.Timestamp.now(tz="Asia/Jakarta").normalize().tz_localize(None)
+def _latest_completed_idx_weekday() -> pd.Timestamp:
+    now = pd.Timestamp.now(tz="Asia/Jakarta")
+    day = now.normalize().tz_localize(None)
+    # Do not request today's daily snapshot before the IDX session is safely complete.
+    if now.weekday() < 5 and now.hour < 17:
+        day -= pd.Timedelta(days=1)
     while day.weekday() >= 5:
         day -= pd.Timedelta(days=1)
     return day
 
 
-def _write_direct_idx_cache(frame: pd.DataFrame) -> None:
-    if frame is None or frame.empty:
-        return
-    CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    frame.to_csv(DIRECT_IDX_CACHE, index=False, compression="gzip")
-
-
-def _stats(frame: pd.DataFrame) -> dict[str, object]:
+def _stats(frame: pd.DataFrame | None, date_col: str = "trade_date") -> dict[str, object]:
     if frame is None or frame.empty:
         return {"rows": 0, "tickers": 0, "days": 0, "freshest": None}
-    dates = pd.to_datetime(frame["trade_date"], errors="coerce") if "trade_date" in frame.columns else pd.Series(dtype="datetime64[ns]")
+    dates = (
+        pd.to_datetime(frame[date_col], errors="coerce")
+        if date_col in frame.columns
+        else pd.Series(dtype="datetime64[ns]")
+    )
     return {
         "rows": int(len(frame)),
         "tickers": int(frame["ticker"].nunique()) if "ticker" in frame.columns else 0,
-        "days": int(dates.nunique()) if not dates.empty else 0,
-        "freshest": str(dates.max().date()) if not dates.empty and pd.notna(dates.max()) else None,
+        "days": int(dates.dt.normalize().nunique()) if not dates.empty else 0,
+        "freshest": (
+            str(pd.Timestamp(dates.max()).date())
+            if not dates.empty and pd.notna(dates.max())
+            else None
+        ),
     }
 
 
-def _candidate_trade_dates(foreign_candidates: pd.DataFrame, end_date: pd.Timestamp, count: int = 20) -> list[str]:
-    if foreign_candidates is not None and not foreign_candidates.empty:
-        dates = pd.to_datetime(foreign_candidates["trade_date"], errors="coerce").dropna().dt.normalize().unique()
-        if len(dates):
-            return [str(pd.Timestamp(d).date()) for d in sorted(dates, reverse=True)[:count]]
-    dates: list[str] = []
-    cursor = end_date
-    while len(dates) < count:
-        if cursor.weekday() < 5:
-            dates.append(str(cursor.date()))
-        cursor -= pd.Timedelta(days=1)
-    return dates
+def _merge_foreign(existing: pd.DataFrame, fresh: pd.DataFrame) -> pd.DataFrame:
+    parts = [frame.copy() for frame in (existing, fresh) if frame is not None and not frame.empty]
+    if not parts:
+        return pd.DataFrame()
+    out = pd.concat(parts, ignore_index=True)
+    out["trade_date"] = pd.to_datetime(out["trade_date"], errors="coerce").dt.normalize()
+    out = out.dropna(subset=["ticker", "trade_date"])
+    source = out.get("source", pd.Series("", index=out.index)).fillna("").astype(str)
+    out["source"] = source
+    return out.drop_duplicates(["ticker", "trade_date", "source"], keep="last").sort_values(
+        ["ticker", "trade_date", "source"], kind="stable"
+    ).reset_index(drop=True)
 
 
-def _classify_indexalpha_unavailable(exc: IndexAlphaUnavailable) -> str:
-    """Keep 402/403-style plan/access limits distinct from invalid-key telemetry."""
-    message = str(exc)
-    lowered = message.lower()
-    if "plan does not allow" in lowered or "http 402" in lowered or "http 403" in lowered:
-        return f"PLAN_LIMIT: {message}"
-    return f"UNAVAILABLE: {message}"
+def _merge_ownership(existing: pd.DataFrame, fresh: pd.DataFrame) -> pd.DataFrame:
+    parts = [frame.copy() for frame in (existing, fresh) if frame is not None and not frame.empty]
+    if not parts:
+        return pd.DataFrame()
+    out = pd.concat(parts, ignore_index=True)
+    out["report_date"] = pd.to_datetime(out.get("report_date"), errors="coerce").dt.normalize()
+    out = out.dropna(subset=["ticker", "report_date"])
+    keys = ["category", "report_date", "ticker", "holder_identity_hash"]
+    out = out.drop_duplicates([key for key in keys if key in out.columns], keep="last")
+    # Keep three reporting periods per category so ownership changes are measurable
+    # without allowing this slow evidence cache to grow without bound.
+    kept: list[pd.DataFrame] = []
+    if "category" in out.columns:
+        for _, group in out.groupby("category", observed=True):
+            dates = sorted(group["report_date"].dropna().unique(), reverse=True)[:3]
+            kept.append(group[group["report_date"].isin(dates)].copy())
+    else:
+        dates = sorted(out["report_date"].dropna().unique(), reverse=True)[:3]
+        kept.append(out[out["report_date"].isin(dates)].copy())
+    merged = pd.concat(kept, ignore_index=True) if kept else pd.DataFrame()
+    if not merged.empty:
+        merged["report_date"] = pd.to_datetime(merged["report_date"]).dt.strftime("%Y-%m-%d")
+    return merged.sort_values(["category", "report_date", "ticker"], kind="stable").reset_index(drop=True)
 
 
-def _run_indexalpha_jobs(
-    jobs: list[tuple[str, str]],
-    fetcher: Callable[..., pd.DataFrame] = fetch_indexalpha_broker_summary,
-) -> tuple[list[pd.DataFrame], str, int, int]:
-    """Execute scarce exact-day jobs with truthful attempted/succeeded telemetry.
+def _merge_capital_actions(existing: pd.DataFrame, fresh: pd.DataFrame, *, as_of: pd.Timestamp) -> pd.DataFrame:
+    parts = [frame.copy() for frame in (existing, fresh) if frame is not None and not frame.empty]
+    if not parts:
+        return pd.DataFrame()
+    out = pd.concat(parts, ignore_index=True)
+    out["event_date"] = pd.to_datetime(out.get("event_date"), errors="coerce").dt.normalize()
+    out = out.dropna(subset=["ticker", "event_date"])
+    keys = ["ticker", "event_type", "event_date", "source_feed"]
+    out = out.drop_duplicates([key for key in keys if key in out.columns], keep="last")
+    lower = as_of.normalize() - pd.Timedelta(days=370)
+    upper = as_of.normalize() + pd.Timedelta(days=95)
+    out = out[out["event_date"].between(lower, upper)].copy()
+    out["event_date"] = pd.to_datetime(out["event_date"]).dt.strftime("%Y-%m-%d")
+    return out.sort_values(["event_date", "ticker", "event_type"], kind="stable").reset_index(drop=True)
 
-    A request counts as attempted before the provider call. This matters when the
-    first call returns a 402/403 plan/access response: the key may still be valid,
-    but a real request was consumed/issued and must not be reported as zero.
-    """
-    parts: list[pd.DataFrame] = []
-    attempted = 0
-    succeeded = 0
-    status = "UNCHANGED"
-    for ticker, day in jobs:
-        attempted += 1
-        try:
-            frame = fetcher(ticker, day, investor="all", market="RG")
-            succeeded += 1
-            if frame is not None and not frame.empty:
-                parts.append(frame)
-            status = "UPDATED"
-        except IndexAlphaQuotaExhausted as exc:
-            status = f"QUOTA_EXHAUSTED: {exc}"
-            break
-        except IndexAlphaUnavailable as exc:
-            status = _classify_indexalpha_unavailable(exc)
-            break
-        except Exception as exc:
-            status = f"ERROR: {type(exc).__name__}: {exc}"
-            break
-    return parts, status, attempted, succeeded
+
+def _write_json_foreign(frame: pd.DataFrame) -> None:
+    if frame is None or frame.empty:
+        return
+    mirror = frame.copy()
+    mirror["trade_date"] = pd.to_datetime(mirror["trade_date"], errors="raise").dt.strftime("%Y-%m-%d")
+    mirror["source_verified"] = True
+    mirror["flow_unit"] = "SHARES"
+    mirror["market_type"] = "ALL"
+    mirror["source_url"] = mirror["source"].map(
+        {
+            "ZAPI_IDX_FOREIGN_FLOW": "https://api.zpi.web.id/v1/finance:idx/foreign-flow",
+            "ZAPI_IDX_STOCK_SUMMARY": "https://api.zpi.web.id/v1/finance:idx/stock-summary",
+        }
+    ).fillna("")
+    mirror["provenance_state"] = "VERIFIED_ZAPI_IDX_SHARE_FLOW_NOT_BROKER_IDENTITY"
+    for column in ("volume", "traded_value"):
+        if column not in mirror.columns:
+            mirror[column] = 0.0
+    cols = [
+        "ticker", "trade_date", "foreign_buy", "foreign_sell", "foreign_net",
+        "volume", "traded_value", "flow_unit", "market_type", "source",
+        "source_verified", "source_url", "provenance_state",
+    ]
+    ZAPI_FOREIGN_JSON.write_text(
+        mirror[cols].sort_values(["ticker", "trade_date", "source"], kind="stable")
+        .to_json(orient="records", double_precision=15)
+        + "\n",
+        encoding="utf-8",
+    )
+
+
+def _fetch_stock_snapshot(universe: list[str], target: pd.Timestamp) -> tuple[pd.DataFrame, str]:
+    # A holiday can fall on a weekday. Walk backward only until a real ZAPI stock
+    # summary session is found; do not synthesize a date.
+    for offset in range(8):
+        day = target - pd.Timedelta(days=offset)
+        if day.weekday() >= 5:
+            continue
+        frame = fetch_zapi_stock_summary_day(universe, day.date())
+        if frame is not None and not frame.empty:
+            return frame, str(day.date())
+    return pd.DataFrame(), "NO_DATA"
 
 
 def main() -> int:
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
     universe = load_bundled_universe(UNIVERSE_PATH)
-    end_date = _latest_weekday()
+    target = _latest_completed_idx_weekday()
+    key_present = bool(str(os.getenv("ZAPI_KEY") or "").strip())
+
     meta: dict[str, object] = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "universe_count": len(universe),
-        "target_trade_date": str(end_date.date()),
-        "direct_idx_foreign": {},
+        "target_trade_date": str(target.date()),
+        "architecture": "ZAPI_ONLY_NO_BROKER_DIRECT",
+        "broker_direct": {
+            "enabled": False,
+            "status": "RETIRED",
+            "providers": [],
+        },
         "zapi_idx_foreign": {},
-        "official_market_broker_health": {},
-        "goapi_broker_direct": {},
-        "indexalpha_broker_direct": {},
+        "zapi_stock_summary": {},
+        "zapi_ownership": {},
+        "zapi_capital_actions": {},
     }
 
-    # Tier 1: direct public IDX TradingSummary. This remains the preferred source
-    # but is allowed to fail closed when Cloudflare challenges cloud egress.
-    existing_direct = load_bundled_idx_official_flows(universe, DIRECT_IDX_CACHE, lookback_calendar_days=120)
-    direct_status = "UNCHANGED"
-    try:
-        fresh_direct = fetch_idx_official_flow_history(
-            universe,
-            end_date=end_date.date(),
-            target_trading_days=int(os.getenv("IDX_FOREIGN_TARGET_DAYS", "20") or "20"),
-            max_calendar_days=int(os.getenv("IDX_FOREIGN_MAX_CALENDAR_DAYS", "45") or "45"),
-            request_delay_seconds=float(os.getenv("IDX_REQUEST_DELAY_SECONDS", "1.0") or "1.0"),
-            raise_on_block=True,
-        )
-        merged_direct = merge_official_flow_frames(existing_direct, fresh_direct)
-        if not merged_direct.empty:
-            _write_direct_idx_cache(merged_direct)
-            direct_status = "UPDATED" if not fresh_direct.empty else "PRESERVED"
-        else:
-            merged_direct = existing_direct
-    except IdxOfficialAccessBlocked as exc:
-        merged_direct = existing_direct
-        direct_status = f"BLOCKED: {exc}"
-    except Exception as exc:
-        merged_direct = existing_direct
-        direct_status = f"ERROR: {type(exc).__name__}: {exc}"
-    meta["direct_idx_foreign"] = {"status": direct_status, **_stats(merged_direct)}
-
-    # Tier 2: Zapi. Bootstrap the desired history once; after that only refresh
-    # the newest trading day. This keeps the free-tier request budget sustainable
-    # instead of downloading the same 20-day window on every scheduled run.
-    existing_zapi = load_bundled_zapi_foreign_flows(universe, ZAPI_FOREIGN_CACHE, lookback_calendar_days=120)
-    zapi_key_present = bool(str(os.getenv("ZAPI_KEY") or "").strip())
-    zapi_target_days = max(1, int(os.getenv("ZAPI_FOREIGN_TARGET_DAYS", "20") or "20"))
-    zapi_max_calendar_days = max(zapi_target_days, int(os.getenv("ZAPI_FOREIGN_MAX_CALENDAR_DAYS", "45") or "45"))
-    zapi_status = "NO_TOKEN" if not zapi_key_present else "UNCHANGED"
-    merged_zapi = existing_zapi
-    if zapi_key_present:
+    existing_foreign = load_bundled_zapi_foreign_flows(
+        universe, ZAPI_FOREIGN_CACHE, lookback_calendar_days=120
+    )
+    foreign_target_days = max(20, int(os.getenv("ZAPI_FOREIGN_TARGET_DAYS", "20") or "20"))
+    foreign_status = "NO_TOKEN" if not key_present else "UNCHANGED"
+    merged_foreign = existing_foreign
+    if key_present:
         try:
-            cached_dates = pd.to_datetime(existing_zapi.get("trade_date"), errors="coerce").dropna() if not existing_zapi.empty else pd.Series(dtype="datetime64[ns]")
+            cached_dates = (
+                pd.to_datetime(existing_foreign["trade_date"], errors="coerce").dropna()
+                if not existing_foreign.empty
+                else pd.Series(dtype="datetime64[ns]")
+            )
             cached_days = int(cached_dates.dt.normalize().nunique()) if not cached_dates.empty else 0
-            freshest_cached = cached_dates.max().normalize() if not cached_dates.empty else pd.NaT
-            if cached_days >= zapi_target_days and pd.notna(freshest_cached) and freshest_cached >= end_date.normalize():
-                fresh_zapi = pd.DataFrame()
-                zapi_status = "PRESERVED"
+            freshest = cached_dates.max().normalize() if not cached_dates.empty else pd.NaT
+            if cached_days >= foreign_target_days and pd.notna(freshest) and freshest >= target.normalize():
+                fresh_foreign = pd.DataFrame()
+                foreign_status = "PRESERVED"
             else:
-                incremental = cached_days >= zapi_target_days
-                fresh_zapi = fetch_zapi_foreign_flow_history(
+                incremental = cached_days >= foreign_target_days
+                fresh_foreign = fetch_zapi_foreign_flow_history(
                     universe,
-                    end_date=end_date.date(),
-                    target_trading_days=1 if incremental else zapi_target_days,
-                    max_calendar_days=7 if incremental else zapi_max_calendar_days,
+                    end_date=target.date(),
+                    target_trading_days=1 if incremental else foreign_target_days,
+                    max_calendar_days=8 if incremental else 50,
                 )
-                zapi_status = "UPDATED" if not fresh_zapi.empty else "NO_DATA"
-            merged_zapi = merge_official_flow_frames(existing_zapi, fresh_zapi)
-            if not merged_zapi.empty:
-                write_zapi_foreign_cache(merged_zapi, ZAPI_FOREIGN_CACHE)
+                foreign_status = "UPDATED" if not fresh_foreign.empty else "NO_DATA"
+            merged_foreign = _merge_foreign(existing_foreign, fresh_foreign)
+            if not merged_foreign.empty:
+                write_zapi_foreign_cache(merged_foreign, ZAPI_FOREIGN_CACHE)
+                _write_json_foreign(merged_foreign)
         except ZapiQuotaExhausted as exc:
-            zapi_status = f"QUOTA_EXHAUSTED: {exc}"
+            foreign_status = f"QUOTA_EXHAUSTED: {exc}"
         except ZapiUnavailable as exc:
-            zapi_status = f"UNAVAILABLE: {exc}"
+            foreign_status = f"UNAVAILABLE: {exc}"
         except Exception as exc:
-            zapi_status = f"ERROR: {type(exc).__name__}: {exc}"
+            foreign_status = f"ERROR: {type(exc).__name__}: {exc}"
     meta["zapi_idx_foreign"] = {
-        "status": zapi_status,
-        "token_present": zapi_key_present,
+        "status": foreign_status,
+        "token_present": key_present,
         "flow_unit": "SHARES",
-        "target_history_days": zapi_target_days,
+        "target_history_days": foreign_target_days,
         "refresh_mode": "INCREMENTAL_AFTER_BOOTSTRAP",
-        **_stats(merged_zapi),
+        **_stats(merged_foreign),
     }
-    if merged_zapi is not None and not merged_zapi.empty:
-        mirror = merged_zapi.copy()
-        mirror["trade_date"] = pd.to_datetime(mirror["trade_date"], errors="raise").dt.strftime("%Y-%m-%d")
-        mirror["source_verified"] = True
-        mirror["flow_unit"] = "SHARES"
-        mirror["market_type"] = "ALL"
-        mirror["source_url"] = mirror["source"].map({
-            "ZAPI_IDX_FOREIGN_FLOW": "https://api.zpi.web.id/v1/finance:idx/foreign-flow",
-            "ZAPI_IDX_STOCK_SUMMARY": "https://api.zpi.web.id/v1/finance:idx/stock-summary",
-        }).fillna("")
-        mirror["provenance_state"] = "VERIFIED_ZAPI_IDX_SHARE_FLOW_NOT_BROKER_IDENTITY"
-        cols = [
-            "ticker", "trade_date", "foreign_buy", "foreign_sell", "foreign_net",
-            "volume", "traded_value", "flow_unit", "market_type", "source",
-            "source_verified", "source_url", "provenance_state",
-        ]
-        for column in ("volume", "traded_value"):
-            if column not in mirror.columns:
-                mirror[column] = 0.0
-        ZAPI_FOREIGN_JSON.write_text(
-            mirror[cols].sort_values(["ticker", "trade_date", "source"], kind="stable")
-            .to_json(orient="records", double_precision=15) + "\n",
-            encoding="utf-8",
-        )
 
-    # IDX GetBrokerSummary is market-wide only: useful source-health telemetry,
-    # never stock-level direct evidence.
-    try:
-        market_broker = fetch_idx_market_broker_summary(end_date.date(), retries=1)
-        meta["official_market_broker_health"] = {
-            "status": "AVAILABLE" if not market_broker.empty else "NO_DATA",
-            "rows": int(len(market_broker)),
-            "brokers": int(market_broker["broker_code"].nunique()) if not market_broker.empty else 0,
-            "direct_evidence_eligible": False,
-        }
-    except IdxOfficialAccessBlocked as exc:
-        meta["official_market_broker_health"] = {
-            "status": f"BLOCKED: {exc}", "rows": 0, "brokers": 0, "direct_evidence_eligible": False,
-        }
-    except Exception as exc:
-        meta["official_market_broker_health"] = {
-            "status": f"ERROR: {type(exc).__name__}: {exc}", "rows": 0, "brokers": 0, "direct_evidence_eligible": False,
-        }
-
-    # Stock-level broker path: GOAPI's documented per-symbol NET broker summary.
-    # The request budget is deliberately repository-variable driven so a free
-    # trial cannot accidentally be consumed like a paid production quota.
-    existing_broker = load_bundled_goapi_broker_flows(universe, GOAPI_BROKER_CACHE, lookback_calendar_days=180)
-    goapi_key_present = bool(str(os.getenv("GOAPI_KEY") or "").strip())
-    goapi_budget = max(0, int(os.getenv("GOAPI_DAILY_BUDGET", "5") or "5"))
-    foreign_candidates = merge_official_flow_frames(merged_direct, merged_zapi)
-    trade_dates = _candidate_trade_dates(foreign_candidates, end_date, count=20)
-    jobs = choose_goapi_backfill_jobs(
-        universe,
-        existing_broker,
-        trade_dates,
-        budget_requests=goapi_budget,
-    ) if goapi_key_present else []
-    goapi_status = "NO_TOKEN" if not goapi_key_present else "NO_BUDGET" if goapi_budget == 0 else "UNCHANGED"
-    broker_parts: list[pd.DataFrame] = []
-    attempted = 0
-    for ticker, day in jobs:
+    existing_stock = load_bundled_zapi_stock_summary(universe, ZAPI_STOCK_SUMMARY_CACHE)
+    stock_status = "NO_TOKEN" if not key_present else "UNCHANGED"
+    stock_snapshot = existing_stock
+    stock_trade_date = None
+    if key_present:
         try:
-            frame = fetch_goapi_broker_summary(ticker, day, investor="ALL")
-            attempted += 1
-            if not frame.empty:
-                broker_parts.append(frame)
-            goapi_status = "UPDATED"
-        except GoApiQuotaExhausted as exc:
-            goapi_status = f"QUOTA_EXHAUSTED: {exc}"
-            break
-        except GoApiUnavailable as exc:
-            goapi_status = f"UNAVAILABLE: {exc}"
-            break
+            fresh_stock, stock_trade_date = _fetch_stock_snapshot(universe, target)
+            if not fresh_stock.empty:
+                stock_snapshot = fresh_stock
+                write_zapi_stock_summary_cache(stock_snapshot, ZAPI_STOCK_SUMMARY_CACHE)
+                stock_status = "UPDATED"
+            else:
+                stock_status = "NO_DATA"
+        except ZapiQuotaExhausted as exc:
+            stock_status = f"QUOTA_EXHAUSTED: {exc}"
+        except ZapiUnavailable as exc:
+            stock_status = f"UNAVAILABLE: {exc}"
         except Exception as exc:
-            goapi_status = f"ERROR: {type(exc).__name__}: {exc}"
-            break
-
-    fresh_broker = pd.concat(broker_parts, ignore_index=True) if broker_parts else pd.DataFrame()
-    merged_broker = merge_goapi_broker_frames(existing_broker, fresh_broker)
-    if not merged_broker.empty:
-        write_goapi_broker_cache(merged_broker, GOAPI_BROKER_CACHE)
-    verified_tickers = 0
-    if not merged_broker.empty and "source_verified" in merged_broker.columns:
-        raw = merged_broker["source_verified"]
-        verified = raw if pd.api.types.is_bool_dtype(raw) else raw.astype(str).str.lower().isin({"1", "true", "yes", "verified"})
-        verified_tickers = int(merged_broker.loc[verified.fillna(False), "ticker"].nunique())
-    meta["goapi_broker_direct"] = {
-        "status": goapi_status,
-        "provider": "GOAPI_BROKER_SUMMARY_NET",
-        "token_present": goapi_key_present,
-        "budget_requests": goapi_budget,
-        "requests_attempted": attempted,
-        "jobs_planned": len(jobs),
-        "verified_tickers": verified_tickers,
-        "target_history_days": len(trade_dates),
-        **_stats(merged_broker),
+            stock_status = f"ERROR: {type(exc).__name__}: {exc}"
+    free_float_available = 0
+    if not stock_snapshot.empty:
+        listed = pd.to_numeric(stock_snapshot.get("listed_shares"), errors="coerce")
+        tradable = pd.to_numeric(stock_snapshot.get("tradable_shares"), errors="coerce")
+        free_float_available = int((listed.gt(0) & tradable.gt(0) & tradable.le(listed * 1.05)).sum())
+    meta["zapi_stock_summary"] = {
+        "status": stock_status,
+        "token_present": key_present,
+        "selected_trade_date": stock_trade_date,
+        "free_float_structure_rows": free_float_available,
+        **_stats(stock_snapshot),
     }
 
-    # Free permanent stock-level broker path: Index Alpha. The public free plan
-    # allows five requests/day, so we pin a five-ticker cohort and request one
-    # exact trading day per ticker. A range aggregate is never expanded into
-    # fabricated daily evidence. Existing direct-evidence gates remain unchanged.
-    existing_indexalpha = load_bundled_indexalpha_broker_flows(
-        universe, INDEX_ALPHA_BROKER_CACHE, lookback_calendar_days=180
+    existing_ownership = load_bundled_zapi_ownership(universe, ZAPI_OWNERSHIP_CACHE)
+    slow_weekday = int(os.getenv("ZAPI_OWNERSHIP_REFRESH_WEEKDAY", "0") or "0")
+    force_slow = str(os.getenv("ZAPI_FORCE_SLOW_REFRESH", "0")).strip().lower() in {"1", "true", "yes"}
+    refresh_ownership = bool(
+        key_present
+        and (
+            existing_ownership.empty
+            or force_slow
+            or pd.Timestamp.now(tz="Asia/Jakarta").weekday() == slow_weekday
+        )
     )
-    indexalpha_targets = [t for t in load_indexalpha_targets() if t in set(universe)]
-    indexalpha_key_present = bool(str(os.getenv("INDEX_ALPHA_KEY") or "").strip())
-    indexalpha_budget = max(0, int(os.getenv("INDEX_ALPHA_DAILY_BUDGET", "5") or "5"))
-    indexalpha_jobs = choose_indexalpha_daily_jobs(
-        indexalpha_targets, existing_indexalpha, trade_dates, budget_requests=indexalpha_budget
-    ) if indexalpha_key_present else []
-    indexalpha_status = (
-        "NO_TOKEN" if not indexalpha_key_present else
-        "NO_BUDGET" if indexalpha_budget == 0 else "UNCHANGED"
+    ownership_status = "NO_TOKEN" if not key_present else "PRESERVED"
+    ownership = existing_ownership
+    ownership_details: dict[str, object] = {}
+    if refresh_ownership:
+        try:
+            fresh_ownership, ownership_details = fetch_latest_zapi_ownership()
+            ownership = _merge_ownership(existing_ownership, fresh_ownership)
+            if not ownership.empty:
+                ownership.to_csv(ZAPI_OWNERSHIP_CACHE, index=False, compression="gzip")
+            ownership_status = str(ownership_details.get("status") or "UPDATED")
+        except ZapiQuotaExhausted as exc:
+            ownership_status = f"QUOTA_EXHAUSTED: {exc}"
+        except ZapiUnavailable as exc:
+            ownership_status = f"UNAVAILABLE: {exc}"
+        except Exception as exc:
+            ownership_status = f"ERROR: {type(exc).__name__}: {exc}"
+    report_dates = (
+        pd.to_datetime(ownership.get("report_date"), errors="coerce")
+        if not ownership.empty
+        else pd.Series(dtype="datetime64[ns]")
     )
-    indexalpha_parts: list[pd.DataFrame] = []
-    indexalpha_attempted = 0
-    indexalpha_succeeded = 0
-    if indexalpha_jobs:
-        indexalpha_parts, indexalpha_status, indexalpha_attempted, indexalpha_succeeded = _run_indexalpha_jobs(indexalpha_jobs)
-
-    fresh_indexalpha = pd.concat(indexalpha_parts, ignore_index=True) if indexalpha_parts else pd.DataFrame()
-    merged_indexalpha = merge_indexalpha_broker_frames(existing_indexalpha, fresh_indexalpha)
-    if not merged_indexalpha.empty:
-        write_indexalpha_broker_cache(merged_indexalpha, INDEX_ALPHA_BROKER_CACHE)
-    indexalpha_verified_tickers = 0
-    if not merged_indexalpha.empty and "source_verified" in merged_indexalpha.columns:
-        raw = merged_indexalpha["source_verified"]
-        verified = raw if pd.api.types.is_bool_dtype(raw) else raw.astype(str).str.lower().isin({"1", "true", "yes", "verified"})
-        indexalpha_verified_tickers = int(merged_indexalpha.loc[verified.fillna(False), "ticker"].nunique())
-    meta["indexalpha_broker_direct"] = {
-        "status": indexalpha_status,
-        "provider": "INDEX_ALPHA_BROKER_SUMMARY",
-        "contract": "STOCK_LEVEL_GROSS_BUY_SELL_EXACT_DAY_RG_ALL",
-        "token_present": indexalpha_key_present,
-        "budget_requests": indexalpha_budget,
-        "requests_attempted": indexalpha_attempted,
-        "requests_succeeded": indexalpha_succeeded,
-        "jobs_planned": len(indexalpha_jobs),
-        "targets": indexalpha_targets,
-        "verified_tickers": indexalpha_verified_tickers,
-        "target_history_days": len(trade_dates),
-        **_stats(merged_indexalpha),
+    meta["zapi_ownership"] = {
+        "status": ownership_status,
+        "token_present": key_present,
+        "refresh_policy": f"WEEKLY_WEEKDAY_{slow_weekday}_OR_MISSING",
+        "report_periods": int(report_dates.dt.normalize().nunique()) if not report_dates.empty else 0,
+        "latest_report_date": (
+            str(pd.Timestamp(report_dates.max()).date())
+            if not report_dates.empty and pd.notna(report_dates.max())
+            else None
+        ),
+        "details": ownership_details,
+        **_stats(ownership, date_col="report_date"),
     }
 
-    CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    META_PATH.write_text(json.dumps(meta, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    print(json.dumps(meta, indent=2, sort_keys=True))
+    existing_actions = load_bundled_zapi_capital_actions(universe, ZAPI_CAPITAL_ACTION_CACHE)
+    action_status = "NO_TOKEN" if not key_present else "PRESERVED"
+    actions = existing_actions
+    action_details: dict[str, object] = {}
+    if key_present:
+        try:
+            fresh_actions, action_details = fetch_zapi_capital_actions(
+                as_of=target.date(),
+                months_back=3,
+                months_forward=1,
+            )
+            actions = _merge_capital_actions(existing_actions, fresh_actions, as_of=target)
+            if not actions.empty:
+                actions.to_csv(ZAPI_CAPITAL_ACTION_CACHE, index=False, compression="gzip")
+            action_status = str(action_details.get("status") or "UPDATED")
+        except ZapiQuotaExhausted as exc:
+            action_status = f"QUOTA_EXHAUSTED: {exc}"
+        except ZapiUnavailable as exc:
+            action_status = f"UNAVAILABLE: {exc}"
+        except Exception as exc:
+            action_status = f"ERROR: {type(exc).__name__}: {exc}"
+    upcoming = 0
+    if not actions.empty and "event_date" in actions.columns:
+        dates = pd.to_datetime(actions["event_date"], errors="coerce")
+        upcoming = int(dates.ge(target.normalize()).sum())
+    meta["zapi_capital_actions"] = {
+        "status": action_status,
+        "token_present": key_present,
+        "upcoming_events": upcoming,
+        "details": action_details,
+        **_stats(actions, date_col="event_date"),
+    }
+
+    META_PATH.write_text(json.dumps(meta, indent=2, sort_keys=True, default=str) + "\n", encoding="utf-8")
+    print(json.dumps(meta, indent=2, sort_keys=True, default=str))
     return 0
 
 
