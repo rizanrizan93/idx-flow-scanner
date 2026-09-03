@@ -1,401 +1,401 @@
-ticker
-ABMM
-ARII
-ATLA
-BBRM
-BESS
-BOAT
-BSML
-BSSR
-BULL
-CANI
-CGAS
-COAL
-DWGL
-ELSA
-FIRE
-HRUM
-IATA
-INDY
-ITMA
-KKGI
-KOPI
-MAHA
-MBAP
-MCOL
-MKAP
-MYOH
-PKPK
-PSAT
-PSSI
-PTIS
-RAJA
-RATU
-RGAS
-RMKE
-RMKO
-RUIS
-SEMA
-SGER
-SICO
-SMMT
-SOCI
-SUNI
-TCPI
-TEBE
-TOBA
-TPMA
-UNIQ
-WINS
-WOWS
-ADMG
-AGII
-AKPI
-ALDO
-ALKA
-APLI
-ASPR
-AYLS
-BATR
-BLES
-BMSR
-BRNA
-CHEM
-CITA
-CLPI
-CTBN
-DGWG
-DKFT
-EKAD
-EPAC
-ESIP
-ESSA
-FASW
-FPNI
-FWCT
-GDST
-GGRP
-IFII
-IFSH
-IGAR
-INCI
-INTD
-IPOL
-ISSP
-KDSI
-KKES
-LMSH
-LTLS
-MDKI
-MINE
-NICE
-NICL
-NIKL
-OBMD
-OKAS
-PACK
-PBID
-PDPP
-PICO
-PPRI
-PSAB
-PTMR
-SAMF
-SBMA
-SMBR
-SMCB
-SMGA
-SMKL
-SMLE
-SOLA
-SPMA
-SULI
-TALF
-TBMS
-TIRT
-TRST
-UNIC
-WTON
-YPAS
-AMFG
-AMIN
-APII
-ARNA
-ASGR
-BINO
-BLUE
-CAKK
-CCSI
-CRSN
-DYAN
-FOLK
-GPSO
-HOPE
-HYGN
-ICON
-IKAI
-IKBI
-JECC
-JTPE
-KBLI
-KBLM
-KIAS
-KING
-KOBX
-KOIN
-KONI
-KUAS
-LION
-MARK
-MFMI
-MHKI
-MLIA
-MUTU
-NAIK
-NTBK
-PADA
-PTMP
-SCCO
-SKRN
-SMIL
-SOSS
-SPTO
-TIRA
-TOTO
-VISI
-VOKS
-WIDI
-AGAR
-AISA
-AMMS
-ASHA
-AYAM
-BISI
-BOBA
-BRRC
-BUAH
-BUDI
-BWPT
-CAMP
-CEKA
-CLEO
-CPRO
-CSRA
-DAYA
-DEWI
-DMND
-DSFI
-DSNG
-EPMT
-EURO
-FISH
-FLMC
-FOOD
-FORE
-GOOD
-GRPM
-GULA
-GUNA
-GZCO
-HERO
-HOKI
-IKAN
-JARR
-JAWA
-KEJU
-KINO
-KMDS
-LSIP
-MAIN
-MAXI
-MBTO
-MKTR
-MLPL
-MPPA
-MRAT
-MSJA
-NANO
-NASI
-NAYZ
-NEST
-PCAR
-PNGO
-PSDN
-PSGO
-PTPS
-RANC
-ROTI
-SDPC
-SGRO
-SIMP
-SIPD
-SKBM
-SKLT
-STAA
-STTP
-TCID
-TGKA
-TGUK
-TLDN
-UCID
-UDNG
-VICI
-WAPO
-YUPI
-BMHS
-CARE
-CHEK
-DGNS
-DVLA
-HALO
-IKPM
-IRRA
-LABS
-MDLA
-MEDS
-MERK
-MMIX
-MTMH
-OBAT
-OMED
-PEHA
-PEVE
-PRAY
-PRDA
-PRIM
-RSCH
-RSGK
-SAME
-SCPI
-SOHO
-SURI
-TSPC
-ADCP
-AMAN
-APLN
-ASPI
-ASRI
-ATAP
-BAPI
-BBSS
-BCIP
-BEST
-BIPP
-BKDP
-BKSL
-BSBK
-CITY
-CSIS
-DADA
-DILD
-DMAS
-DUTI
-ELTY
-EMDE
-FMII
-GMTD
-GPRA
-GRIA
-HBAT
-HOMI
-INPP
-IPAC
-JRPT
-KBAG
-KIJA
-KOCI
-LAND
-LPCK
-LPLI
-MMLP
-MSIE
-MTLA
-MTSM
-NZIA
-PAMG
-PLIN
-POLI
-PURI
-RBMS
-REAL
-RELF
-RISE
-ROCK
-RODA
-SAGE
-SATU
-SMDM
-SMRA
-UANG
-URBN
-VAST
-WINR
-AREA
-ATIC
-AWAN
-AXIO
-CASH
-CHIP
-CYBR
-DIVA
-DMMX
-ELIT
-GLVA
-HDIT
-IOTF
-IRSX
-JATI
-KIOS
-KREN
-LUCK
-MCAS
-MPIX
-MSTI
-MTDL
-NFCX
-PGJO
-PTSN
-RUNS
-TFAS
-TOSK
-TRON
-UVCR
-WGSH
-WIFI
-WIRG
-ZYRX
-ASLI
-BALI
-BDKR
-CMNP
-DATA
-DGIK
-FIMP
-GHON
-GOLD
-HADE
-IBST
-IDPR
-INET
-IPCM
-JAST
-JKON
-KARW
-KEEN
-KETR
-KOKA
-MANG
-META
-MPOW
-MTPS
-NRCA
-PORT
-POWR
-PPRE
-PTPP
-PTPW
-SMKM
-SSIA
-TAMA
-TOTL
-WEGE
+ticker,sector
+ABMM,"Energy"
+ARII,"Energy"
+ATLA,"Energy"
+BBRM,"Energy"
+BESS,"Energy"
+BOAT,"Energy"
+BSML,"Energy"
+BSSR,"Energy"
+BULL,"Energy"
+CANI,"Energy"
+CGAS,"Energy"
+COAL,"Energy"
+DWGL,"Energy"
+ELSA,"Energy"
+FIRE,"Energy"
+HRUM,"Energy"
+IATA,"Energy"
+INDY,"Energy"
+ITMA,"Energy"
+KKGI,"Energy"
+KOPI,"Energy"
+MAHA,"Energy"
+MBAP,"Energy"
+MCOL,"Energy"
+MKAP,"Energy"
+MYOH,"Energy"
+PKPK,"Energy"
+PSAT,"Energy"
+PSSI,"Energy"
+PTIS,"Energy"
+RAJA,"Energy"
+RATU,"Energy"
+RGAS,"Energy"
+RMKE,"Energy"
+RMKO,"Energy"
+RUIS,"Energy"
+SEMA,"Energy"
+SGER,"Energy"
+SICO,"Energy"
+SMMT,"Energy"
+SOCI,"Energy"
+SUNI,"Energy"
+TCPI,"Energy"
+TEBE,"Energy"
+TOBA,"Energy"
+TPMA,"Energy"
+UNIQ,"Energy"
+WINS,"Energy"
+WOWS,"Energy"
+ADMG,"Basic Materials"
+AGII,"Basic Materials"
+AKPI,"Basic Materials"
+ALDO,"Basic Materials"
+ALKA,"Basic Materials"
+APLI,"Basic Materials"
+ASPR,"Basic Materials"
+AYLS,"Basic Materials"
+BATR,"Basic Materials"
+BLES,"Basic Materials"
+BMSR,"Basic Materials"
+BRNA,"Basic Materials"
+CHEM,"Basic Materials"
+CITA,"Basic Materials"
+CLPI,"Basic Materials"
+CTBN,"Basic Materials"
+DGWG,"Basic Materials"
+DKFT,"Basic Materials"
+EKAD,"Basic Materials"
+EPAC,"Basic Materials"
+ESIP,"Basic Materials"
+ESSA,"Basic Materials"
+FASW,"Basic Materials"
+FPNI,"Basic Materials"
+FWCT,"Basic Materials"
+GDST,"Basic Materials"
+GGRP,"Basic Materials"
+IFII,"Basic Materials"
+IFSH,"Basic Materials"
+IGAR,"Basic Materials"
+INCI,"Basic Materials"
+INTD,"Basic Materials"
+IPOL,"Basic Materials"
+ISSP,"Basic Materials"
+KDSI,"Basic Materials"
+KKES,"Basic Materials"
+LMSH,"Basic Materials"
+LTLS,"Basic Materials"
+MDKI,"Basic Materials"
+MINE,"Basic Materials"
+NICE,"Basic Materials"
+NICL,"Basic Materials"
+NIKL,"Basic Materials"
+OBMD,"Basic Materials"
+OKAS,"Basic Materials"
+PACK,"Basic Materials"
+PBID,"Basic Materials"
+PDPP,"Basic Materials"
+PICO,"Basic Materials"
+PPRI,"Basic Materials"
+PSAB,"Basic Materials"
+PTMR,"Basic Materials"
+SAMF,"Basic Materials"
+SBMA,"Basic Materials"
+SMBR,"Basic Materials"
+SMCB,"Basic Materials"
+SMGA,"Basic Materials"
+SMKL,"Basic Materials"
+SMLE,"Basic Materials"
+SOLA,"Basic Materials"
+SPMA,"Basic Materials"
+SULI,"Basic Materials"
+TALF,"Basic Materials"
+TBMS,"Basic Materials"
+TIRT,"Basic Materials"
+TRST,"Basic Materials"
+UNIC,"Basic Materials"
+WTON,"Basic Materials"
+YPAS,"Basic Materials"
+AMFG,"Industrials"
+AMIN,"Industrials"
+APII,"Industrials"
+ARNA,"Industrials"
+ASGR,"Industrials"
+BINO,"Industrials"
+BLUE,"Industrials"
+CAKK,"Industrials"
+CCSI,"Industrials"
+CRSN,"Industrials"
+DYAN,"Industrials"
+FOLK,"Industrials"
+GPSO,"Industrials"
+HOPE,"Industrials"
+HYGN,"Industrials"
+ICON,"Industrials"
+IKAI,"Industrials"
+IKBI,"Industrials"
+JECC,"Industrials"
+JTPE,"Industrials"
+KBLI,"Industrials"
+KBLM,"Industrials"
+KIAS,"Industrials"
+KING,"Industrials"
+KOBX,"Industrials"
+KOIN,"Industrials"
+KONI,"Industrials"
+KUAS,"Industrials"
+LION,"Industrials"
+MARK,"Industrials"
+MFMI,"Industrials"
+MHKI,"Industrials"
+MLIA,"Industrials"
+MUTU,"Industrials"
+NAIK,"Industrials"
+NTBK,"Industrials"
+PADA,"Industrials"
+PTMP,"Industrials"
+SCCO,"Industrials"
+SKRN,"Industrials"
+SMIL,"Industrials"
+SOSS,"Industrials"
+SPTO,"Industrials"
+TIRA,"Industrials"
+TOTO,"Industrials"
+VISI,"Industrials"
+VOKS,"Industrials"
+WIDI,"Industrials"
+AGAR,"Consumer Non-Cyclicals"
+AISA,"Consumer Non-Cyclicals"
+AMMS,"Consumer Non-Cyclicals"
+ASHA,"Consumer Non-Cyclicals"
+AYAM,"Consumer Non-Cyclicals"
+BISI,"Consumer Non-Cyclicals"
+BOBA,"Consumer Non-Cyclicals"
+BRRC,"Consumer Non-Cyclicals"
+BUAH,"Consumer Non-Cyclicals"
+BUDI,"Consumer Non-Cyclicals"
+BWPT,"Consumer Non-Cyclicals"
+CAMP,"Consumer Non-Cyclicals"
+CEKA,"Consumer Non-Cyclicals"
+CLEO,"Consumer Non-Cyclicals"
+CPRO,"Consumer Non-Cyclicals"
+CSRA,"Consumer Non-Cyclicals"
+DAYA,"Consumer Non-Cyclicals"
+DEWI,"Consumer Non-Cyclicals"
+DMND,"Consumer Non-Cyclicals"
+DSFI,"Consumer Non-Cyclicals"
+DSNG,"Consumer Non-Cyclicals"
+EPMT,"Consumer Non-Cyclicals"
+EURO,"Consumer Non-Cyclicals"
+FISH,"Consumer Non-Cyclicals"
+FLMC,"Consumer Non-Cyclicals"
+FOOD,"Consumer Non-Cyclicals"
+FORE,"Consumer Non-Cyclicals"
+GOOD,"Consumer Non-Cyclicals"
+GRPM,"Consumer Non-Cyclicals"
+GULA,"Consumer Non-Cyclicals"
+GUNA,"Consumer Non-Cyclicals"
+GZCO,"Consumer Non-Cyclicals"
+HERO,"Consumer Non-Cyclicals"
+HOKI,"Consumer Non-Cyclicals"
+IKAN,"Consumer Non-Cyclicals"
+JARR,"Consumer Non-Cyclicals"
+JAWA,"Consumer Non-Cyclicals"
+KEJU,"Consumer Non-Cyclicals"
+KINO,"Consumer Non-Cyclicals"
+KMDS,"Consumer Non-Cyclicals"
+LSIP,"Consumer Non-Cyclicals"
+MAIN,"Consumer Non-Cyclicals"
+MAXI,"Consumer Non-Cyclicals"
+MBTO,"Consumer Non-Cyclicals"
+MKTR,"Consumer Non-Cyclicals"
+MLPL,"Consumer Non-Cyclicals"
+MPPA,"Consumer Non-Cyclicals"
+MRAT,"Consumer Non-Cyclicals"
+MSJA,"Consumer Non-Cyclicals"
+NANO,"Consumer Non-Cyclicals"
+NASI,"Consumer Non-Cyclicals"
+NAYZ,"Consumer Non-Cyclicals"
+NEST,"Consumer Non-Cyclicals"
+PCAR,"Consumer Non-Cyclicals"
+PNGO,"Consumer Non-Cyclicals"
+PSDN,"Consumer Non-Cyclicals"
+PSGO,"Consumer Non-Cyclicals"
+PTPS,"Consumer Non-Cyclicals"
+RANC,"Consumer Non-Cyclicals"
+ROTI,"Consumer Non-Cyclicals"
+SDPC,"Consumer Non-Cyclicals"
+SGRO,"Consumer Non-Cyclicals"
+SIMP,"Consumer Non-Cyclicals"
+SIPD,"Consumer Non-Cyclicals"
+SKBM,"Consumer Non-Cyclicals"
+SKLT,"Consumer Non-Cyclicals"
+STAA,"Consumer Non-Cyclicals"
+STTP,"Consumer Non-Cyclicals"
+TCID,"Consumer Non-Cyclicals"
+TGKA,"Consumer Non-Cyclicals"
+TGUK,"Consumer Non-Cyclicals"
+TLDN,"Consumer Non-Cyclicals"
+UCID,"Consumer Non-Cyclicals"
+UDNG,"Consumer Non-Cyclicals"
+VICI,"Consumer Non-Cyclicals"
+WAPO,"Consumer Non-Cyclicals"
+YUPI,"Consumer Non-Cyclicals"
+BMHS,"Healthcare"
+CARE,"Healthcare"
+CHEK,"Healthcare"
+DGNS,"Healthcare"
+DVLA,"Healthcare"
+HALO,"Healthcare"
+IKPM,"Healthcare"
+IRRA,"Healthcare"
+LABS,"Healthcare"
+MDLA,"Healthcare"
+MEDS,"Healthcare"
+MERK,"Healthcare"
+MMIX,"Healthcare"
+MTMH,"Healthcare"
+OBAT,"Healthcare"
+OMED,"Healthcare"
+PEHA,"Healthcare"
+PEVE,"Healthcare"
+PRAY,"Healthcare"
+PRDA,"Healthcare"
+PRIM,"Healthcare"
+RSCH,"Healthcare"
+RSGK,"Healthcare"
+SAME,"Healthcare"
+SCPI,"Healthcare"
+SOHO,"Healthcare"
+SURI,"Healthcare"
+TSPC,"Healthcare"
+ADCP,"Properties & Real Estate"
+AMAN,"Properties & Real Estate"
+APLN,"Properties & Real Estate"
+ASPI,"Properties & Real Estate"
+ASRI,"Properties & Real Estate"
+ATAP,"Properties & Real Estate"
+BAPI,"Properties & Real Estate"
+BBSS,"Properties & Real Estate"
+BCIP,"Properties & Real Estate"
+BEST,"Properties & Real Estate"
+BIPP,"Properties & Real Estate"
+BKDP,"Properties & Real Estate"
+BKSL,"Properties & Real Estate"
+BSBK,"Properties & Real Estate"
+CITY,"Properties & Real Estate"
+CSIS,"Properties & Real Estate"
+DADA,"Properties & Real Estate"
+DILD,"Properties & Real Estate"
+DMAS,"Properties & Real Estate"
+DUTI,"Properties & Real Estate"
+ELTY,"Properties & Real Estate"
+EMDE,"Properties & Real Estate"
+FMII,"Properties & Real Estate"
+GMTD,"Properties & Real Estate"
+GPRA,"Properties & Real Estate"
+GRIA,"Properties & Real Estate"
+HBAT,"Properties & Real Estate"
+HOMI,"Properties & Real Estate"
+INPP,"Properties & Real Estate"
+IPAC,"Properties & Real Estate"
+JRPT,"Properties & Real Estate"
+KBAG,"Properties & Real Estate"
+KIJA,"Properties & Real Estate"
+KOCI,"Properties & Real Estate"
+LAND,"Properties & Real Estate"
+LPCK,"Properties & Real Estate"
+LPLI,"Properties & Real Estate"
+MMLP,"Properties & Real Estate"
+MSIE,"Properties & Real Estate"
+MTLA,"Properties & Real Estate"
+MTSM,"Properties & Real Estate"
+NZIA,"Properties & Real Estate"
+PAMG,"Properties & Real Estate"
+PLIN,"Properties & Real Estate"
+POLI,"Properties & Real Estate"
+PURI,"Properties & Real Estate"
+RBMS,"Properties & Real Estate"
+REAL,"Properties & Real Estate"
+RELF,"Properties & Real Estate"
+RISE,"Properties & Real Estate"
+ROCK,"Properties & Real Estate"
+RODA,"Properties & Real Estate"
+SAGE,"Properties & Real Estate"
+SATU,"Properties & Real Estate"
+SMDM,"Properties & Real Estate"
+SMRA,"Properties & Real Estate"
+UANG,"Properties & Real Estate"
+URBN,"Properties & Real Estate"
+VAST,"Properties & Real Estate"
+WINR,"Properties & Real Estate"
+AREA,"Technology"
+ATIC,"Technology"
+AWAN,"Technology"
+AXIO,"Technology"
+CASH,"Technology"
+CHIP,"Technology"
+CYBR,"Technology"
+DIVA,"Technology"
+DMMX,"Technology"
+ELIT,"Technology"
+GLVA,"Technology"
+HDIT,"Technology"
+IOTF,"Technology"
+IRSX,"Technology"
+JATI,"Technology"
+KIOS,"Technology"
+KREN,"Technology"
+LUCK,"Technology"
+MCAS,"Technology"
+MPIX,"Technology"
+MSTI,"Technology"
+MTDL,"Technology"
+NFCX,"Technology"
+PGJO,"Technology"
+PTSN,"Technology"
+RUNS,"Technology"
+TFAS,"Technology"
+TOSK,"Technology"
+TRON,"Technology"
+UVCR,"Technology"
+WGSH,"Technology"
+WIFI,"Technology"
+WIRG,"Technology"
+ZYRX,"Technology"
+ASLI,"Infrastructures"
+BALI,"Infrastructures"
+BDKR,"Infrastructures"
+CMNP,"Infrastructures"
+DATA,"Infrastructures"
+DGIK,"Infrastructures"
+FIMP,"Infrastructures"
+GHON,"Infrastructures"
+GOLD,"Infrastructures"
+HADE,"Infrastructures"
+IBST,"Infrastructures"
+IDPR,"Infrastructures"
+INET,"Infrastructures"
+IPCM,"Infrastructures"
+JAST,"Infrastructures"
+JKON,"Infrastructures"
+KARW,"Infrastructures"
+KEEN,"Infrastructures"
+KETR,"Infrastructures"
+KOKA,"Infrastructures"
+MANG,"Infrastructures"
+META,"Infrastructures"
+MPOW,"Infrastructures"
+MTPS,"Infrastructures"
+NRCA,"Infrastructures"
+PORT,"Infrastructures"
+POWR,"Infrastructures"
+PPRE,"Infrastructures"
+PTPP,"Infrastructures"
+PTPW,"Infrastructures"
+SMKM,"Infrastructures"
+SSIA,"Infrastructures"
+TAMA,"Infrastructures"
+TOTL,"Infrastructures"
+WEGE,"Infrastructures"
