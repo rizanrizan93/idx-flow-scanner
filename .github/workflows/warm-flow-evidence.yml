@@ -1,4 +1,4 @@
-name: Warm Flow Evidence
+name: Warm ZAPI Flow Evidence
 
 on:
   workflow_dispatch:
@@ -7,19 +7,17 @@ on:
   push:
     paths:
       - 'scripts/build_flow_evidence_cache.py'
-      - 'src/idx_flow_scanner/providers/idx_official.py'
       - 'src/idx_flow_scanner/providers/zapi.py'
-      - 'src/idx_flow_scanner/providers/goapi.py'
-      - 'src/idx_flow_scanner/providers/indexalpha.py'
-      - 'data/config/indexalpha_targets.json'
-      - 'src/idx_flow_scanner/foreign_evidence.py'
+      - 'src/idx_flow_scanner/providers/zapi_slow.py'
+      - 'src/idx_flow_scanner/slow_evidence.py'
+      - 'requirements.txt'
       - '.github/workflows/warm-flow-evidence.yml'
 
 permissions:
   contents: write
 
 concurrency:
-  group: warm-flow-evidence-${{ github.ref }}
+  group: warm-zapi-flow-evidence-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -33,87 +31,45 @@ jobs:
           python-version: '3.12'
           cache: pip
       - run: pip install -r requirements.txt
-      - name: Refresh audited foreign and broker evidence caches
+
+      - name: Refresh ZAPI flow and slow evidence
         env:
           PYTHONPATH: src
           ZAPI_KEY: ${{ secrets.ZAPI_KEY }}
-          GOAPI_KEY: ${{ secrets.GOAPI_KEY }}
-          GOAPI_DAILY_BUDGET: ${{ vars.GOAPI_DAILY_BUDGET || '5' }}
-          INDEX_ALPHA_KEY: ${{ secrets.INDEX_ALPHA_KEY }}
-          # Index Alpha's permanent free plan is capped at five requests/day.
-          # The pinned five-ticker cohort builds coherent exact-day RG/all history;
-          # no range aggregate is expanded into synthetic daily evidence.
-          INDEX_ALPHA_DAILY_BUDGET: '5'
-          IDX_FOREIGN_TARGET_DAYS: '20'
-          IDX_FOREIGN_MAX_CALENDAR_DAYS: '45'
           ZAPI_FOREIGN_TARGET_DAYS: '20'
-          ZAPI_FOREIGN_MAX_CALENDAR_DAYS: '45'
-          IDX_REQUEST_DELAY_SECONDS: '1.0'
+          ZAPI_OWNERSHIP_REFRESH_WEEKDAY: '0'
         run: python scripts/build_flow_evidence_cache.py
-      - name: Export stable Index Alpha JSON mirror for Supabase pull-sync
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          import pandas as pd
 
-          src = Path('data/cache/indexalpha_broker_60d.csv.gz')
-          dst = Path('data/cache/indexalpha_broker_60d.json')
-          if not src.exists():
-              print('Index Alpha gzip cache absent; JSON mirror unchanged')
-              raise SystemExit(0)
-
-          df = pd.read_csv(src)
-          if df.empty:
-              print('Index Alpha cache empty; JSON mirror unchanged')
-              raise SystemExit(0)
-
-          cols = [
-              'ticker','trade_date','broker_code','buy_value','sell_value',
-              'buy_volume','sell_volume','buy_avg','sell_avg','market_type',
-              'source','source_verified','source_url','provenance_state'
-          ]
-          missing = [c for c in cols if c not in df.columns]
-          if missing:
-              raise SystemExit(f'Index Alpha cache missing JSON mirror columns: {missing}')
-          out = df[cols].copy()
-          out['trade_date'] = pd.to_datetime(out['trade_date'], errors='raise').dt.strftime('%Y-%m-%d')
-          out = out.sort_values(['ticker','trade_date','broker_code','source'], kind='stable').reset_index(drop=True)
-          dst.write_text(out.to_json(orient='records', double_precision=15) + '\n', encoding='utf-8')
-          print(f'Wrote {len(out)} verified broker rows to {dst}')
-          PY
-      - name: Publish provider telemetry without repository mutation
+      - name: Publish provider telemetry
         if: always()
         run: |
-          {
-            echo '## Flow evidence provider telemetry'
-            echo
-            echo '```json'
-            cat data/cache/flow_evidence_meta.json 2>/dev/null || echo '{"status":"meta_unavailable"}'
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
-      - name: Commit audited evidence cache
+          echo '## ZAPI Flow evidence telemetry' >> "$GITHUB_STEP_SUMMARY"
+          echo '' >> "$GITHUB_STEP_SUMMARY"
+          cat data/cache/flow_evidence_meta.json 2>/dev/null >> "$GITHUB_STEP_SUMMARY" || echo '{"status":"meta_unavailable"}' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Commit semantic evidence changes
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          rm -rf /tmp/flow-evidence-cache
-          mkdir -p /tmp/flow-evidence-cache
-          cp data/cache/flow_evidence_meta.json /tmp/flow-evidence-cache/
-          test ! -f data/cache/idx_official_flow_60d.csv.gz || cp data/cache/idx_official_flow_60d.csv.gz /tmp/flow-evidence-cache/
-          test ! -f data/cache/zapi_idx_foreign_60d.csv.gz || cp data/cache/zapi_idx_foreign_60d.csv.gz /tmp/flow-evidence-cache/
-          test ! -f data/cache/zapi_idx_foreign_60d.json || cp data/cache/zapi_idx_foreign_60d.json /tmp/flow-evidence-cache/
-          test ! -f data/cache/goapi_broker_60d.csv.gz || cp data/cache/goapi_broker_60d.csv.gz /tmp/flow-evidence-cache/
-          test ! -f data/cache/indexalpha_broker_60d.csv.gz || cp data/cache/indexalpha_broker_60d.csv.gz /tmp/flow-evidence-cache/
-          test ! -f data/cache/indexalpha_broker_60d.json || cp data/cache/indexalpha_broker_60d.json /tmp/flow-evidence-cache/
+          rm -rf /tmp/zapi-flow-cache
+          mkdir -p /tmp/zapi-flow-cache
+          for name in \
+            flow_evidence_meta.json \
+            zapi_idx_foreign_60d.csv.gz \
+            zapi_idx_foreign_60d.json \
+            zapi_stock_summary_latest.csv.gz \
+            zapi_ownership_latest.csv.gz \
+            zapi_capital_actions.csv.gz
+          do
+            test ! -f "data/cache/$name" || cp "data/cache/$name" "/tmp/zapi-flow-cache/$name"
+          done
 
           git fetch origin "$GITHUB_REF_NAME"
           git reset --hard "origin/$GITHUB_REF_NAME"
           mkdir -p data/cache
 
-          # Provider-status telemetry is written to the Actions summary above. Only a semantic
-          # evidence-data change may mutate main. This prevents quota/status-only metadata from
-          # redeploying Streamlit and interrupting an in-flight managed 400-ticker scan.
           python - <<'PY'
           from __future__ import annotations
 
@@ -121,99 +77,62 @@ jobs:
           import shutil
           from pathlib import Path
 
-          cache = Path("data/cache")
-          fresh = Path("/tmp/flow-evidence-cache")
-          evidence_changed = False
+          current = Path("data/cache")
+          fresh = Path("/tmp/zapi-flow-cache")
+          changed = False
 
-          def uncompressed_bytes(path: Path) -> bytes:
-              with gzip.open(path, "rb") as handle:
-                  return handle.read()
+          def semantic_bytes(path: Path) -> bytes:
+              if path.name.endswith(".csv.gz"):
+                  with gzip.open(path, "rb") as handle:
+                      return handle.read()
+              return path.read_bytes()
 
-          # The stable Index Alpha JSON mirror is the canonical semantic projection used by
-          # Supabase pull-sync. If it is unchanged, preserve the tracked gzip even when pandas
-          # rewrites equivalent CSV float formatting or compression metadata differently.
-          new_json = fresh / "indexalpha_broker_60d.json"
-          old_json = cache / "indexalpha_broker_60d.json"
-          indexalpha_semantically_same = (
-              new_json.exists()
-              and old_json.exists()
-              and new_json.read_bytes() == old_json.read_bytes()
-          )
-
-          for name in (
-              "idx_official_flow_60d.csv.gz",
+          evidence_files = (
               "zapi_idx_foreign_60d.csv.gz",
-              "goapi_broker_60d.csv.gz",
-          ):
+              "zapi_idx_foreign_60d.json",
+              "zapi_stock_summary_latest.csv.gz",
+              "zapi_ownership_latest.csv.gz",
+              "zapi_capital_actions.csv.gz",
+          )
+          for name in evidence_files:
               new_path = fresh / name
-              old_path = cache / name
+              old_path = current / name
               if not new_path.exists():
                   continue
               same = False
               if old_path.exists():
                   try:
-                      same = uncompressed_bytes(new_path) == uncompressed_bytes(old_path)
+                      same = semantic_bytes(new_path) == semantic_bytes(old_path)
                   except Exception:
                       same = False
               if same:
-                  print(f"{name}: uncompressed evidence unchanged; preserving tracked gzip")
-              else:
-                  shutil.copy2(new_path, old_path)
-                  evidence_changed = True
+                  print(f"{name}: semantic evidence unchanged")
+                  continue
+              shutil.copy2(new_path, old_path)
+              changed = True
+              print(f"{name}: evidence updated")
 
-          new_indexalpha_gz = fresh / "indexalpha_broker_60d.csv.gz"
-          old_indexalpha_gz = cache / "indexalpha_broker_60d.csv.gz"
-          if new_indexalpha_gz.exists():
-              if indexalpha_semantically_same:
-                  print("indexalpha_broker_60d.csv.gz: semantic evidence unchanged; preserving tracked gzip")
-              else:
-                  same_bytes = False
-                  if old_indexalpha_gz.exists():
-                      try:
-                          same_bytes = uncompressed_bytes(new_indexalpha_gz) == uncompressed_bytes(old_indexalpha_gz)
-                      except Exception:
-                          same_bytes = False
-                  if same_bytes:
-                      print("indexalpha_broker_60d.csv.gz: uncompressed evidence unchanged; preserving tracked gzip")
-                  else:
-                      shutil.copy2(new_indexalpha_gz, old_indexalpha_gz)
-                      evidence_changed = True
-
-          if new_json.exists():
-              if indexalpha_semantically_same:
-                  print("indexalpha_broker_60d.json: evidence unchanged; preserving tracked mirror")
-              else:
-                  shutil.copy2(new_json, old_json)
-                  evidence_changed = True
-
-          new_zapi_json = fresh / "zapi_idx_foreign_60d.json"
-          old_zapi_json = cache / "zapi_idx_foreign_60d.json"
-          if new_zapi_json.exists():
-              if old_zapi_json.exists() and new_zapi_json.read_bytes() == old_zapi_json.read_bytes():
-                  print("zapi_idx_foreign_60d.json: semantic evidence unchanged; preserving tracked mirror")
-              else:
-                  shutil.copy2(new_zapi_json, old_zapi_json)
-                  evidence_changed = True
-
-          new_meta = fresh / "flow_evidence_meta.json"
-          old_meta = cache / "flow_evidence_meta.json"
-          if evidence_changed and new_meta.exists():
-              shutil.copy2(new_meta, old_meta)
-              print("flow_evidence_meta.json: included because evidence data changed")
-          elif new_meta.exists():
-              print("flow_evidence_meta.json: telemetry-only change kept in Actions summary; tracked metadata preserved")
+          meta = fresh / "flow_evidence_meta.json"
+          if changed and meta.exists():
+              shutil.copy2(meta, current / meta.name)
+          elif meta.exists():
+              print("flow_evidence_meta.json: telemetry-only change kept in Actions summary")
           PY
 
-          git add data/cache/flow_evidence_meta.json
-          test ! -f data/cache/idx_official_flow_60d.csv.gz || git add data/cache/idx_official_flow_60d.csv.gz
-          test ! -f data/cache/zapi_idx_foreign_60d.csv.gz || git add data/cache/zapi_idx_foreign_60d.csv.gz
-          test ! -f data/cache/zapi_idx_foreign_60d.json || git add data/cache/zapi_idx_foreign_60d.json
-          test ! -f data/cache/goapi_broker_60d.csv.gz || git add data/cache/goapi_broker_60d.csv.gz
-          test ! -f data/cache/indexalpha_broker_60d.csv.gz || git add data/cache/indexalpha_broker_60d.csv.gz
-          test ! -f data/cache/indexalpha_broker_60d.json || git add data/cache/indexalpha_broker_60d.json
+          for name in \
+            flow_evidence_meta.json \
+            zapi_idx_foreign_60d.csv.gz \
+            zapi_idx_foreign_60d.json \
+            zapi_stock_summary_latest.csv.gz \
+            zapi_ownership_latest.csv.gz \
+            zapi_capital_actions.csv.gz
+          do
+            test ! -f "data/cache/$name" || git add "data/cache/$name"
+          done
+
           if git diff --cached --quiet; then
-            echo "Flow evidence data unchanged; no repository commit and no Streamlit redeploy"
+            echo "ZAPI evidence unchanged; no repository commit"
           else
-            git commit -m "Refresh audited flow evidence cache"
+            git commit -m "Refresh ZAPI flow evidence cache"
             git push origin HEAD:"$GITHUB_REF_NAME"
           fi
