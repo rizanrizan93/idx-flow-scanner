@@ -6,6 +6,7 @@ from typing import Callable, Mapping
 import numpy as np
 import pandas as pd
 
+from .config import ZapiFlowConfig
 from .data import canonical_ticker, completed_idx_session_frame
 from .data_quality import compute_price_quality_features
 from .engines.flow import compute_official_foreign_features, compute_price_flow_features
@@ -45,7 +46,7 @@ def _phase(features: Mapping[str, object]) -> str:
     return "NEUTRAL"
 
 
-def _score(features: Mapping[str, object]) -> float:
+def _score(features: Mapping[str, object], config: ZapiFlowConfig) -> float:
     parts = {
         "accumulation": float(features.get("proxy_accumulation_score", 30.0) or 30.0),
         "foreign": float(features.get("foreign_institutional_score", 50.0) or 50.0),
@@ -58,17 +59,18 @@ def _score(features: Mapping[str, object]) -> float:
         "smc": float(features.get("smc_execution_score", 50.0) or 50.0),
         "risk": float(features.get("risk_liquidity_score", 50.0) or 50.0),
     }
+    w = config.weights
     weights = {
-        "accumulation": 0.24,
-        "foreign": 0.20,
-        "market": 0.15,
-        "free_float": 0.10,
-        "ownership": 0.08,
-        "corporate": 0.05,
-        "retail": 0.06,
-        "divergence": 0.04,
-        "smc": 0.04,
-        "risk": 0.04,
+        "accumulation": w.accumulation,
+        "foreign": w.foreign_flow,
+        "market": w.market_sector,
+        "free_float": w.free_float,
+        "ownership": w.ownership,
+        "corporate": w.corporate_action,
+        "retail": w.retail_exhaustion,
+        "divergence": w.price_flow_divergence,
+        "smc": w.smc_execution,
+        "risk": w.risk_liquidity,
     }
     score = sum(parts[key] * weights[key] for key in weights)
     distribution = float(features.get("proxy_distribution_risk", 50.0) or 50.0)
@@ -86,26 +88,33 @@ def _decision_state(
     qf: Mapping[str, object],
     sf: Mapping[str, object],
     slow: Mapping[str, object],
+    config: ZapiFlowConfig,
 ) -> tuple[str, str, bool]:
     reasons: list[str] = []
     coverage = float(ff.get("foreign_evidence_coverage_pct", 0.0) or 0.0)
     if not _zapi_ready(ff):
         reasons.append("ZAPI foreign-flow evidence not FULL/FRESH/VALID")
-    if coverage < 80.0:
-        reasons.append(f"ZAPI coverage {coverage:.1f}% < 80%")
-    if score < 65.0:
-        reasons.append(f"score {score:.1f} below 65")
+    if coverage < config.minimum_foreign_coverage_pct:
+        reasons.append(
+            f"ZAPI coverage {coverage:.1f}% < {config.minimum_foreign_coverage_pct:.0f}%"
+        )
+    if score < config.decision_score_floor:
+        reasons.append(f"score {score:.1f} below {config.decision_score_floor:.0f}")
     distribution = float(qf.get("proxy_distribution_risk", 0.0) or 0.0)
     # qf does not own distribution; caller appends a normalized key when needed.
     distribution = float(slow.get("_distribution_risk", distribution) or distribution)
-    if distribution >= 70.0:
+    if distribution >= config.max_distribution_risk:
         reasons.append(f"distribution risk high ({distribution:.1f})")
     price_quality = float(qf.get("price_data_quality_score", 0.0) or 0.0)
-    if price_quality < 70.0:
-        reasons.append(f"price data quality {price_quality:.1f} < 70")
+    if price_quality < config.minimum_price_quality_score:
+        reasons.append(
+            f"price data quality {price_quality:.1f} < {config.minimum_price_quality_score:.0f}"
+        )
     staleness = int(qf.get("price_staleness_days", 999) or 0)
-    if staleness > 3:
-        reasons.append(f"price stale {staleness}d > 3d")
+    if staleness > config.max_price_staleness_days:
+        reasons.append(
+            f"price stale {staleness}d > {config.max_price_staleness_days}d"
+        )
     if not bool(sf.get("execution_geometry_valid", False)):
         reasons.append("execution geometry invalid")
     if not bool(sf.get("execution_levels_tradeable", False)):
@@ -113,7 +122,7 @@ def _decision_state(
     if not bool(sf.get("entry_within_next_session_price_band", False)):
         reasons.append("entry outside next-session price band")
     free_float = slow.get("free_float_pct")
-    if free_float is not None and float(free_float) < 7.5:
+    if free_float is not None and float(free_float) < config.extreme_low_free_float_pct:
         reasons.append(f"extreme low free float ({float(free_float):.2f}%)")
     if bool(slow.get("slow_evidence_hard_block", False)):
         reasons.append("recent material dilution/capital action")
@@ -137,11 +146,15 @@ def scan_one_zapi(
     stock_summary: pd.DataFrame | None = None,
     ownership: pd.DataFrame | None = None,
     capital_actions: pd.DataFrame | None = None,
+    config: ZapiFlowConfig | None = None,
 ) -> ScanResult:
+    config = config or ZapiFlowConfig()
     ticker = canonical_ticker(ticker)
     price = completed_idx_session_frame(price)
-    if len(price) < 80:
-        raise ValueError(f"{ticker}: insufficient price history ({len(price)} bars)")
+    if len(price) < config.minimum_price_bars:
+        raise ValueError(
+            f"{ticker}: insufficient price history ({len(price)} bars)"
+        )
 
     foreign_flow = foreign_flow if foreign_flow is not None else pd.DataFrame()
     ff = compute_official_foreign_features(foreign_flow, price)
@@ -162,7 +175,7 @@ def scan_one_zapi(
         capital_actions=capital_actions,
     )
     features = {**ff, **pf, **sf, **qf, **market_features, **slow}
-    score = _score(features)
+    score = _score(features, config)
     phase = _phase(features)
     zapi_ready = _zapi_ready(ff)
     distribution = float(pf.get("proxy_distribution_risk", 50.0) or 50.0)
@@ -174,6 +187,7 @@ def scan_one_zapi(
         qf=qf,
         sf=sf,
         slow=slow,
+        config=config,
     )
     if not zapi_ready:
         action = "RESEARCH_ONLY"
@@ -290,7 +304,9 @@ def scan_universe_zapi(
     ownership_frame: pd.DataFrame | None = None,
     capital_action_frame: pd.DataFrame | None = None,
     sector_map: Mapping[str, str] | None = None,
+    config: ZapiFlowConfig | None = None,
 ) -> tuple[str, pd.DataFrame, list[dict[str, str]]]:
+    config = config or ZapiFlowConfig()
     run_id = run_id or str(uuid.uuid4())
     foreign_flow_frame = foreign_flow_frame if foreign_flow_frame is not None else pd.DataFrame()
     stock_summary_frame = stock_summary_frame if stock_summary_frame is not None else pd.DataFrame()
@@ -350,6 +366,7 @@ def scan_universe_zapi(
                     stock_summary=stock,
                     ownership=ownership,
                     capital_actions=actions,
+                    config=config,
                 ).to_dict()
             )
         except Exception as exc:
