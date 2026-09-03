@@ -595,16 +595,25 @@ def run() -> None:
             ).eq("ZAPI_FLOW").sum()
         )
 
-        decision_tab, research_tab, audit_tab, evidence_tab = st.tabs(
-            [
-                "◈ Decision Center",
-                "⌁ Research Universe",
-                "◎ Ticker Audit",
-                "◇ Evidence Health",
-            ]
+        terminal_views = [
+            "◈ Decision Center",
+            "⌁ Research Universe",
+            "◎ Ticker Audit",
+            "◇ Evidence Health",
+        ]
+        active_view = (
+            st.segmented_control(
+                "Terminal view",
+                options=terminal_views,
+                default="◈ Decision Center",
+                key="terminal_view",
+                selection_mode="single",
+                label_visibility="collapsed",
+            )
+            or "◈ Decision Center"
         )
 
-        with decision_tab:
+        if active_view == "◈ Decision Center":
             render_section(
                 "Decision Funnel",
                 "From the full research universe to execution-authorized setups.",
@@ -662,7 +671,7 @@ def run() -> None:
                     height=520,
                 )
 
-        with research_tab:
+        elif active_view == "⌁ Research Universe":
             render_section(
                 "Raw Research Priority — 400 Ticker",
                 "Complete scored universe. PRICE_PROXY rows remain research-only.",
@@ -711,7 +720,7 @@ def run() -> None:
                 height=690,
             )
 
-        with audit_tab:
+        elif active_view == "◎ Ticker Audit":
             render_section(
                 "Ticker Command Center",
                 "Execution geometry, evidence stack and guardrail state for one candidate.",
@@ -759,7 +768,7 @@ def run() -> None:
             with st.expander("Open full evidence diagnostics", expanded=False):
                 st.json(diagnostics, expanded=False)
 
-        with evidence_tab:
+        elif active_view == "◇ Evidence Health":
             render_section(
                 "Evidence Health",
                 "Coverage and freshness of the active ZAPI-only production evidence stack.",
