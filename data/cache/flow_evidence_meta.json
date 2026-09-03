@@ -1,66 +1,30 @@
 {
-  "direct_idx_foreign": {
-    "days": 0,
-    "freshest": null,
-    "rows": 0,
-    "status": "BLOCKED: IDX official TradingSummary access blocked with HTTP 403 (Cloudflare challenge)",
-    "tickers": 0
+  "architecture": "ZAPI_ONLY_NO_BROKER_DIRECT",
+  "broker_direct": {
+    "enabled": false,
+    "status": "RETIRED",
+    "providers": []
   },
-  "generated_at": "2026-09-03T06:12:02.143175+00:00",
-  "goapi_broker_direct": {
-    "budget_requests": 5,
-    "days": 0,
-    "freshest": null,
-    "jobs_planned": 0,
-    "provider": "GOAPI_BROKER_SUMMARY_NET",
-    "requests_attempted": 0,
-    "rows": 0,
-    "status": "NO_TOKEN",
-    "target_history_days": 20,
-    "tickers": 0,
-    "token_present": false,
-    "verified_tickers": 0
-  },
-  "indexalpha_broker_direct": {
-    "budget_requests": 5,
-    "contract": "STOCK_LEVEL_GROSS_BUY_SELL_EXACT_DAY_RG_ALL",
-    "days": 6,
-    "freshest": "2026-09-02",
-    "jobs_planned": 5,
-    "provider": "INDEX_ALPHA_BROKER_SUMMARY",
-    "requests_attempted": 5,
-    "requests_succeeded": 5,
-    "rows": 658,
-    "status": "UPDATED",
-    "target_history_days": 20,
-    "targets": [
-      "MMIX",
-      "PKPK",
-      "DAYA",
-      "MDLA",
-      "OMED"
-    ],
-    "tickers": 5,
-    "token_present": true,
-    "verified_tickers": 5
-  },
-  "official_market_broker_health": {
-    "brokers": 0,
-    "direct_evidence_eligible": false,
-    "rows": 0,
-    "status": "BLOCKED: IDX official TradingSummary access blocked with HTTP 403 (Cloudflare challenge)"
-  },
-  "target_trade_date": "2026-09-03",
+  "migration_note": "v0.4 runtime/warm job no longer consumes broker-direct evidence; next ZAPI warm run will refresh full telemetry",
   "universe_count": 400,
   "zapi_idx_foreign": {
     "days": 24,
-    "flow_unit": "SHARES",
     "freshest": "2026-09-02",
-    "refresh_mode": "INCREMENTAL_AFTER_BOOTSTRAP",
+    "flow_unit": "SHARES",
     "rows": 9600,
-    "status": "UPDATED",
+    "status": "PRESERVED_FROM_LAST_VERIFIED_CACHE",
     "target_history_days": 20,
-    "tickers": 400,
-    "token_present": true
+    "tickers": 400
+  },
+  "zapi_stock_summary": {
+    "status": "CACHE_PRESENT_REVALIDATE_ON_NEXT_WARM_RUN"
+  },
+  "zapi_ownership": {
+    "status": "PENDING_FIRST_V0_4_WARM_REFRESH",
+    "refresh_policy": "WEEKLY_OR_MISSING"
+  },
+  "zapi_capital_actions": {
+    "status": "PENDING_FIRST_V0_4_WARM_REFRESH",
+    "horizon": "RECENT_PLUS_UPCOMING"
   }
 }
