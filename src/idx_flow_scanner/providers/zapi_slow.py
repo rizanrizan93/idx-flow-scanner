@@ -543,6 +543,7 @@ def fetch_zapi_capital_actions(
     as_of: date | str,
     api_key: str | None = None,
     months_back: int = 2,
+    months_forward: int = 1,
     max_pages: int = 10,
     timeout: float = 30.0,
 ) -> tuple[pd.DataFrame, dict[str, object]]:
@@ -555,7 +556,8 @@ def fetch_zapi_capital_actions(
 
     for feed, url in CAPITAL_ACTION_FEEDS.items():
         periods = [observed_on] if feed == "issued-history" else [
-            _month_shift(observed_on, offset) for offset in range(max(1, int(months_back)))
+            _month_shift(observed_on, offset)
+            for offset in range(-max(0, int(months_forward)), max(1, int(months_back)))
         ]
         feed_rows = 0
         calls = 0
