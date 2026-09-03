@@ -443,7 +443,7 @@ hr {
 
 
 def inject_terminal_theme() -> None:
-    st.markdown(TERMINAL_CSS, unsafe_allow_html=True)
+    st.html(TERMINAL_CSS)
 
 
 def _escape(value: object) -> str:
@@ -459,7 +459,7 @@ def render_header(
 ) -> None:
     db_class = "idx-chip-positive" if database_connected else "idx-chip-warning"
     db_text = "DB CONNECTED" if database_connected else "DB OFF"
-    st.markdown(
+    st.html(
         f"""
         <div class="idx-terminal-header">
           <div class="idx-kicker">Market Intelligence / Indonesia Equities</div>
@@ -479,13 +479,12 @@ def render_header(
             <span class="idx-chip {db_class}">{db_text}</span>
           </div>
         </div>
-        """,
-        unsafe_allow_html=True,
+        """
     )
 
 
 def render_section(title: str, caption: str | None = None) -> None:
-    st.markdown(
+    st.html(
         f"""
         <div class="idx-section-head">
           <div>
@@ -493,8 +492,7 @@ def render_section(title: str, caption: str | None = None) -> None:
             <div class="idx-section-caption">{_escape(caption or "")}</div>
           </div>
         </div>
-        """,
-        unsafe_allow_html=True,
+        """
     )
 
 
@@ -521,7 +519,7 @@ def render_funnel(
         """
         for label, value, meta in items
     )
-    st.markdown(f'<div class="idx-funnel">{cards}</div>', unsafe_allow_html=True)
+    st.html(f'<div class="idx-funnel">{cards}</div>')
 
 
 def _safe_num(value: object, digits: int = 1) -> str:
@@ -557,10 +555,7 @@ def render_leaderboard(frame: pd.DataFrame | None, *, max_cards: int = 5) -> Non
             </div>
             """
         )
-    st.markdown(
-        f'<div class="idx-leaderboard">{"".join(cards)}</div>',
-        unsafe_allow_html=True,
-    )
+    st.html(f'<div class="idx-leaderboard">{"".join(cards)}</div>')
 
 
 def table_column_config(columns: Sequence[str]) -> dict[str, object]:
@@ -651,7 +646,7 @@ def render_ticker_hero(row: Mapping[str, object]) -> None:
     action = _escape(row.get("action", "RESEARCH_ONLY"))
     score = _safe_num(row.get("final_score"), 1)
     state = _escape(row.get("real_money_state", "UNKNOWN"))
-    st.markdown(
+    st.html(
         f"""
         <div class="idx-audit-hero">
           <div class="idx-kicker">Single Ticker Command Center</div>
@@ -659,8 +654,7 @@ def render_ticker_hero(row: Mapping[str, object]) -> None:
           <div class="idx-audit-meta">Score {score} · {phase} · {state}</div>
           <span class="idx-signal {_signal_class(action)}">{action}</span>
         </div>
-        """,
-        unsafe_allow_html=True,
+        """
     )
 
 
@@ -668,13 +662,12 @@ def render_health_cards(items: Sequence[tuple[str, object, str]]) -> None:
     cols = st.columns(len(items))
     for col, (label, value, meta) in zip(cols, items):
         with col:
-            st.markdown(
+            st.html(
                 f"""
                 <div class="idx-health-card">
                   <div class="idx-health-label">{_escape(label)}</div>
                   <div class="idx-health-value">{_escape(value)}</div>
                   <div class="idx-health-meta">{_escape(meta)}</div>
                 </div>
-                """,
-                unsafe_allow_html=True,
+                """
             )
