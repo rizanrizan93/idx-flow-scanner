@@ -55,3 +55,12 @@ def test_supabase_persistence_requires_explicit_confirmation():
     assert "Saya konfirmasi project Supabase ini benar" in app
     assert "persistence_armed = bool(use_database and confirm_database)" in app
     assert "connect_store(persistence_armed)" in app
+
+
+def test_terminal_navigation_is_stateful_across_widget_reruns():
+    app = Path("src/idx_flow_scanner/streamlit_app.py").read_text(encoding="utf-8")
+    assert "st.segmented_control(" in app
+    assert 'key="terminal_view"' in app
+    assert 'active_view == "◎ Ticker Audit"' in app
+    assert "st.tabs(" not in app
+    assert 'key="audit_ticker"' in app
