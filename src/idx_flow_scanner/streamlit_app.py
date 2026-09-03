@@ -36,6 +36,16 @@ from .vendor_foreign_store import (
     upsert_zapi_vendor_foreign_flows,
 )
 from .zapi_pipeline import scan_universe_zapi
+from .ui_terminal import (
+    inject_terminal_theme,
+    render_funnel,
+    render_header,
+    render_health_cards,
+    render_leaderboard,
+    render_section,
+    render_table,
+    render_ticker_hero,
+)
 
 APP_VERSION = "0.4.0"
 ROOT = Path(__file__).resolve().parents[2]
@@ -141,21 +151,25 @@ def _zapi_foreign(
 
 
 def run() -> None:
-    st.set_page_config(page_title="IDX Flow Scanner", page_icon="📡", layout="wide")
-    st.title("IDX Flow Scanner")
-    st.caption(
-        f"v{APP_VERSION} • OHLCV + ZAPI flow + sector context + "
-        "free-float/ownership/corporate-action → SMC/ICT → decision"
+    st.set_page_config(
+        page_title="IDX Flow Terminal",
+        page_icon="◈",
+        layout="wide",
+        initial_sidebar_state="expanded",
     )
-    st.info(
-        "Broker-direct, Index Alpha, GOAPI broker dan direct-IDX broker collector "
-        "sudah dikeluarkan dari runtime produksi. ZAPI adalah provider flow utama."
-    )
+    inject_terminal_theme()
 
     with st.sidebar:
-        st.header("Managed Scan")
+        st.markdown("### IDX Flow")
+        st.caption(f"Terminal v{APP_VERSION}")
+        st.divider()
+        st.markdown("**SCAN CONTROL**")
         period = st.selectbox("OHLCV lookback", ["6mo", "1y", "2y"], index=1)
         use_zapi = st.checkbox("ZAPI evidence", value=True)
+        st.caption("Foreign flow · free float · ownership · corporate actions")
+
+        st.divider()
+        st.markdown("**PERSISTENCE**")
         use_database = st.checkbox(
             "Dedicated IDX Flow Supabase",
             value=False,
@@ -174,9 +188,14 @@ def run() -> None:
             value=False,
             disabled=not (use_database and persist),
         )
+
+        st.divider()
         run_manual = st.button(
-            "Run / Re-run sekarang", type="primary", width="stretch"
+            "▶  RUN MARKET SCAN",
+            type="primary",
+            width="stretch",
         )
+        st.caption("Broker-direct retired · ZAPI-only production pipeline")
 
     for key, value in {
         "last_results": None,
@@ -229,11 +248,22 @@ def run() -> None:
                 False, f"managed gate unavailable: {exc}"
             )
 
-    m1, m2, m3, m4 = st.columns(4)
-    m1.metric("Universe", len(universe))
-    m2.metric("Pipeline", "ZAPI-ONLY")
-    m3.metric("Sectors", len(set(sector_map.values())) if sector_map else 0)
-    m4.metric("DB", "CONNECTED" if store is not None else "OFF")
+    sector_count = len(set(sector_map.values())) if sector_map else 0
+    render_header(
+        version=APP_VERSION,
+        universe_count=len(universe),
+        sector_count=sector_count,
+        database_connected=store is not None,
+    )
+
+    render_health_cards(
+        [
+            ("Universe", len(universe), "managed IDX coverage"),
+            ("Pipeline", "ZAPI-ONLY", "primary flow provider"),
+            ("Sectors", sector_count, "sector-aware context"),
+            ("Database", "CONNECTED" if store is not None else "OFF", "persistence state"),
+        ]
+    )
 
     trigger_scan = bool(run_manual or managed_decision.should_run)
     if managed_auto:
@@ -520,21 +550,6 @@ def run() -> None:
             else pd.DataFrame()
         )
 
-        st.subheader("Decision Funnel")
-        f1, f2, f3, f4, f5 = st.columns(5)
-        f1.metric("Valid research", len(display))
-        f2.metric(
-            "ZAPI flow",
-            int(
-                display.get(
-                    "evidence_tier", pd.Series(dtype=object)
-                ).eq("ZAPI_FLOW").sum()
-            ),
-        )
-        f3.metric("Decision Top", len(decision_display))
-        f4.metric("Execution Ready", len(ready_display))
-        f5.metric("Sectors", len(set(sector_map.values())) if sector_map else 0)
-
         base_cols = [
             "ticker",
             "final_score",
@@ -563,94 +578,249 @@ def run() -> None:
             "tp2",
         ]
 
-        st.subheader("1. Raw Research Priority — 400 Ticker")
-        st.dataframe(
-            display[[c for c in base_cols if c in display.columns]],
-            width="stretch",
-            hide_index=True,
+        zapi_count = int(
+            display.get(
+                "evidence_tier",
+                pd.Series(dtype=object),
+            ).eq("ZAPI_FLOW").sum()
         )
 
-        st.subheader("2. ZAPI Flow Decision — Top 20")
-        st.caption(
-            "Gate: ZAPI FULL/FRESH/VALID, price quality ≥70, distribution <70, "
-            "bukan Distribution/Reduce-Avoid."
-        )
-        if decision_display.empty:
-            st.warning("Belum ada kandidat yang lolos ZAPI decision gate.")
-        else:
-            cols = ["decision_rank"] + [
-                c for c in base_cols if c in decision_display.columns
+        decision_tab, research_tab, audit_tab, evidence_tab = st.tabs(
+            [
+                "◈ Decision Center",
+                "⌁ Research Universe",
+                "◎ Ticker Audit",
+                "◇ Evidence Health",
             ]
-            st.dataframe(
-                decision_display[cols], width="stretch", hide_index=True
+        )
+
+        with decision_tab:
+            render_section(
+                "Decision Funnel",
+                "From the full research universe to execution-authorized setups.",
+            )
+            render_funnel(
+                valid=len(display),
+                zapi=zapi_count,
+                decision=len(decision_display),
+                execution=len(ready_display),
             )
 
-        st.subheader("3. Execution Ready — Top 10")
-        st.caption(
-            "Requires ZAPI ≥80% coverage, score ≥65, valid SMC/ICT geometry, "
-            "no extreme-low free float and no material dilution hard-block."
-        )
-        if ready_display.empty:
-            st.info("Belum ada setup yang memenuhi seluruh execution gate.")
-        else:
-            cols = ["execution_rank"] + [
-                c for c in base_cols if c in ready_display.columns
-            ]
-            st.dataframe(
-                ready_display[cols], width="stretch", hide_index=True
+            primary = ready_display if not ready_display.empty else decision_display
+            render_section(
+                "Priority Board",
+                (
+                    "Execution-ready candidates ranked by the active production contract."
+                    if not ready_display.empty
+                    else "No execution-ready setup yet; showing the guarded decision shortlist."
+                ),
+            )
+            render_leaderboard(primary, max_cards=5)
+
+            render_section(
+                "Execution Ready — Top 10",
+                "ZAPI ≥80% · score ≥65 · valid SMC/ICT geometry · slow-evidence guards passed.",
+            )
+            if ready_display.empty:
+                st.info(
+                    "No setup currently satisfies every execution gate. "
+                    "Use the Decision Top table below for research candidates."
+                )
+            else:
+                ready_cols = ["execution_rank"] + [
+                    c for c in base_cols if c in ready_display.columns
+                ]
+                render_table(
+                    ready_display,
+                    columns=ready_cols,
+                    height=390,
+                )
+
+            render_section(
+                "ZAPI Flow Decision — Top 20",
+                "FULL/FRESH/VALID ZAPI flow, quality ≥70 and distribution risk <70.",
+            )
+            if decision_display.empty:
+                st.warning("No candidate currently passes the ZAPI decision gate.")
+            else:
+                decision_cols = ["decision_rank"] + [
+                    c for c in base_cols if c in decision_display.columns
+                ]
+                render_table(
+                    decision_display,
+                    columns=decision_cols,
+                    height=520,
+                )
+
+        with research_tab:
+            render_section(
+                "Raw Research Priority — 400 Ticker",
+                "Complete scored universe. PRICE_PROXY rows remain research-only.",
+            )
+            filter_col, sector_col = st.columns([1, 1])
+            with filter_col:
+                research_query = st.text_input(
+                    "Search ticker",
+                    placeholder="e.g. RAJA, RMKE, ELSA",
+                    key="research_ticker_query",
+                )
+            with sector_col:
+                sector_options = ["ALL"] + sorted(
+                    str(value)
+                    for value in display.get(
+                        "sector",
+                        pd.Series(dtype=object),
+                    ).dropna().unique()
+                )
+                selected_sector = st.selectbox(
+                    "Sector",
+                    sector_options,
+                    key="research_sector_filter",
+                )
+
+            research_frame = display
+            if research_query.strip():
+                research_frame = research_frame[
+                    research_frame["ticker"].astype(str).str.contains(
+                        research_query.strip(),
+                        case=False,
+                        regex=False,
+                    )
+                ]
+            if selected_sector != "ALL" and "sector" in research_frame.columns:
+                research_frame = research_frame[
+                    research_frame["sector"].astype(str).eq(selected_sector)
+                ]
+
+            st.caption(
+                f"Showing {len(research_frame)} of {len(display)} valid research rows"
+            )
+            render_table(
+                research_frame,
+                columns=base_cols,
+                height=690,
             )
 
-        st.subheader("Single Ticker Audit")
-        selected = st.selectbox("Ticker", display["ticker"].tolist())
-        row = display[display["ticker"] == selected].iloc[0].to_dict()
-        a, b, c, d, e = st.columns(5)
-        a.metric("Final Score", row.get("final_score"))
-        b.metric("Phase", row.get("phase"))
-        c.metric("State", row.get("real_money_state"))
-        d.metric("Sector", row.get("sector") or "UNKNOWN")
-        ff = row.get("free_float_pct")
-        e.metric(
-            "Free Float",
-            f"{float(ff):.1f}%" if pd.notna(ff) else "N/A",
-        )
-        st.write(row.get("guardrail_reason"))
-        st.json(row.get("diagnostics", {}), expanded=False)
+        with audit_tab:
+            render_section(
+                "Ticker Command Center",
+                "Execution geometry, evidence stack and guardrail state for one candidate.",
+            )
+            selected = st.selectbox(
+                "Select ticker",
+                display["ticker"].tolist(),
+                key="audit_ticker",
+            )
+            row = display[display["ticker"] == selected].iloc[0].to_dict()
+            render_ticker_hero(row)
 
-        st.subheader("Data Integrity & Calibration")
-        d1, d2, d3, d4, d5 = st.columns(5)
-        d1.metric("ZAPI days", int(zapi_stats.get("days", 0) or 0))
-        d2.metric(
-            "ZAPI tickers",
-            int(foreign_stats.get("zapi_selected_tickers", 0) or 0),
-        )
-        d3.metric(
-            "Float snapshot",
-            int(slow_stats.get("stock_snapshot_tickers", 0) or 0),
-        )
-        d4.metric(
-            "Ownership",
-            int(slow_stats.get("ownership_tickers", 0) or 0),
-        )
-        d5.metric(
-            "Capital actions",
-            int(slow_stats.get("capital_action_tickers", 0) or 0),
-        )
-        st.caption(
-            f"OOS memory: seeded {int(outcome_stats.get('seeded', 0) or 0)} • "
-            f"updated {int(outcome_stats.get('updated', 0) or 0)} • "
-            "weights remain shadow-calibration only."
-        )
+            a, b, c, d = st.columns(4)
+            a.metric("Final Score", row.get("final_score"))
+            b.metric("Accumulation", row.get("accumulation_score"))
+            c.metric("Foreign Flow", row.get("foreign_institutional_score"))
+            d.metric("Market / Sector", row.get("market_context_score"))
 
-        st.download_button(
-            "Download scan CSV",
-            data=export_scan_csv(display),
-            file_name=f"idx_flow_scan_{st.session_state.last_run_id}.csv",
-            mime="text/csv",
-        )
+            e, f, g, h = st.columns(4)
+            e.metric("SMC Execution", row.get("smc_execution_score"))
+            f.metric("Ownership", row.get("ownership_score"))
+            ff = pd.to_numeric(row.get("free_float_pct"), errors="coerce")
+            g.metric(
+                "Free Float",
+                f"{float(ff):.1f}%" if pd.notna(ff) else "N/A",
+            )
+            h.metric("Distribution Risk", row.get("distribution_risk"))
 
-    if errors:
-        err = pd.DataFrame(errors)
-        with st.expander(
-            f"Pipeline warnings/errors ({len(err)})", expanded=False
-        ):
-            st.dataframe(err, width="stretch", hide_index=True)
+            render_section(
+                "Trade Geometry",
+                "Scanner-generated levels; execution remains subject to next-session price-band validation.",
+            )
+            p1, p2, p3, p4, p5 = st.columns(5)
+            p1.metric("Entry Low", row.get("entry_low"))
+            p2.metric("Entry High", row.get("entry_high"))
+            p3.metric("Invalidation", row.get("invalidation"))
+            p4.metric("TP1", row.get("tp1"))
+            p5.metric("TP2", row.get("tp2"))
+
+            guardrail = row.get("guardrail_reason")
+            if guardrail:
+                st.caption(f"Guardrail: {guardrail}")
+
+            diagnostics = row.get("diagnostics", {})
+            with st.expander("Open full evidence diagnostics", expanded=False):
+                st.json(diagnostics, expanded=False)
+
+        with evidence_tab:
+            render_section(
+                "Evidence Health",
+                "Coverage and freshness of the active ZAPI-only production evidence stack.",
+            )
+            render_health_cards(
+                [
+                    (
+                        "ZAPI History",
+                        f"{int(zapi_stats.get('days', 0) or 0)} days",
+                        str(zapi_stats.get("freshest") or "no freshness date"),
+                    ),
+                    (
+                        "ZAPI Coverage",
+                        int(foreign_stats.get("zapi_selected_tickers", 0) or 0),
+                        "tickers selected",
+                    ),
+                    (
+                        "Free Float",
+                        int(slow_stats.get("stock_snapshot_tickers", 0) or 0),
+                        "stock-summary tickers",
+                    ),
+                    (
+                        "Ownership",
+                        int(slow_stats.get("ownership_tickers", 0) or 0),
+                        "slow-evidence tickers",
+                    ),
+                    (
+                        "Corp Actions",
+                        int(slow_stats.get("capital_action_tickers", 0) or 0),
+                        "tickers with explicit events",
+                    ),
+                ]
+            )
+
+            render_section(
+                "Calibration Memory",
+                "OOS outcomes are collected without automatically mutating production weights.",
+            )
+            c1, c2, c3, c4 = st.columns(4)
+            c1.metric("Seeded", int(outcome_stats.get("seeded", 0) or 0))
+            c2.metric("Updated", int(outcome_stats.get("updated", 0) or 0))
+            c3.metric("Complete", int(outcome_stats.get("complete", 0) or 0))
+            c4.metric("Mode", outcome_stats.get("mode", "SKIPPED"))
+
+            st.caption(
+                "Threshold review requires a mature OOS sample. "
+                "Production weights remain fixed until the calibration gate is satisfied."
+            )
+
+            st.download_button(
+                "Download full scan CSV",
+                data=export_scan_csv(display),
+                file_name=f"idx_flow_scan_{st.session_state.last_run_id}.csv",
+                mime="text/csv",
+                width="stretch",
+            )
+
+            if errors:
+                err = pd.DataFrame(errors)
+                with st.expander(
+                    f"Pipeline warnings / errors ({len(err)})",
+                    expanded=False,
+                ):
+                    st.dataframe(err, width="stretch", hide_index=True)
+
+    else:
+        render_section(
+            "Terminal Ready",
+            "Run the market scan to populate Decision Center, Research Universe and Ticker Audit.",
+        )
+        st.info(
+            "The production UI is ready. ZAPI evidence is enabled by default; "
+            "Supabase persistence stays OFF until the dedicated IDX Flow project is connected."
+        )
