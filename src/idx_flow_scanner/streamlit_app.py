@@ -7,41 +7,40 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-from .authorization import apply_production_authorization, export_scan_csv
-from .broker_evidence import select_broker_evidence
-from .config import ScannerConfig
+from .authorization import export_scan_csv
+from .config import ZapiFlowConfig
 from .database_first import prepare_database_first_prices
+from .decision import select_execution_ready, select_zapi_decision_top
 from .foreign_evidence import prepare_foreign_evidence
-from .funnel import merge_verified_finalists, select_guarded_top5, verify_guarded_top5
 from .managed import (
     ManagedDecision,
     decide_managed_run,
     load_bundled_universe,
-    load_persisted_results,
     mark_stale_managed_runs,
     recent_runs,
     universe_signature,
 )
 from .outcomes import refresh_pending_outcomes, seed_signal_outcomes
-from .pipeline import scan_universe
-from .providers.idx_official import load_bundled_idx_official_flows, load_cached_idx_official_flows
-from .providers.indexalpha import (
-    INDEX_ALPHA_SOURCE,
-    IndexAlphaQuotaExhausted,
-    IndexAlphaUnavailable,
-    fetch_indexalpha_broker_summary,
-    load_bundled_indexalpha_broker_flows,
-    merge_indexalpha_broker_frames,
+from .providers.zapi import (
+    fetch_zapi_stock_summary_day,
+    load_bundled_zapi_foreign_flows,
+    load_bundled_zapi_stock_summary,
 )
-from .providers.zapi import load_bundled_zapi_foreign_flows
+from .slow_evidence import (
+    load_bundled_zapi_capital_actions,
+    load_bundled_zapi_ownership,
+)
 from .storage import DuplicateActiveUniverseRunError, SupabaseStore
-from .vendor_foreign_store import load_zapi_vendor_foreign_flows, upsert_zapi_vendor_foreign_flows
+from .vendor_foreign_store import (
+    load_zapi_vendor_foreign_flows,
+    upsert_zapi_vendor_foreign_flows,
+)
+from .zapi_pipeline import scan_universe_zapi
 
-APP_VERSION = "0.3.0"
+APP_VERSION = "0.4.0"
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_UNIVERSE_PATH = ROOT / "data" / "universe" / "idx_400_syariah.csv"
 MANAGED_MIN_VALID_RATIO = 0.90
-FINALIST_COUNT = 5
 
 
 def create_durable_run_record(
@@ -50,15 +49,13 @@ def create_durable_run_record(
     universe_count: int,
     config: dict[str, object],
 ) -> bool:
-    """Create the tracked lifecycle record, stopping only duplicate executions."""
     try:
         store.create_run(run_id, universe_count, config)
         store.update_run_progress(run_id, 0, "OHLCV_PREP")
         return True
     except DuplicateActiveUniverseRunError:
         st.error(
-            "Scan tidak dimulai: run aktif yang sudah ada masih memiliki lock universe ini. "
-            "Lanjutkan atau tunggu run tersebut; eksekusi duplikat dihentikan sebelum pipeline OHLCV."
+            "Scan tidak dimulai: run aktif yang sudah ada masih memiliki lock universe ini."
         )
         st.stop()
     except Exception as exc:
@@ -90,19 +87,17 @@ def connect_store(enabled: bool) -> tuple[SupabaseStore | None, str | None]:
 
 def data_stats(frame: pd.DataFrame) -> dict[str, object]:
     if frame is None or frame.empty:
-        return {"rows": 0, "tickers": 0, "days": 0, "verified_tickers": 0, "freshest": None}
+        return {"rows": 0, "tickers": 0, "days": 0, "freshest": None}
     dates = pd.to_datetime(frame.get("trade_date"), errors="coerce")
-    verified_tickers = 0
-    if "source_verified" in frame.columns:
-        raw = frame["source_verified"]
-        verified = raw.fillna(False) if pd.api.types.is_bool_dtype(raw) else raw.astype(str).str.strip().str.lower().isin({"1", "true", "yes", "y", "verified"})
-        verified_tickers = int(frame.loc[verified, "ticker"].nunique())
     return {
         "rows": int(len(frame)),
         "tickers": int(frame["ticker"].nunique()) if "ticker" in frame.columns else 0,
         "days": int(dates.nunique()) if dates is not None else 0,
-        "verified_tickers": verified_tickers,
-        "freshest": str(dates.max().date()) if dates is not None and pd.notna(dates.max()) else None,
+        "freshest": (
+            str(dates.max().date())
+            if dates is not None and pd.notna(dates.max())
+            else None
+        ),
     }
 
 
@@ -110,229 +105,108 @@ def _diag(value: object) -> dict[str, object]:
     return value if isinstance(value, dict) else {}
 
 
-def recover_funnel_views(results: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
-    if results is None or results.empty or "diagnostics" not in results.columns:
-        return pd.DataFrame(), pd.DataFrame()
-    rows = apply_production_authorization(results)
-    rows["guarded_rank"] = rows["diagnostics"].map(lambda d: _diag(d).get("guarded_rank"))
-    rows["guarded_score"] = rows["diagnostics"].map(lambda d: _diag(d).get("guarded_score"))
-    rows["broker_verification_status"] = rows["diagnostics"].map(lambda d: _diag(d).get("broker_verification_status"))
-    guarded = rows[rows["guarded_rank"].notna()].sort_values("guarded_rank", kind="stable").head(FINALIST_COUNT).copy()
-    broker = guarded[guarded["broker_verification_status"].notna()].copy()
-    if not broker.empty:
-        order = {"BROKER_VERIFIED": 0, "BROKER_GUARDED": 1, "BROKER_PENDING": 2, "BROKER_REJECT": 3}
-        broker["_order"] = broker["broker_verification_status"].map(order).fillna(9)
-        broker = broker.sort_values(["_order", "final_score", "guarded_rank"], ascending=[True, False, True], kind="stable").drop(columns="_order")
-        broker["broker_rank"] = range(1, len(broker) + 1)
-    return guarded, broker
-
-
-def _decorate(frame: pd.DataFrame) -> pd.DataFrame:
-    if frame is None or frame.empty:
-        return pd.DataFrame()
-    display = apply_production_authorization(frame)
-    if "diagnostics" in display.columns:
-        for name in (
-            "broker_verified_source_pct",
-            "broker_days",
-            "persistence_20d",
-            "broker_cohort_stability",
-            "cost_position",
-            "foreign_evidence_coverage_pct",
-            "foreign_evidence_source",
-            "official_foreign_coverage_pct",
-            "market_regime_label",
-            "relative_strength_20d_pct",
-            "guarded_rank",
-            "guarded_score",
-            "broker_verification_status",
-            "broker_latest_observation",
-            "broker_latest_age_days",
-            "broker_freshness_state",
-            "broker_data_available",
-            "broker_data_valid",
-            "foreign_provider_selected",
-            "foreign_provider_selection_state",
-            "foreign_provider_reconciliation_state",
-            "foreign_provider_conflict",
-            "foreign_window_state",
-            "foreign_window_coverage_ratio",
-        ):
-            if name not in display.columns:
-                display[name] = display["diagnostics"].map(lambda value, key=name: _diag(value).get(key))
-    direct = display.get("evidence_tier", pd.Series(index=display.index, dtype=object)).eq("BROKER_DIRECT")
-    display["bandar_price_est"] = pd.to_numeric(display.get("estimated_smart_money_cost"), errors="coerce").where(direct)
-    display["bandar_vs_price_pct"] = pd.to_numeric(display.get("premium_to_cost_pct"), errors="coerce").where(direct)
-    display["bandar_cost_position"] = display.get("cost_position", pd.Series(index=display.index, dtype=object)).where(direct, "UNVERIFIED")
-    return display
-
-
-def _zapi_first_foreign(
+def _zapi_foreign(
     universe: list[str],
     store: SupabaseStore | None,
     load_price,
-) -> tuple[pd.DataFrame, dict[str, object], dict[str, object], dict[str, object]]:
-    """Load both cached providers, then compare them before row-local selection.
-
-    The historical function name is retained for compatibility with older app
-    imports. It no longer encodes provider priority.
-    """
-    db_zapi = load_zapi_vendor_foreign_flows(store, universe, lookback_calendar_days=120) if store is not None else pd.DataFrame()
-    bundled_zapi = load_bundled_zapi_foreign_flows(universe, lookback_calendar_days=120)
-    zapi_candidates = pd.concat([f for f in (db_zapi, bundled_zapi) if f is not None and not f.empty], ignore_index=True) if any(f is not None and not f.empty for f in (db_zapi, bundled_zapi)) else pd.DataFrame()
+) -> tuple[pd.DataFrame, dict[str, object], dict[str, object]]:
+    db_zapi = (
+        load_zapi_vendor_foreign_flows(store, universe, lookback_calendar_days=120)
+        if store is not None
+        else pd.DataFrame()
+    )
+    bundled_zapi = load_bundled_zapi_foreign_flows(
+        universe, lookback_calendar_days=120
+    )
+    valid = [
+        frame
+        for frame in (db_zapi, bundled_zapi)
+        if frame is not None and not frame.empty
+    ]
+    candidates = pd.concat(valid, ignore_index=True) if valid else pd.DataFrame()
     if store is not None and bundled_zapi is not None and not bundled_zapi.empty:
         try:
             upsert_zapi_vendor_foreign_flows(store, bundled_zapi)
         except Exception:
             pass
 
-    db_direct = load_cached_idx_official_flows(store, universe, lookback_calendar_days=120) if store is not None else pd.DataFrame()
-    bundled_direct = load_bundled_idx_official_flows(universe, lookback_calendar_days=120)
-    valid_direct = [f for f in (db_direct, bundled_direct) if f is not None and not f.empty]
-    direct_candidates = pd.concat(valid_direct, ignore_index=True) if valid_direct else pd.DataFrame()
-
-    provider_frames = [
-        value for value in (zapi_candidates, direct_candidates) if value is not None and not value.empty
-    ]
-    all_candidates = pd.concat(provider_frames, ignore_index=True) if provider_frames else pd.DataFrame()
     foreign_flow, selection_stats = prepare_foreign_evidence(
-        universe, all_candidates, load_price, lookback=20
+        universe, candidates, load_price, lookback=20
     )
-    zapi_stats = {**data_stats(zapi_candidates), "source": "ZAPI_IDX_FOREIGN_FLOW"}
-    direct_stats = {**data_stats(direct_candidates), "source": "IDX_OFFICIAL_STOCK_SUMMARY"}
-    return foreign_flow, zapi_stats, direct_stats, selection_stats
-
-
-def _load_indexalpha_for_finalists(
-    finalists: list[str],
-    load_price,
-    store: SupabaseStore | None,
-    *,
-    allow_live_pull: bool,
-) -> tuple[pd.DataFrame, dict[str, object]]:
-    if not finalists:
-        return pd.DataFrame(), {"status": "NO_FINALISTS", "requests_attempted": 0, "latest_day_cache_hits": 0}
-    db = pd.DataFrame()
-    if store is not None:
-        try:
-            db = store.load_broker_flows(finalists, lookback_calendar_days=180)
-            if not db.empty and "source" in db.columns:
-                db = db[db["source"].eq(INDEX_ALPHA_SOURCE)].copy()
-        except Exception:
-            db = pd.DataFrame()
-    bundled = load_bundled_indexalpha_broker_flows(finalists, lookback_calendar_days=180)
-    existing = merge_indexalpha_broker_frames(db, bundled)
-
-    key = _secret("INDEX_ALPHA_KEY")
-    live_parts: list[pd.DataFrame] = []
-    attempted = 0
-    cache_hits = 0
-    status = "CACHE_ONLY"
-    present_pairs: set[tuple[str, str]] = set()
-    if not existing.empty:
-        work = existing[["ticker", "trade_date"]].copy()
-        work["trade_date"] = pd.to_datetime(work["trade_date"], errors="coerce").dt.date.astype("string")
-        present_pairs = set((str(t), str(d)) for t, d in work.dropna().itertuples(index=False, name=None))
-
-    if allow_live_pull and key:
-        status = "LIVE_OK"
-        for ticker in finalists[:FINALIST_COUNT]:
-            price = load_price(ticker)
-            if price is None or price.empty:
-                continue
-            day_value = pd.to_datetime(price["date"], errors="coerce").max()
-            if pd.isna(day_value):
-                continue
-            day = pd.Timestamp(day_value).date().isoformat()
-            if (ticker, day) in present_pairs:
-                cache_hits += 1
-                continue
-            try:
-                attempted += 1
-                fresh = fetch_indexalpha_broker_summary(ticker, day, api_key=key, investor="all", market="RG")
-                if not fresh.empty:
-                    live_parts.append(fresh)
-                    present_pairs.add((ticker, day))
-            except IndexAlphaQuotaExhausted as exc:
-                status = f"QUOTA_EXHAUSTED: {exc}"
-                break
-            except IndexAlphaUnavailable as exc:
-                status = f"UNAVAILABLE: {exc}"
-                break
-            except Exception as exc:
-                status = f"ERROR: {type(exc).__name__}: {exc}"
-                break
-    elif allow_live_pull and not key:
-        status = "NO_STREAMLIT_INDEX_ALPHA_KEY"
-    elif not allow_live_pull:
-        status = "CACHE_ONLY_MANAGED_AUTO"
-
-    fresh_frame = pd.concat(live_parts, ignore_index=True) if live_parts else pd.DataFrame()
-    if store is not None and not fresh_frame.empty:
-        try:
-            store.upsert_broker_flows(fresh_frame)
-        except Exception:
-            pass
-    merged = merge_indexalpha_broker_frames(existing, fresh_frame)
-    selected, selector_stats = select_broker_evidence(merged)
-    stats = {
-        "status": status,
-        "requests_attempted": attempted,
-        "latest_day_cache_hits": cache_hits,
-        "fresh_rows": int(len(fresh_frame)),
-        "finalist_count": len(finalists),
-        "provider_selection": selector_stats,
-        **data_stats(selected),
-    }
-    return selected, stats
+    return (
+        foreign_flow,
+        {**data_stats(candidates), "source": "ZAPI_IDX_FOREIGN_FLOW"},
+        selection_stats,
+    )
 
 
 def run() -> None:
     st.set_page_config(page_title="IDX Flow Scanner", page_icon="📡", layout="wide")
     st.title("IDX Flow Scanner")
     st.caption(
-        f"v{APP_VERSION} • 400 ticker → PRICE_PROXY → IDX/ZAPI foreign comparison → Final Guarded Top 5 → "
-        "Index Alpha broker → Broker-Verified Top 5"
+        f"v{APP_VERSION} • OHLCV + ZAPI flow + sector context + "
+        "free-float/ownership/corporate-action → SMC/ICT → decision"
     )
     st.info(
-        "Broker evidence tidak ikut menentukan Final Guarded Top 5. Index Alpha baru dibaca/ditarik setelah cohort Top 5 terbentuk. "
-        "BROKER_DIRECT tetap membutuhkan ≥10 broker-days, coverage/provenance quorum, broker balance, dan price-quality gate."
+        "Broker-direct, Index Alpha, GOAPI broker dan direct-IDX broker collector "
+        "sudah dikeluarkan dari runtime produksi. ZAPI adalah provider flow utama."
     )
 
     with st.sidebar:
         st.header("Managed Scan")
-        managed_auto = st.toggle("Managed auto-run", value=True)
         period = st.selectbox("OHLCV lookback", ["6mo", "1y", "2y"], index=1)
-        use_database = st.checkbox("Database-first Supabase", value=True)
-        use_foreign = st.checkbox("ZAPI foreign evidence", value=True)
-        pull_indexalpha = st.checkbox(
-            "Index Alpha live pull untuk Final Top 5",
-            value=True,
-            help="Maksimum 1 exact-day request per finalist dan hanya pada manual Run/Re-run. Cached exact-day rows tidak diminta ulang.",
+        use_zapi = st.checkbox("ZAPI evidence", value=True)
+        use_database = st.checkbox(
+            "Dedicated IDX Flow Supabase",
+            value=False,
+            help=(
+                "Biarkan OFF sampai SUPABASE_URL/SECRET menunjuk project IDX Flow Scanner "
+                "yang benar. Ini mencegah write ke project Supabase lain."
+            ),
         )
-        persist = st.checkbox("Persist hasil scan", value=True)
-        run_manual = st.button("Run / Re-run sekarang", type="primary", width="stretch")
+        persist = st.checkbox(
+            "Persist hasil scan",
+            value=False,
+            disabled=not use_database,
+        )
+        managed_auto = st.toggle(
+            "Managed auto-run",
+            value=False,
+            disabled=not (use_database and persist),
+        )
+        run_manual = st.button(
+            "Run / Re-run sekarang", type="primary", width="stretch"
+        )
 
     for key, value in {
         "last_results": None,
-        "last_proxy_results": None,
-        "last_guarded_top5": None,
-        "last_broker_top5": None,
+        "last_decision_top": None,
+        "last_execution_ready": None,
         "last_errors": [],
         "last_run_id": None,
         "last_price_stats": None,
-        "last_broker_stats": None,
         "last_zapi_stats": None,
-        "last_direct_idx_stats": None,
+        "last_slow_stats": None,
         "last_foreign_selection_stats": None,
         "last_outcome_stats": None,
     }.items():
         st.session_state.setdefault(key, value)
 
+    universe_frame = pd.read_csv(DEFAULT_UNIVERSE_PATH)
     universe = load_bundled_universe(DEFAULT_UNIVERSE_PATH)
     if not universe:
         st.error("Bundled 400-ticker universe tidak tersedia.")
         st.stop()
+
+    sector_map: dict[str, str] = {}
+    if {"ticker", "sector"}.issubset(universe_frame.columns):
+        sector_map = dict(
+            zip(
+                universe_frame["ticker"].astype(str).str.upper(),
+                universe_frame["sector"].astype(str),
+            )
+        )
+
     signature = universe_signature(universe)
     store, store_error = connect_store(use_database)
     if store_error:
@@ -351,32 +225,22 @@ def run() -> None:
                 min_success_ratio=MANAGED_MIN_VALID_RATIO,
             )
         except Exception as exc:
-            managed_decision = ManagedDecision(False, f"managed gate unavailable: {exc}")
+            managed_decision = ManagedDecision(
+                False, f"managed gate unavailable: {exc}"
+            )
 
-    m1, m2, m3 = st.columns(3)
+    m1, m2, m3, m4 = st.columns(4)
     m1.metric("Universe", len(universe))
-    m2.metric("Pipeline", "PROXY → ZAPI → TOP5 → BROKER")
-    m3.metric("DB", "CONNECTED" if store is not None else "UNAVAILABLE")
-
-    if st.session_state.last_results is None and store is not None and managed_decision.blocking_run_id and "valid" in managed_decision.reason:
-        try:
-            persisted = load_persisted_results(store, managed_decision.blocking_run_id)
-            if not persisted.empty:
-                st.session_state.last_results = persisted
-                st.session_state.last_proxy_results = persisted.copy()
-                guarded, broker_view = recover_funnel_views(persisted)
-                st.session_state.last_guarded_top5 = guarded
-                st.session_state.last_broker_top5 = broker_view
-                st.session_state.last_run_id = managed_decision.blocking_run_id
-        except Exception:
-            pass
+    m2.metric("Pipeline", "ZAPI-ONLY")
+    m3.metric("Sectors", len(set(sector_map.values())) if sector_map else 0)
+    m4.metric("DB", "CONNECTED" if store is not None else "OFF")
 
     trigger_scan = bool(run_manual or managed_decision.should_run)
     if managed_auto:
         st.caption(f"Managed engine: {managed_decision.reason}")
 
     if trigger_scan:
-        config = ScannerConfig()
+        config = ZapiFlowConfig()
         run_id = str(uuid.uuid4())
         run_record_created = False
         bar = st.progress(0.0, text="Preparing OHLCV...")
@@ -393,15 +257,16 @@ def run() -> None:
                     "version": APP_VERSION,
                     "mode": run_mode,
                     "universe_signature": signature,
-                    "pipeline": "400_PROXY__ZAPI__GUARDED_TOP5__INDEX_ALPHA__BROKER_VERIFIED_TOP5",
-                    "broker_scope": "FINAL_GUARDED_TOP5_ONLY",
-                    "broker_provider": INDEX_ALPHA_SOURCE,
-                    "broker_min_days": config.minimum_broker_days,
-                    "indexalpha_live_pull_manual_only": True,
-                    "zapi_primary_foreign": bool(use_foreign),
-                    "market_context": "CROSS_SECTIONAL_400_PRESERVED_IN_BROKER_PASS",
-                    "universe_point_in_time_state": "CURRENT_SNAPSHOT_ONLY_NOT_HISTORICAL_MEMBERSHIP",
-                    "universe_snapshot_date": "2026-08-29",
+                    "pipeline": "OHLCV__ZAPI_FLOW__SECTOR__SLOW_EVIDENCE__SMC_ICT",
+                    "broker_direct_enabled": False,
+                    "primary_flow_provider": "ZAPI",
+                    "zapi_stock_summary": True,
+                    "zapi_ownership_files": True,
+                    "zapi_capital_actions": True,
+                    "market_context": (
+                        "MARKET_30__SECTOR_30__SECTOR_RS_25__MARKET_RS_15"
+                    ),
+                    "calibration_policy": "SHADOW_OOS_NO_AUTO_WEIGHT_MUTATION",
                 },
             )
 
@@ -420,205 +285,372 @@ def run() -> None:
         st.session_state.last_price_stats = price_stats
 
         foreign_flow = pd.DataFrame()
-        zapi_stats = {"rows": 0, "tickers": 0, "days": 0, "freshest": None, "source": "DISABLED"}
-        direct_idx_stats = {"rows": 0, "tickers": 0, "days": 0, "freshest": None, "source": "DISABLED"}
-        foreign_selection_stats = {"zapi_selected_tickers": 0, "idx_direct_selected_tickers": 0, "foreign_unavailable_tickers": len(universe), "median_selected_coverage_pct": 0.0}
-        if use_foreign:
-            status_box.caption("Stage 2/5 • IDX/ZAPI foreign evidence comparison")
+        zapi_stats = {
+            "rows": 0,
+            "tickers": 0,
+            "days": 0,
+            "freshest": None,
+            "source": "DISABLED",
+        }
+        foreign_selection_stats = {
+            "zapi_selected_tickers": 0,
+            "foreign_unavailable_tickers": len(universe),
+            "median_selected_coverage_pct": 0.0,
+        }
+        if use_zapi:
+            status_box.caption("Stage 2/5 • ZAPI foreign-flow evidence")
             try:
-                foreign_flow, zapi_stats, direct_idx_stats, foreign_selection_stats = _zapi_first_foreign(universe, store, load_price)
+                (
+                    foreign_flow,
+                    zapi_stats,
+                    foreign_selection_stats,
+                ) = _zapi_foreign(universe, store, load_price)
             except Exception as exc:
-                st.warning(f"ZAPI/foreign evidence unavailable; Final Guarded Top 5 will fail closed: {exc}")
+                st.warning(
+                    "ZAPI foreign evidence unavailable; scanner remains research-only: "
+                    f"{exc}"
+                )
+
+        status_box.caption("Stage 3/5 • ZAPI slow evidence")
+        stock_snapshot = load_bundled_zapi_stock_summary(universe)
+        ownership = load_bundled_zapi_ownership(universe)
+        capital_actions = load_bundled_zapi_capital_actions(universe)
+
+        if use_zapi and stock_snapshot.empty and run_manual:
+            try:
+                latest_dates: list[pd.Timestamp] = []
+                for ticker in universe[:20]:
+                    px = load_price(ticker)
+                    if px is not None and not px.empty:
+                        latest_dates.append(
+                            pd.to_datetime(px["date"], errors="coerce").max()
+                        )
+                target = max(
+                    [d for d in latest_dates if pd.notna(d)],
+                    default=pd.Timestamp.today(),
+                )
+                stock_snapshot = fetch_zapi_stock_summary_day(
+                    universe,
+                    pd.Timestamp(target).date(),
+                    api_key=_secret("ZAPI_KEY"),
+                )
+            except Exception as exc:
+                st.caption(f"ZAPI stock-summary live fallback unavailable: {exc}")
+
+        slow_stats = {
+            "stock_snapshot_tickers": (
+                int(stock_snapshot["ticker"].nunique())
+                if not stock_snapshot.empty and "ticker" in stock_snapshot.columns
+                else 0
+            ),
+            "ownership_tickers": (
+                int(ownership["ticker"].nunique())
+                if not ownership.empty and "ticker" in ownership.columns
+                else 0
+            ),
+            "capital_action_tickers": (
+                int(capital_actions["ticker"].nunique())
+                if not capital_actions.empty and "ticker" in capital_actions.columns
+                else 0
+            ),
+        }
         st.session_state.last_zapi_stats = zapi_stats
-        st.session_state.last_direct_idx_stats = direct_idx_stats
+        st.session_state.last_slow_stats = slow_stats
         st.session_state.last_foreign_selection_stats = foreign_selection_stats
 
         def progress(i: int, total: int, ticker: str) -> None:
-            bar.progress(i / max(total, 1), text=f"Stage 1-3/5 • {i}/{total} • {ticker}")
-            status_box.caption(f"Proxy + selected foreign evidence scoring {ticker} • {i}/{total}")
-            if store is not None and run_record_created and (i == 1 or i % 20 == 0 or i == total):
+            bar.progress(
+                i / max(total, 1),
+                text=f"Stage 4/5 • {i}/{total} • {ticker}",
+            )
+            status_box.caption(
+                f"ZAPI + sector + slow evidence + SMC scoring "
+                f"{ticker} • {i}/{total}"
+            )
+            if (
+                store is not None
+                and run_record_created
+                and (i == 1 or i % 20 == 0 or i == total)
+            ):
                 store.update_run_progress(run_id, i, ticker)
 
-        _, proxy_results, errors = scan_universe(
+        _, results, errors = scan_universe_zapi(
             universe,
             load_price,
-            pd.DataFrame(),
-            config,
-            progress,
+            progress=progress,
             run_id=run_id,
-            official_flow_frame=foreign_flow,
-        )
-        guarded_top5 = select_guarded_top5(proxy_results, config, top_n=FINALIST_COUNT)
-        st.session_state.last_proxy_results = proxy_results
-        st.session_state.last_guarded_top5 = guarded_top5
-
-        finalists = guarded_top5["ticker"].astype(str).tolist() if not guarded_top5.empty else []
-        status_box.caption(f"Stage 4/5 • Index Alpha broker • finalists: {', '.join(finalists) if finalists else 'none'}")
-        broker_frame, broker_stats = _load_indexalpha_for_finalists(
-            finalists,
-            load_price,
-            store,
-            allow_live_pull=bool(run_manual and pull_indexalpha),
-        )
-        st.session_state.last_broker_stats = broker_stats
-
-        broker_top5, broker_errors = verify_guarded_top5(
-            guarded_top5,
-            load_price,
-            broker_frame,
+            foreign_flow_frame=foreign_flow,
+            stock_summary_frame=stock_snapshot,
+            ownership_frame=ownership,
+            capital_action_frame=capital_actions,
+            sector_map=sector_map,
             config=config,
-            official_flow_frame=foreign_flow,
         )
-        st.session_state.last_broker_top5 = broker_top5
-        results = merge_verified_finalists(proxy_results, broker_top5)
-        all_errors = list(errors) + list(broker_errors)
+        decision_top = select_zapi_decision_top(results, top_n=20)
+        execution_ready = select_execution_ready(results, top_n=10)
+
         st.session_state.last_results = results
-        st.session_state.last_errors = all_errors
+        st.session_state.last_decision_top = decision_top
+        st.session_state.last_execution_ready = execution_ready
+        st.session_state.last_errors = errors
         st.session_state.last_run_id = run_id
 
-        valid_ratio = len(proxy_results) / max(len(universe), 1)
-        if len(proxy_results) == len(universe):
+        valid_ratio = len(results) / max(len(universe), 1)
+        if len(results) == len(universe):
             final_status = "COMPLETED"
         elif valid_ratio >= MANAGED_MIN_VALID_RATIO:
             final_status = "COMPLETED_PARTIAL"
         else:
             final_status = "FAILED"
-        outcome_stats = {"checked": 0, "updated": 0, "complete": 0, "seeded": 0, "mode": "SKIPPED", "status": "SKIPPED"}
 
+        outcome_stats = {
+            "checked": 0,
+            "updated": 0,
+            "complete": 0,
+            "seeded": 0,
+            "mode": "SKIPPED",
+            "status": "SKIPPED",
+        }
         if persist and store is not None and run_record_created:
             try:
                 store.save_results(run_id, results)
                 try:
-                    refreshed = refresh_pending_outcomes(store, universe, load_price)
-                    seeded = seed_signal_outcomes(store, run_id, results, load_price)
-                    outcome_stats = {**refreshed, "seeded": int(seeded), "status": "OK"}
+                    refreshed = refresh_pending_outcomes(
+                        store, universe, load_price
+                    )
+                    seeded = seed_signal_outcomes(
+                        store, run_id, results, load_price
+                    )
+                    outcome_stats = {
+                        **refreshed,
+                        "seeded": int(seeded),
+                        "status": "OK",
+                    }
                 except Exception as exc:
-                    outcome_stats = {"checked": 0, "updated": 0, "complete": 0, "seeded": 0, "mode": "UNAVAILABLE", "status": f"UNAVAILABLE: {exc}"}
+                    outcome_stats = {
+                        "checked": 0,
+                        "updated": 0,
+                        "complete": 0,
+                        "seeded": 0,
+                        "mode": "UNAVAILABLE",
+                        "status": f"UNAVAILABLE: {exc}",
+                    }
                 store.finish_run(
                     run_id,
-                    len(proxy_results),
+                    len(results),
                     len(errors),
                     status=final_status,
                     attempted_count=len(universe),
                     telemetry={
-                        "price_cache_hits": int(price_stats.get("cache_hits", 0)),
-                        "price_fetched": int(price_stats.get("fetched_valid", 0)),
-                        "price_failures": int(price_stats.get("unavailable", 0)),
+                        "price_cache_hits": int(
+                            price_stats.get("cache_hits", 0)
+                        ),
+                        "price_fetched": int(
+                            price_stats.get("fetched_valid", 0)
+                        ),
+                        "price_failures": int(
+                            price_stats.get("unavailable", 0)
+                        ),
                     },
                 )
                 if final_status == "COMPLETED":
-                    st.success(f"Persisted • full universe {len(proxy_results)}/{len(universe)} valid • Final Guarded Top {len(guarded_top5)}")
+                    st.success(
+                        f"Persisted • {len(results)}/{len(universe)} valid • "
+                        f"Decision Top {len(decision_top)} • "
+                        f"Execution Ready {len(execution_ready)}"
+                    )
                 elif final_status == "COMPLETED_PARTIAL":
-                    st.warning(f"Persisted PARTIAL • {len(proxy_results)}/{len(universe)} valid ({valid_ratio:.1%}) • missing tickers remain explicit")
+                    st.warning(
+                        f"Persisted PARTIAL • {len(results)}/{len(universe)} "
+                        f"valid ({valid_ratio:.1%})"
+                    )
                 else:
-                    st.error(f"Run FAILED integrity gate • valid {len(proxy_results)}/{len(universe)} ({valid_ratio:.1%})")
+                    st.error(
+                        f"Run FAILED integrity gate • valid "
+                        f"{len(results)}/{len(universe)} ({valid_ratio:.1%})"
+                    )
             except Exception as exc:
                 st.warning(f"Scan selesai, persistence gagal: {exc}")
+
         st.session_state.last_outcome_stats = outcome_stats
-        bar.progress(1.0, text="Stage 5/5 • Broker verification complete")
+        bar.progress(1.0, text="Stage 5/5 • ZAPI decision pipeline complete")
         status_box.caption("Pipeline complete")
 
     results = st.session_state.last_results
-    proxy_results = st.session_state.last_proxy_results
-    guarded_top5 = st.session_state.last_guarded_top5
-    broker_top5 = st.session_state.last_broker_top5
+    decision_top = st.session_state.last_decision_top
+    execution_ready = st.session_state.last_execution_ready
     errors = st.session_state.last_errors
-    price_stats = st.session_state.last_price_stats or {}
-    broker_stats = st.session_state.last_broker_stats or {}
     zapi_stats = st.session_state.last_zapi_stats or {}
+    slow_stats = st.session_state.last_slow_stats or {}
     foreign_stats = st.session_state.last_foreign_selection_stats or {}
+    outcome_stats = st.session_state.last_outcome_stats or {}
 
     if isinstance(results, pd.DataFrame) and not results.empty:
-        proxy_display = _decorate(proxy_results if isinstance(proxy_results, pd.DataFrame) and not proxy_results.empty else results)
-        final_display = _decorate(results)
-        guarded_display = _decorate(guarded_top5) if isinstance(guarded_top5, pd.DataFrame) else pd.DataFrame()
-        broker_display = _decorate(broker_top5) if isinstance(broker_top5, pd.DataFrame) else pd.DataFrame()
+        display = results.copy()
+        if "diagnostics" in display.columns:
+            for name in (
+                "sector",
+                "sector_regime_score",
+                "sector_regime_label",
+                "sector_relative_strength_20d_pct",
+                "foreign_evidence_coverage_pct",
+                "foreign_window_state",
+                "foreign_data_freshness",
+                "free_float_pct",
+                "float_turnover_20d_pct",
+                "foreign_net_to_float_20d_pct",
+                "ownership_score",
+                "foreign_ownership_change_pct",
+                "recent_dilution_pct",
+                "corporate_action_score",
+            ):
+                if name not in display.columns:
+                    display[name] = display["diagnostics"].map(
+                        lambda value, key=name: _diag(value).get(key)
+                    )
 
-        verified_count = int(broker_display.get("broker_verification_status", pd.Series(dtype=object)).eq("BROKER_VERIFIED").sum()) if not broker_display.empty else 0
-        pending_count = int(broker_display.get("broker_verification_status", pd.Series(dtype=object)).eq("BROKER_PENDING").sum()) if not broker_display.empty else 0
-        reject_count = int(broker_display.get("broker_verification_status", pd.Series(dtype=object)).eq("BROKER_REJECT").sum()) if not broker_display.empty else 0
+        decision_display = (
+            decision_top.copy()
+            if isinstance(decision_top, pd.DataFrame)
+            else pd.DataFrame()
+        )
+        ready_display = (
+            execution_ready.copy()
+            if isinstance(execution_ready, pd.DataFrame)
+            else pd.DataFrame()
+        )
 
         st.subheader("Decision Funnel")
-        f1, f2, f3, f4, f5, f6 = st.columns(6)
-        f1.metric("Valid proxy", len(proxy_display))
-        f2.metric("ZAPI tickers", int(foreign_stats.get("zapi_selected_tickers", 0)))
-        f3.metric("Final guarded", len(guarded_display))
-        f4.metric("Broker verified", verified_count)
-        f5.metric("Broker pending", pending_count)
-        f6.metric("Broker reject", reject_count)
-        st.caption(
-            f"Index Alpha: {broker_stats.get('status', 'N/A')} • requests {int(broker_stats.get('requests_attempted', 0) or 0)} • "
-            f"latest-day cache hits {int(broker_stats.get('latest_day_cache_hits', 0) or 0)} • broker days {int(broker_stats.get('days', 0) or 0)}"
+        f1, f2, f3, f4, f5 = st.columns(5)
+        f1.metric("Valid research", len(display))
+        f2.metric(
+            "ZAPI flow",
+            int(
+                display.get(
+                    "evidence_tier", pd.Series(dtype=object)
+                ).eq("ZAPI_FLOW").sum()
+            ),
         )
-        if broker_stats.get("status") == "NO_STREAMLIT_INDEX_ALPHA_KEY":
-            st.warning("INDEX_ALPHA_KEY belum tersedia di environment Streamlit. Scanner memakai cache/DB Index Alpha dan tidak menghabiskan quota live.")
+        f3.metric("Decision Top", len(decision_display))
+        f4.metric("Execution Ready", len(ready_display))
+        f5.metric("Sectors", len(set(sector_map.values())) if sector_map else 0)
 
         base_cols = [
-            "ticker", "final_score", "phase", "action", "real_money_state",
-            "accumulation_score", "foreign_institutional_score", "foreign_evidence_coverage_pct",
-            "smc_execution_score", "price_data_quality_score", "distribution_risk",
-            "entry_low", "entry_high", "invalidation", "tp1", "tp2",
+            "ticker",
+            "final_score",
+            "phase",
+            "action",
+            "real_money_state",
+            "evidence_tier",
+            "sector",
+            "sector_regime_score",
+            "sector_relative_strength_20d_pct",
+            "accumulation_score",
+            "foreign_institutional_score",
+            "foreign_evidence_coverage_pct",
+            "free_float_pct",
+            "foreign_net_to_float_20d_pct",
+            "ownership_score",
+            "recent_dilution_pct",
+            "market_context_score",
+            "smc_execution_score",
+            "price_data_quality_score",
+            "distribution_risk",
+            "entry_low",
+            "entry_high",
+            "invalidation",
+            "tp1",
+            "tp2",
         ]
-        broker_cols = [
-            "broker_rank", "guarded_rank", "ticker", "broker_verification_status", "guarded_score", "final_score",
-            "phase", "action", "real_money_state", "evidence_tier", "evidence_coverage_pct", "broker_days",
-            "broker_verified_source_pct", "accumulation_score", "operator_dominance_score", "persistence_20d",
-            "broker_cohort_stability", "distribution_risk", "bandar_price_est", "bandar_vs_price_pct", "bandar_cost_position",
-            "entry_low", "entry_high", "invalidation", "tp1", "tp2",
-        ]
-        column_config = {
-            "bandar_price_est": st.column_config.NumberColumn("Harga Bandar Est.", format="Rp %.0f"),
-            "bandar_vs_price_pct": st.column_config.NumberColumn("Harga vs Bandar", format="%.1f%%"),
-        }
 
-        st.subheader("1. Proxy + ZAPI Research — 400 Ticker")
-        st.caption("Broker tidak dipakai pada ranking tahap ini.")
-        st.dataframe(proxy_display[[c for c in base_cols if c in proxy_display.columns]], width="stretch", hide_index=True)
+        st.subheader("1. Raw Research Priority — 400 Ticker")
+        st.dataframe(
+            display[[c for c in base_cols if c in display.columns]],
+            width="stretch",
+            hide_index=True,
+        )
 
-        st.subheader("2. Final Guarded Top 5")
-        st.caption("Cohort ini dipilih sebelum broker enrichment. Foreign coverage minimum 70%, distribution <70, price-quality/freshness/zero-volume gates harus lolos; final_score menentukan urutan Top-N, bukan floor tersembunyi.")
-        if guarded_display.empty:
-            st.warning("Tidak ada kandidat yang lolos Final Guarded gate. Index Alpha tidak dipanggil.")
+        st.subheader("2. ZAPI Flow Decision — Top 20")
+        st.caption(
+            "Gate: ZAPI FULL/FRESH/VALID, price quality ≥70, distribution <70, "
+            "bukan Distribution/Reduce-Avoid."
+        )
+        if decision_display.empty:
+            st.warning("Belum ada kandidat yang lolos ZAPI decision gate.")
         else:
-            guarded_cols = ["guarded_rank", "ticker", "guarded_score", "phase", "accumulation_score", "foreign_institutional_score", "foreign_evidence_coverage_pct", "smc_execution_score", "price_data_quality_score", "distribution_risk", "entry_low", "entry_high", "invalidation", "tp1", "tp2"]
-            st.dataframe(guarded_display[[c for c in guarded_cols if c in guarded_display.columns]], width="stretch", hide_index=True)
+            cols = ["decision_rank"] + [
+                c for c in base_cols if c in decision_display.columns
+            ]
+            st.dataframe(
+                decision_display[cols], width="stretch", hide_index=True
+            )
 
-        st.subheader("3. Broker-Verified Top 5")
-        st.caption("BROKER_VERIFIED = direct broker evidence + minimum quality gates. BROKER_PENDING berarti history/quorum Index Alpha belum cukup; BROKER_REJECT berarti distribusi/avoid setelah broker pass.")
-        if broker_display.empty:
-            st.info("Belum ada broker verification output.")
+        st.subheader("3. Execution Ready — Top 10")
+        st.caption(
+            "Requires ZAPI ≥80% coverage, score ≥65, valid SMC/ICT geometry, "
+            "no extreme-low free float and no material dilution hard-block."
+        )
+        if ready_display.empty:
+            st.info("Belum ada setup yang memenuhi seluruh execution gate.")
         else:
-            st.dataframe(broker_display[[c for c in broker_cols if c in broker_display.columns]], width="stretch", hide_index=True, column_config=column_config)
+            cols = ["execution_rank"] + [
+                c for c in base_cols if c in ready_display.columns
+            ]
+            st.dataframe(
+                ready_display[cols], width="stretch", hide_index=True
+            )
 
         st.subheader("Single Ticker Audit")
-        selected = st.selectbox("Ticker", final_display["ticker"].tolist())
-        row = final_display[final_display["ticker"] == selected].iloc[0].to_dict()
-        direct = row.get("evidence_tier") == "BROKER_DIRECT"
+        selected = st.selectbox("Ticker", display["ticker"].tolist())
+        row = display[display["ticker"] == selected].iloc[0].to_dict()
         a, b, c, d, e = st.columns(5)
         a.metric("Final Score", row.get("final_score"))
         b.metric("Phase", row.get("phase"))
         c.metric("State", row.get("real_money_state"))
-        d.metric("Harga Bandar Est.", f"Rp {float(row['bandar_price_est']):,.0f}" if direct and pd.notna(row.get("bandar_price_est")) else "UNVERIFIED")
-        e.metric("Harga vs Bandar", f"{float(row['bandar_vs_price_pct']):+.1f}%" if direct and pd.notna(row.get("bandar_vs_price_pct")) else "N/A")
+        d.metric("Sector", row.get("sector") or "UNKNOWN")
+        ff = row.get("free_float_pct")
+        e.metric(
+            "Free Float",
+            f"{float(ff):.1f}%" if pd.notna(ff) else "N/A",
+        )
         st.write(row.get("guardrail_reason"))
         st.json(row.get("diagnostics", {}), expanded=False)
 
-        st.subheader("Data Integrity")
+        st.subheader("Data Integrity & Calibration")
         d1, d2, d3, d4, d5 = st.columns(5)
-        d1.metric("DB OHLCV hits", int(price_stats.get("cache_hits", 0) or 0))
-        d2.metric("OHLCV fetched", int(price_stats.get("fetched_valid", 0) or 0))
-        d3.metric("OHLCV unavailable", int(price_stats.get("unavailable", 0) or 0))
-        d4.metric("ZAPI days", int(zapi_stats.get("days", 0) or 0))
-        d5.metric("Broker verified tickers", int(broker_stats.get("verified_tickers", 0) or 0))
+        d1.metric("ZAPI days", int(zapi_stats.get("days", 0) or 0))
+        d2.metric(
+            "ZAPI tickers",
+            int(foreign_stats.get("zapi_selected_tickers", 0) or 0),
+        )
+        d3.metric(
+            "Float snapshot",
+            int(slow_stats.get("stock_snapshot_tickers", 0) or 0),
+        )
+        d4.metric(
+            "Ownership",
+            int(slow_stats.get("ownership_tickers", 0) or 0),
+        )
+        d5.metric(
+            "Capital actions",
+            int(slow_stats.get("capital_action_tickers", 0) or 0),
+        )
+        st.caption(
+            f"OOS memory: seeded {int(outcome_stats.get('seeded', 0) or 0)} • "
+            f"updated {int(outcome_stats.get('updated', 0) or 0)} • "
+            "weights remain shadow-calibration only."
+        )
 
         st.download_button(
             "Download scan CSV",
-            data=export_scan_csv(final_display),
+            data=export_scan_csv(display),
             file_name=f"idx_flow_scan_{st.session_state.last_run_id}.csv",
             mime="text/csv",
         )
 
     if errors:
         err = pd.DataFrame(errors)
-        with st.expander(f"Pipeline warnings/errors ({len(err)})", expanded=False):
+        with st.expander(
+            f"Pipeline warnings/errors ({len(err)})", expanded=False
+        ):
             st.dataframe(err, width="stretch", hide_index=True)

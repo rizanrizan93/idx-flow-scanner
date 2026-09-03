@@ -343,3 +343,39 @@ def write_zapi_foreign_cache(frame: pd.DataFrame, path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     if frame is not None and not frame.empty:
         frame.to_csv(path, index=False, compression="gzip")
+
+
+def load_bundled_zapi_stock_summary(
+    universe: Iterable[str],
+    path: Path | None = None,
+) -> pd.DataFrame:
+    """Load the latest bundled ZAPI stock-summary snapshot.
+
+    This snapshot supplies listed/tradable shares and other slow-moving market
+    structure fields. It is not broker evidence and never produces a bandar cost.
+    """
+    cache_path = path or (_root_path() / "data" / "cache" / "zapi_stock_summary_latest.csv.gz")
+    if not cache_path.exists():
+        return pd.DataFrame()
+    try:
+        out = pd.read_csv(cache_path)
+    except Exception:
+        return pd.DataFrame()
+    out.columns = [str(c).strip().lower() for c in out.columns]
+    required = {"ticker", "trade_date", "listed_shares", "tradable_shares", "source"}
+    if not required.issubset(out.columns):
+        return pd.DataFrame()
+    out["ticker"] = out["ticker"].map(canonical_ticker)
+    out["trade_date"] = pd.to_datetime(out["trade_date"], errors="coerce").dt.normalize()
+    names = {canonical_ticker(t) for t in universe if canonical_ticker(t)}
+    out = out[out["ticker"].isin(names)].dropna(subset=["ticker", "trade_date"]).copy()
+    for col in ("listed_shares", "tradable_shares", "volume", "traded_value", "frequency"):
+        if col in out.columns:
+            out[col] = pd.to_numeric(out[col], errors="coerce")
+    return out.sort_values(["ticker", "trade_date"], kind="stable").reset_index(drop=True)
+
+
+def write_zapi_stock_summary_cache(frame: pd.DataFrame, path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if frame is not None and not frame.empty:
+        frame.to_csv(path, index=False, compression="gzip")

@@ -1,66 +1,86 @@
 {
-  "direct_idx_foreign": {
-    "days": 0,
-    "freshest": null,
-    "rows": 0,
-    "status": "BLOCKED: IDX official TradingSummary access blocked with HTTP 403 (Cloudflare challenge)",
-    "tickers": 0
-  },
-  "generated_at": "2026-09-02T16:50:21.158626+00:00",
-  "goapi_broker_direct": {
-    "budget_requests": 5,
-    "days": 0,
-    "freshest": null,
-    "jobs_planned": 0,
-    "provider": "GOAPI_BROKER_SUMMARY_NET",
-    "requests_attempted": 0,
-    "rows": 0,
-    "status": "NO_TOKEN",
-    "target_history_days": 20,
-    "tickers": 0,
-    "token_present": false,
-    "verified_tickers": 0
-  },
-  "indexalpha_broker_direct": {
-    "budget_requests": 5,
-    "contract": "STOCK_LEVEL_GROSS_BUY_SELL_EXACT_DAY_RG_ALL",
-    "days": 5,
-    "freshest": "2026-09-02",
-    "jobs_planned": 5,
-    "provider": "INDEX_ALPHA_BROKER_SUMMARY",
-    "requests_attempted": 5,
-    "requests_succeeded": 5,
-    "rows": 551,
-    "status": "UPDATED",
-    "target_history_days": 20,
-    "targets": [
-      "MMIX",
-      "PKPK",
-      "DAYA",
-      "MDLA",
-      "OMED"
-    ],
-    "tickers": 5,
-    "token_present": true,
-    "verified_tickers": 5
-  },
-  "official_market_broker_health": {
-    "brokers": 0,
-    "direct_evidence_eligible": false,
-    "rows": 0,
-    "status": "BLOCKED: IDX official TradingSummary access blocked with HTTP 403 (Cloudflare challenge)"
-  },
+  "architecture": "ZAPI_ONLY_NO_BROKER_DIRECT",
+  "generated_at": "2026-09-03T07:07:06+00:00",
   "target_trade_date": "2026-09-02",
   "universe_count": 400,
+  "broker_direct": {
+    "enabled": false,
+    "status": "RETIRED",
+    "providers": []
+  },
   "zapi_idx_foreign": {
-    "days": 24,
+    "status": "PRESERVED",
+    "token_present": true,
     "flow_unit": "SHARES",
-    "freshest": "2026-09-02",
+    "target_history_days": 20,
     "refresh_mode": "INCREMENTAL_AFTER_BOOTSTRAP",
     "rows": 9600,
-    "status": "UPDATED",
-    "target_history_days": 20,
     "tickers": 400,
-    "token_present": true
+    "days": 24,
+    "freshest": "2026-09-02"
+  },
+  "zapi_stock_summary": {
+    "status": "UPDATED",
+    "token_present": true,
+    "selected_trade_date": "2026-09-02",
+    "free_float_structure_rows": 400,
+    "rows": 400,
+    "tickers": 400,
+    "days": 1,
+    "freshest": "2026-09-02"
+  },
+  "zapi_ownership": {
+    "status": "UPDATED_PROFILE_FALLBACK",
+    "token_present": true,
+    "refresh_policy": "WEEKLY_WEEKDAY_0_OR_MISSING",
+    "rows": 344,
+    "tickers": 40,
+    "report_periods": 1,
+    "latest_report_date": "2026-09-02",
+    "primary": {
+      "source": "ZAPI_OWNERSHIP_FILES",
+      "status": "UNAVAILABLE_HTTP_403"
+    },
+    "fallback": {
+      "source": "ZAPI_COMPANY_PROFILE_SHAREHOLDERS",
+      "requests_attempted": 40,
+      "requests_succeeded": 40,
+      "tickers_requested": 40,
+      "tickers_with_rows": 40,
+      "snapshot_date": "2026-09-02",
+      "provenance_state": "VERIFIED_IDX_COMPANY_PROFILE_VIA_ZAPI"
+    }
+  },
+  "zapi_capital_actions": {
+    "status": "UPDATED",
+    "token_present": true,
+    "rows": 140,
+    "tickers": 108,
+    "days": 80,
+    "freshest": "2026-09-03",
+    "upcoming_events": 8,
+    "feeds": {
+      "issued-history": {
+        "api_calls": 4,
+        "provider_rows": 1801
+      },
+      "additional-listings": {
+        "api_calls": 4,
+        "normalized_rows": 28
+      },
+      "rights-offerings": {
+        "api_calls": 4,
+        "normalized_rows": 0
+      },
+      "stock-splits": {
+        "api_calls": 4,
+        "normalized_rows": 3
+      }
+    }
+  },
+  "verification": {
+    "ci": "PASSED",
+    "live_zapi_warm_run": "PASSED",
+    "supabase_mutated": false
   }
 }

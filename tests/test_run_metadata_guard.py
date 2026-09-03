@@ -6,14 +6,16 @@ from idx_flow_scanner.run_metadata_guard import (
 )
 
 
-def test_run_metadata_guard_reports_cache_only_indexalpha_and_persistence_revision():
+def test_run_metadata_guard_records_zapi_only_runtime_and_persistence_revision():
     captured = {}
 
     class Store:
         _flow_bounded_result_persistence_revision = "v3.18-direct-postgrest-persistence"
 
         def create_run(self, run_id, universe_count, config):
-            captured.update({"run_id": run_id, "universe_count": universe_count, "config": config})
+            captured.update(
+                {"run_id": run_id, "universe_count": universe_count, "config": config}
+            )
             return "ok"
 
     install_truthful_run_metadata(Store)
@@ -24,9 +26,9 @@ def test_run_metadata_guard_reports_cache_only_indexalpha_and_persistence_revisi
         "run-1",
         400,
         {
-            "version": "0.3.19",
-            "indexalpha_live_pull_manual_only": True,
-            "pipeline": "400_PROXY__ZAPI__GUARDED_TOP5__INDEX_ALPHA__BROKER_VERIFIED_TOP5",
+            "version": "0.4.0",
+            "broker_direct_enabled": True,
+            "broker_provider": "legacy",
         },
     )
 
@@ -34,9 +36,15 @@ def test_run_metadata_guard_reports_cache_only_indexalpha_and_persistence_revisi
     assert Store.create_run is first
     assert captured["universe_count"] == 400
     config = captured["config"]
-    assert config["indexalpha_live_pull_manual_only"] is False
-    assert config["indexalpha_acquisition_mode"] == "CACHE_ONLY_WARM_JOB_BUDGET"
-    assert config["indexalpha_budget_owner"] == "GITHUB_WARM_FLOW_EVIDENCE"
-    assert config["indexalpha_daily_request_budget"] == 5
+    assert config["broker_direct_enabled"] is False
+    assert config["broker_provider"] is None
+    assert config["indexalpha_acquisition_mode"] == "DISABLED"
+    assert config["pipeline_runtime"] == "OHLCV__ZAPI_FLOW__SECTOR__SLOW_EVIDENCE__SMC_ICT"
+    assert config["primary_flow_provider"] == "ZAPI"
+    assert config["slow_evidence_sources"] == [
+        "ZAPI_STOCK_SUMMARY",
+        "ZAPI_OWNERSHIP_FILES",
+        "ZAPI_CAPITAL_ACTIONS",
+    ]
     assert config["result_persistence_revision"] == "v3.18-direct-postgrest-persistence"
     assert config["run_metadata_guard_revision"] == RUN_METADATA_GUARD_REVISION

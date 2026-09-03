@@ -1,149 +1,248 @@
 # IDX Flow Scanner
 
-Current production contract: **v0.3.26**.
+Current production contract: **v0.4.0**.
 
-Third scanner in the IDX research stack. It is a **clean-room implementation** of public bandarmology / market-operator concepts and is not affiliated with, endorsed by, or a copy of any proprietary Creative Trader / MM Detector formula.
+IDX Flow Scanner is the flow / accumulation / execution layer in the IDX research stack. Version 0.4 removes broker-direct acquisition and broker-dependent authorization from the active production pipeline.
 
 ## Objective
 
-Find transitions in stock ownership/flow before or during markup:
+Detect high-quality accumulation and early-markup candidates using independent evidence families:
 
-`broker accumulation → supply concentration → estimated operator cost → phase detection → SMC/ICT execution → distribution warning`
+```
+OHLCV / absorption proxy
+        +
+ZAPI foreign flow
+        +
+market & sector regime
+        +
+free-float / ownership structure
+        +
+explicit corporate actions
+        +
+SMC / ICT execution
+        ↓
+research ranking
+        ↓
+ZAPI Flow Decision
+        ↓
+Execution Ready
+```
 
-The scanner is deliberately evidence-aware. A price/volume proxy is **never** labeled as direct broker evidence.
+The scanner does **not** claim to identify a beneficial owner or proprietary "bandar" identity. Price/volume absorption remains a proxy. Ownership files remain factual ownership evidence. No broker-derived smart-money cost is produced in v0.4.
 
-## Current engines
+## Active evidence sources
 
-- Direct broker-summary normalization and coverage measurement.
-- 5D/20D/60D net-flow windows.
-- Accumulation persistence and top-broker concentration.
-- Transparent estimated smart-money cost from positive net-volume of top accumulating brokers.
-- Reversal-based distribution-risk warning.
-- Retail-exhaustion / price-flow divergence features.
-- SMC/ICT execution overlay: liquidity sweep, CHOCH proxy, BOS proxy, bullish FVG, entry/invalidation/TP plan.
-- Real-money guardrail that blocks insufficient direct evidence.
-- Streamlit UI with Silent Accumulation, Distribution Warning, and Single Ticker Audit views.
-- Supabase-ready private persistence contract.
+### 1. OHLCV
 
-## Evidence hierarchy
+The managed 400-ticker universe uses database/cache-first daily OHLCV with integrity gates for:
 
-1. `BROKER_DIRECT`: direct broker-summary observations with enough date coverage.
-2. `PRICE_PROXY`: OHLCV-derived research proxy only. This state is automatically `RESEARCH_ONLY` / `GUARDED`.
+- minimum bar history;
+- OHLC geometry;
+- stale observations;
+- zero-volume density;
+- unchanged-close density;
+- split/corporate-action-like discontinuities;
+- IDX tradeable price fractions;
+- next-session execution price bands.
 
-This hierarchy prevents false coverage and false precision.
+### 2. ZAPI foreign flow
 
-## Broker CSV contract
+Primary daily flow evidence:
 
-Use `data/templates/broker_summary_template.csv` with columns:
+- `finance:idx/foreign-flow`
+- `finance:idx/stock-summary` fallback/slow snapshot
 
-`ticker, trade_date, broker_code, buy_value, sell_value, buy_volume, sell_volume, buy_avg, sell_avg, market_type, source`
+Foreign buy/sell/net remain **share-unit** observations. They are validated for window completeness, freshness, duplicates, unit semantics, and buy/sell/net consistency before scoring.
 
-Values should reflect a lawful source/export. Do not ingest copied proprietary MM Detector outputs or bypass a data provider's access controls.
+### 3. ZAPI stock-summary / free float
 
-## Run locally
+The stock-summary snapshot contributes:
+
+- listed shares;
+- tradable shares;
+- derived tradable/free-float percentage;
+- 20D volume turnover versus tradable shares;
+- 20D foreign net shares versus tradable shares.
+
+A very low free float is treated as a risk/structure condition, not automatically as positive accumulation.
+
+### 4. Ownership / KSEI-style slow evidence
+
+Verified ZAPI ownership index:
+
+- `finance:idx/ownership-files`
+- categories: `lima-persen`, `satu-persen`, `klasifikasi`, `tipe`
+
+The acquisition path only accepts HTTPS ownership workbooks whose final source is an IDX/KSEI domain. Stored facts include report/publication dates, holder/category information, shares, ownership percentage, local/foreign classification, source URL and file hash.
+
+Ownership is slow-moving evidence. It is never relabelled as broker identity or coordinated operator activity.
+
+### 5. Explicit corporate actions
+
+Verified ZAPI/IDX feeds:
+
+- `finance:idx/issued-history`
+- `finance:idx/additional-listings`
+- `finance:idx/rights-offerings`
+- `finance:idx/stock-splits`
+
+The scanner keeps explicit event dates/spans and share-count facts. Material dilution near the decision date can hard-block execution. Stock split/reverse-split events trigger normalization caution rather than being mistaken for flow.
+
+Upcoming events are included in the acquisition horizon.
+
+## Market context v0.4
+
+Market context is now sector-aware.
+
+When sector membership is available for the 400-ticker universe:
+
+- market regime: **30%**
+- sector regime: **30%**
+- sector-relative strength: **25%**
+- market-relative strength: **15%**
+
+Sector regime uses 20D/60D breadth and median returns. This prevents a ticker from being judged only against the entire universe when its own sector is weak or strong.
+
+## Active v0.4 scoring priors
+
+These are research priors, not fitted coefficients:
+
+- accumulation / absorption: **24%**
+- ZAPI foreign flow: **20%**
+- market + sector context: **15%**
+- free-float structure: **10%**
+- ownership: **8%**
+- corporate action: **5%**
+- retail exhaustion: **6%**
+- price-flow divergence: **4%**
+- SMC / ICT execution: **4%**
+- risk / liquidity: **4%**
+
+Correlated OHLCV observations are treated as one latent evidence family. Data quality is a confidence haircut, not a separate alpha source.
+
+## Decision lanes
+
+### Raw Research Priority
+
+All valid managed-universe results. PRICE_PROXY rows remain visible for research.
+
+### ZAPI Flow Decision — Top 20
+
+Requires, at minimum:
+
+- `ZAPI_FLOW` evidence tier;
+- full, fresh, valid foreign-flow window;
+- price quality >= 70;
+- distribution risk < 70;
+- non-distribution phase/action.
+
+### Execution Ready — Top 10
+
+Adds stricter execution authorization:
+
+- ZAPI coverage >= 80%;
+- score >= 65;
+- valid SMC/ICT execution geometry;
+- valid IDX price fractions and next-session price band;
+- acceptable data staleness;
+- no extreme-low-free-float guard;
+- no material recent/upcoming dilution hard block.
+
+## SMC / ICT execution
+
+The execution overlay retains:
+
+- liquidity sweep;
+- CHOCH;
+- BOS;
+- bullish FVG;
+- entry zone;
+- invalidation;
+- TP1 / TP2;
+- structural RR;
+- IDX price fraction checks;
+- next-session price-band checks.
+
+## Calibration
+
+Current weights and thresholds are **not automatically retuned** from a small sample.
+
+The OOS memory records:
+
+- 5D return;
+- 20D return;
+- 60D return;
+- 20D MFE;
+- 20D MAE;
+- phase;
+- evidence tier;
+- signal score.
+
+Calibration tooling reports score buckets, hit rate, payoff distribution, MFE/MAE and monotonicity. Current readiness policy:
+
+- threshold review: at least **200 completed 20D observations**;
+- weight review: at least **400 completed 20D** and **150 completed 60D observations**.
+
+Any future weight change should be walk-forward/OOS and include transaction-cost/slippage assumptions. No snapshot-only tuning.
+
+## ZAPI warm job
+
+The scheduled GitHub workflow is ZAPI-only.
+
+It refreshes:
+
+- `zapi_idx_foreign_60d.csv.gz`
+- `zapi_idx_foreign_60d.json`
+- `zapi_stock_summary_latest.csv.gz`
+- `zapi_ownership_latest.csv.gz`
+- `zapi_capital_actions.csv.gz`
+
+Ownership is refreshed weekly or when its cache is missing because it is slow-moving. Corporate actions include recent and upcoming periods.
+
+The workflow no longer consumes GOAPI or Index Alpha broker budgets and no longer attempts direct-IDX broker acquisition.
+
+## Broker-direct retirement
+
+v0.4 active runtime:
+
+- does not call GOAPI broker endpoints;
+- does not call Index Alpha broker endpoints;
+- does not call the retired direct-IDX broker collector;
+- does not rank or authorize on broker data;
+- does not display `BROKER_PENDING` / `BROKER_VERIFIED`;
+- does not calculate or display an estimated bandar price/cost.
+
+Some legacy broker modules/database columns may remain temporarily for backward-compatible tests and historical persisted runs. They are dormant: `app.py`, the active Streamlit pipeline and the ZAPI warm workflow do not invoke them.
+
+Database schema cleanup is intentionally deferred until the dedicated IDX Flow Supabase connection is available for a separate migration/parity audit.
+
+## Supabase
+
+Production persistence is designed for the dedicated **IDX Flow Scanner** project.
+
+No Supabase schema change is part of the v0.4 ZAPI-only code refactor in this branch. When the correct dedicated project is connected, migration parity, RLS, advisors and removal/archival of obsolete broker entities should be audited separately before any schema mutation.
+
+## Deployment
+
+Streamlit Community Cloud:
+
+- repository: `rizanrizan93/idx-flow-scanner`
+- branch: `main`
+- app file: `app.py`
+- backend secrets: `SUPABASE_URL`, `SUPABASE_SECRET_KEY`
+- ZAPI acquisition secret: `ZAPI_KEY`
+
+Run locally:
 
 ```bash
 python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\\Scripts\\activate
+source .venv/bin/activate
 pip install -r requirements.txt
 streamlit run app.py
 ```
 
-For tests:
+Tests:
 
 ```bash
 PYTHONPATH=src pytest -q
 ```
-
-## Supabase
-
-Production persistence uses the dedicated Supabase project **`IDX Flow Scanner`**, created in a separate Supabase account and connected directly to this GitHub repository.
-
-The project ref and backend secret are intentionally **not committed to GitHub**. Database schema is versioned under `supabase/migrations/`, with `001_initial_schema.sql` as the current bootstrap migration.
-
-In the Supabase GitHub integration:
-
-- repository: `rizanrizan93/idx-flow-scanner`
-- production branch: `main`
-- working directory: `.`
-- `Deploy to production`: enabled for automatic migration deployment
-
-Runtime should use backend-only secrets:
-
-```toml
-SUPABASE_URL = "https://<idx-flow-project-ref>.supabase.co"
-SUPABASE_SECRET_KEY = "<backend secret/service-role key>"
-```
-
-All scanner tables enable RLS. `anon` and `authenticated` table privileges are revoked; Streamlit persistence is server-side through a secret/service-role key. Never commit a Supabase secret/service-role key to GitHub.
-
-The legacy Emir Supabase project is no longer a Flow Scanner target. `Idx emir framework v2` remains independent for the Emir Scanner, and the Super Scanner database is not part of Flow production persistence.
-
-## Deployment
-
-Designed for Streamlit Community Cloud:
-
-- repository: this repo
-- branch: `main`
-- app file: `app.py`
-- secrets: `SUPABASE_URL`, `SUPABASE_SECRET_KEY`
-
-## Scoring policy
-
-The first pass is strictly PRICE_PROXY + verified foreign evidence. Broker evidence is finalist-only. PRICE_PROXY scoring collapses correlated OHLCV observations before combining them with external evidence. The configured direct-evidence weights remain subject to walk-forward/OOS calibration:
-
-- accumulation 25%
-- operator dominance 15%
-- cost-basis advantage 10%
-- retail exhaustion 10%
-- foreign institutional 10% (direct IDX when available; otherwise audited Zapi IDX-derived share flow; neutral only when verified flow is unavailable)
-- supply concentration 8%
-- price-flow divergence 7%
-- market/sector regime 5% (neutral 50 until verified provider is wired)
-- SMC/ICT execution 5%
-- risk/liquidity 5%
-
-Weights are explicitly **not** claimed to reproduce any proprietary formula. Before real-money use, thresholds and weights must be walk-forward calibrated on historical direct broker data, with out-of-sample evaluation and transaction-cost/slippage assumptions.
-
-## Free-tier stock-level broker evidence
-
-- Index Alpha is an optional Bearer-token provider for stock-level broker summary; plan/quota failure is treated as provider unavailability, never as evidence.
-- Broker enrichment occurs only after the guarded Top-5 has been selected, so stronger direct evidence cannot remove a ticker from the proxy shortlist.
-- The free policy is pinned to five tickers and at most five exact-day requests per day.
-- Production requests always use `from == to`; a multi-day aggregate is never expanded into synthetic daily rows.
-- Cached rows carry `INDEX_ALPHA_BROKER_SUMMARY`, verified vendor provenance, and regular-market (`RG`) scope.
-- The existing gate still requires at least 10 broker days, 70% 20D coverage, six brokers, <=10% buy/sell balance error, and >=95% verified provenance before `BROKER_DIRECT`.
-- Without `INDEX_ALPHA_KEY`, the provider is a no-op and scanner behavior stays PRICE_PROXY/GUARDED.
-
-## v0.2.5 foreign evidence
-
-- Bundled Zapi IDX-derived foreign-flow cache covers the managed 400-ticker universe for 20 trading days.
-- Zapi rows persist in `flow_vendor_foreign_flows`, never in the direct-IDX `flow_official_stock_flows` table.
-- Foreign buy/sell/net remain share-unit evidence and are never promoted to broker-direct evidence or bandar cost.
-- Direct IDX HTTP remains preferred on equal coverage, but cloud 403/Cloudflare failures fail closed.
-- GOAPI is optional; the scanner remains fully operational in PRICE_PROXY/GUARDED mode when stock-level broker evidence is absent.
-
-## Production integrity gates
-
-- `COMPLETED` means full requested-universe completion; `COMPLETED_PARTIAL` is explicit for >=90% but <100%.
-- The canonical 10-session OHLCV mirror and verified ZAPI foreign-flow mirror are pulled into Supabase by backend-only `service_role` cron functions; stale DB cache therefore no longer depends on a user scan to refresh.
-- Mirror pull-sync functions validate date bounds, OHLC geometry, units and provenance before upsert, and are revoked from `public`, `anon`, and `authenticated`.
-- Price cache/seed frames older than seven calendar days are rejected before they can define the cross-sectional reference date.
-- Zero-volume density above 20% over 20D or 35% over 60D blocks guarded broker-budget promotion and direct authorization.
-- The OHLCV seed refresh is scheduled on weekdays and replaces the tracked seed only after the integrity gate passes.
-- `idx_400_syariah.csv` is a current snapshot, not point-in-time historical membership evidence.
-
-## Next production gates
-
-- Verify the dedicated `IDX Flow Scanner` project has applied all pending migrations.
-- Verify RLS, backend service-role grants, and Supabase Security/Performance Advisor findings.
-- Configure Streamlit `SUPABASE_URL` and `SUPABASE_SECRET_KEY` for the dedicated project.
-- Verified broker-summary ingestion adapter and freshness audit.
-- Persistent OHLCV/broker caches and resumable 400-ticker jobs.
-- Independent historical labels for accumulation → markup and distribution → drawdown.
-- Walk-forward/OOS calibration; no snapshot-only tuning.
-- Session/EOD data lineage and source quorum.
-
-## v0.1.1 proxy integrity
-
-When direct broker summary is unavailable, the scanner computes explicitly-labelled OHLCV accumulation/absorption proxies so research ranking remains informative. These proxies never change `PRICE_PROXY` evidence to `BROKER_DIRECT` and can never pass the real-money guardrail by themselves.
