@@ -9,7 +9,7 @@ import streamlit as st
 
 from .authorization import apply_production_authorization, export_scan_csv
 from .broker_evidence import select_broker_evidence
-from .config import ScannerConfig
+from .config import ZapiFlowConfig
 from .database_first import prepare_database_first_prices
 from .foreign_evidence import prepare_foreign_evidence
 from .decision import select_execution_ready, select_zapi_decision_top
@@ -370,7 +370,7 @@ def run() -> None:
         st.caption(f"Managed engine: {managed_decision.reason}")
 
     if trigger_scan:
-        config = ScannerConfig()
+        config = ZapiFlowConfig()
         run_id = str(uuid.uuid4())
         run_record_created = False
         bar = st.progress(0.0, text="Preparing OHLCV...")
@@ -475,6 +475,7 @@ def run() -> None:
             ownership_frame=ownership,
             capital_action_frame=capital_actions,
             sector_map=sector_map,
+            config=config,
         )
         decision_top = select_zapi_decision_top(results, top_n=20)
         execution_ready = select_execution_ready(results, top_n=10)
