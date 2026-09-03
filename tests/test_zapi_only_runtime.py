@@ -7,11 +7,13 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+import idx_flow_scanner.providers.zapi_slow as zapi_slow
 from idx_flow_scanner.calibration import build_calibration_report, calibration_readiness
 from idx_flow_scanner.config import ZapiFlowConfig, ZapiFlowWeights
 from idx_flow_scanner.decision import select_execution_ready, select_zapi_decision_top
 from idx_flow_scanner.market_context import compute_market_context, ticker_market_features
 from idx_flow_scanner.providers.zapi_slow import (
+    fetch_zapi_company_profile_ownership,
     normalize_zapi_capital_actions,
     parse_ownership_workbook,
 )
@@ -122,6 +124,43 @@ def test_ownership_workbook_is_factual_and_period_bounded():
     assert row["source_verified"] is True or bool(row["source_verified"]) is True
 
 
+
+def test_company_profile_ownership_fallback_is_structured_and_bounded(monkeypatch):
+    def fake_request(url, params, *, api_key, timeout):
+        assert url == zapi_slow.COMPANY_PROFILE_URL
+        assert params == {"code": "AAAA"}
+        assert api_key == "zpi_test"
+        return {
+            "code": "AAAA",
+            "dataset": "company-profile",
+            "provider": "idx",
+            "shareholders": [
+                {
+                    "name": "Institution A",
+                    "shares": 600_000,
+                    "category": "Lebih dari 5%",
+                    "sharePct": 60.0,
+                }
+            ],
+        }
+
+    monkeypatch.setattr(zapi_slow, "_request_json", fake_request)
+    frame, meta = fetch_zapi_company_profile_ownership(
+        ["AAAA", "BBBB"],
+        observed_on=date(2026, 9, 2),
+        api_key="zpi_test",
+        max_tickers=1,
+    )
+
+    assert frame["ticker"].tolist() == ["AAAA"]
+    assert frame.iloc[0]["ownership_percentage"] == 60.0
+    assert frame.iloc[0]["report_date"] == "2026-09-02"
+    assert frame.iloc[0]["report_date_kind"] == "OBSERVED_PROFILE_SNAPSHOT"
+    assert frame.iloc[0]["provenance_state"] == "VERIFIED_IDX_COMPANY_PROFILE_VIA_ZAPI"
+    assert meta["requests_attempted"] == 1
+    assert meta["tickers_requested"] == 1
+    assert meta["tickers_with_rows"] == 1
+
 def test_upcoming_material_rights_issue_becomes_slow_evidence_hard_block():
     actions = normalize_zapi_capital_actions(
         [
@@ -230,6 +269,8 @@ def test_active_runtime_and_warm_job_do_not_call_broker_providers():
     assert "verify_guarded_top5(" not in run_body
     assert "GOAPI_KEY" not in workflow
     assert "INDEX_ALPHA_KEY" not in workflow
+    assert "ZAPI_OWNERSHIP_PROFILE_FALLBACK_LIMIT" in workflow
+    assert "* * 1-5" in workflow
     assert "fetch_goapi" not in builder
     assert "fetch_indexalpha" not in builder
     assert "fetch_idx_official" not in builder
