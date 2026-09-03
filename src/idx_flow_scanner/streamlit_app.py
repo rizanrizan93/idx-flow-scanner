@@ -178,15 +178,25 @@ def run() -> None:
                 "yang benar. Ini mencegah write ke project Supabase lain."
             ),
         )
+        confirm_database = st.checkbox(
+            "Saya konfirmasi project Supabase ini benar",
+            value=False,
+            disabled=not use_database,
+            help=(
+                "Safety interlock. Aktifkan hanya setelah memastikan credential mengarah "
+                "ke dedicated project IDX Flow Scanner."
+            ),
+        )
+        persistence_armed = bool(use_database and confirm_database)
         persist = st.checkbox(
             "Persist hasil scan",
             value=False,
-            disabled=not use_database,
+            disabled=not persistence_armed,
         )
         managed_auto = st.toggle(
             "Managed auto-run",
             value=False,
-            disabled=not (use_database and persist),
+            disabled=not (persistence_armed and persist),
         )
 
         st.divider()
@@ -227,7 +237,7 @@ def run() -> None:
         )
 
     signature = universe_signature(universe)
-    store, store_error = connect_store(use_database)
+    store, store_error = connect_store(persistence_armed)
     if store_error:
         st.warning(f"Supabase belum siap: {store_error}")
 
@@ -253,7 +263,7 @@ def run() -> None:
         version=APP_VERSION,
         universe_count=len(universe),
         sector_count=sector_count,
-        database_connected=store is not None,
+        database_connected=store is not None and persistence_armed,
     )
 
     render_health_cards(

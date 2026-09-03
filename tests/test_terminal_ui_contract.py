@@ -40,3 +40,18 @@ def test_terminal_css_has_mobile_breakpoint_and_dense_table_shell():
     assert "idx-leaderboard" in ui
     assert "idx-funnel" in ui
     assert '[data-testid="stDataFrame"]' in ui
+
+
+def test_custom_terminal_components_use_native_html_renderer():
+    ui = Path("src/idx_flow_scanner/ui_terminal.py").read_text(encoding="utf-8")
+    assert "st.html(TERMINAL_CSS)" in ui
+    assert 'st.html(f\'<div class="idx-funnel">{cards}</div>\')' in ui
+    assert 'st.html(f\'<div class="idx-leaderboard">{"".join(cards)}</div>\')' in ui
+    assert "unsafe_allow_html=True" not in ui
+
+
+def test_supabase_persistence_requires_explicit_confirmation():
+    app = Path("src/idx_flow_scanner/streamlit_app.py").read_text(encoding="utf-8")
+    assert "Saya konfirmasi project Supabase ini benar" in app
+    assert "persistence_armed = bool(use_database and confirm_database)" in app
+    assert "connect_store(persistence_armed)" in app
