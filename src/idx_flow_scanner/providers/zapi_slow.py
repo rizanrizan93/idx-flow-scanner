@@ -44,7 +44,18 @@ def _parse_date(value: Any) -> date | None:
     text = _clean(value)
     if not text:
         return None
-    parsed = pd.to_datetime(value, errors="coerce", dayfirst=True)
+
+    # ZAPI event/publication fields are frequently ISO YYYY-MM-DD. Parse ISO
+    # deterministically before falling back to day-first workbook-style dates;
+    # otherwise pandas dayfirst=True can reinterpret 2026-09-10 as 2026-10-09.
+    iso = re.match(r"^(\d{4})-(\d{2})-(\d{2})(?:[T\s].*)?$", text)
+    if iso:
+        try:
+            return date(int(iso.group(1)), int(iso.group(2)), int(iso.group(3)))
+        except ValueError:
+            return None
+
+    parsed = pd.to_datetime(text, errors="coerce", dayfirst=True)
     return None if pd.isna(parsed) else pd.Timestamp(parsed).date()
 
 
