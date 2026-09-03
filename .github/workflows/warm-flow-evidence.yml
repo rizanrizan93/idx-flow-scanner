@@ -3,7 +3,7 @@ name: Warm ZAPI Flow Evidence
 on:
   workflow_dispatch:
   schedule:
-    - cron: '40 12 * * *'
+    - cron: '40 12 * * 1-5'
   push:
     paths:
       - 'scripts/build_flow_evidence_cache.py'
@@ -38,6 +38,7 @@ jobs:
           ZAPI_KEY: ${{ secrets.ZAPI_KEY }}
           ZAPI_FOREIGN_TARGET_DAYS: '20'
           ZAPI_OWNERSHIP_REFRESH_WEEKDAY: '0'
+          ZAPI_OWNERSHIP_PROFILE_FALLBACK_LIMIT: '40'
         run: python scripts/build_flow_evidence_cache.py
 
       - name: Publish provider telemetry
