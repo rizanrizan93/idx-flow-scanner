@@ -9,6 +9,7 @@ from .providers.zapi import ZAPI_STOCK_SUMMARY_URL, _get_json
 
 TARGET_UNIVERSE_SIZE = 700
 IDX_COMPANIES_URL = "https://www.idx.co.id/primary/ListedCompany/GetCompanyProfiles"
+IDX_COMPANIES_PAGE_URL = "https://www.idx.co.id/id/perusahaan-tercatat/profil-perusahaan/"
 ZAPI_COMPANIES_URL = "https://api.zpi.web.id/v1/finance:idx/companies"
 
 _SECTOR_MAP = {
@@ -102,26 +103,52 @@ def _normalize_company_rows(rows: object) -> pd.DataFrame:
 def fetch_idx_listed_companies(*, timeout: float = 35.0) -> pd.DataFrame:
     """Fetch the current official IDX listed-company directory.
 
-    curl_cffi with a browser TLS fingerprint is already a project dependency and
-    is materially more reliable against IDX Cloudflare than plain requests.
+    Prime a browser-like session on the public company-profile page before
+    requesting the JSON directory. This carries Cloudflare/session cookies from
+    the same browser fingerprint into the API request.
     """
     from curl_cffi import requests as curl_requests
 
-    response = curl_requests.get(
-        IDX_COMPANIES_URL,
-        params={"start": 0, "length": 9999},
-        headers={
-            "Accept": "application/json, text/plain, */*",
-            "Referer": "https://www.idx.co.id/id/perusahaan-tercatat/profil-perusahaan/",
-            "Accept-Language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
-        },
-        impersonate="chrome",
-        timeout=timeout,
-    )
+    headers = {
+        "Accept": "application/json, text/plain, */*",
+        "Referer": IDX_COMPANIES_PAGE_URL,
+        "Accept-Language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
+        "X-Requested-With": "XMLHttpRequest",
+    }
+    with curl_requests.Session(impersonate="chrome") as session:
+        try:
+            session.get(
+                IDX_COMPANIES_PAGE_URL,
+                headers={"Accept-Language": headers["Accept-Language"]},
+                timeout=timeout,
+            )
+        except Exception:
+            # The directory call can still succeed even when the HTML warmup is
+            # unavailable, so do not fail solely on the warmup request.
+            pass
+        response = session.get(
+            IDX_COMPANIES_URL,
+            params={"start": 0, "length": 9999},
+            headers=headers,
+            timeout=timeout,
+        )
     response.raise_for_status()
+    content_type = str(response.headers.get("content-type") or "").lower()
+    if "json" not in content_type:
+        prefix = str(response.text or "")[:120].replace("\n", " ")
+        raise RuntimeError(
+            f"IDX company directory returned non-JSON content-type={content_type!r} body={prefix!r}"
+        )
     payload = response.json()
     rows = payload.get("data") if isinstance(payload, dict) else None
-    return _normalize_company_rows(rows)
+    frame = _normalize_company_rows(rows)
+    if frame.empty:
+        keys = sorted(payload.keys()) if isinstance(payload, dict) else []
+        sample_keys = sorted(rows[0].keys()) if isinstance(rows, list) and rows and isinstance(rows[0], dict) else []
+        raise RuntimeError(
+            f"IDX company directory normalized to zero rows payload_keys={keys} sample_keys={sample_keys}"
+        )
+    return frame
 
 
 def fetch_zapi_listed_companies(
@@ -326,18 +353,21 @@ def materialize_universe_700(
     key = str(api_key or "").strip()
 
     try:
+        source_errors: list[str] = []
         try:
             companies = fetch_idx_listed_companies()
-        except Exception:
+        except Exception as exc:
+            source_errors.append(f"IDX_OFFICIAL:{type(exc).__name__}:{exc}")
             companies = pd.DataFrame()
         if (companies.empty or len(companies) < int(target_size)) and key:
             try:
                 companies = fetch_zapi_listed_companies(api_key=key)
-            except Exception:
-                pass
+            except Exception as exc:
+                source_errors.append(f"ZAPI_COMPANIES:{type(exc).__name__}:{exc}")
         if companies.empty or len(companies) < int(target_size):
+            errors = " | ".join(source_errors) if source_errors else "no source error captured"
             raise RuntimeError(
-                f"Listed-company directory incomplete: need >= {target_size}, got {len(companies)}"
+                f"Listed-company directory incomplete: need >= {target_size}, got {len(companies)}; {errors}"
             )
 
         activity = pd.DataFrame()
