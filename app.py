@@ -11,10 +11,7 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 import idx_flow_scanner.streamlit_app as streamlit_app
-from idx_flow_scanner.large_universe_prices import prepare_large_universe_prices
-from idx_flow_scanner.run_metadata_guard import install_truthful_run_metadata
-from idx_flow_scanner.runtime_persistence import install_current_result_persistence
-from idx_flow_scanner.slow_evidence_store import (
+from idx_flow_scanner.evidence_database import (
     load_capital_actions,
     load_ownership,
     load_stock_summary,
@@ -25,6 +22,9 @@ from idx_flow_scanner.slow_evidence_store import (
     upsert_ownership,
     upsert_stock_summary,
 )
+from idx_flow_scanner.large_universe_prices import prepare_large_universe_prices
+from idx_flow_scanner.run_metadata_guard import install_truthful_run_metadata
+from idx_flow_scanner.runtime_persistence import install_current_result_persistence
 from idx_flow_scanner.storage import SupabaseStore
 from idx_flow_scanner.universe_700 import materialize_universe_700
 
