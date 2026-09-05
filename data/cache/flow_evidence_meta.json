@@ -5,7 +5,7 @@
     "providers": [],
     "status": "RETIRED"
   },
-  "generated_at": "2026-09-05T13:40:26.246793+00:00",
+  "generated_at": "2026-09-05T13:47:40.547461+00:00",
   "target_trade_date": "2026-09-04",
   "universe_count": 700,
   "zapi_capital_actions": {
@@ -24,7 +24,7 @@
     "freshest": "2026-09-02",
     "refresh_mode": "INCREMENTAL_AFTER_BOOTSTRAP",
     "rows": 9600,
-    "status": "QUOTA_EXHAUSTED: Zapi rate/monthly quota exhausted",
+    "status": "UNAVAILABLE: Zapi HTTP 522",
     "target_history_days": 20,
     "tickers": 400,
     "token_present": true
