@@ -1,0 +1,25 @@
+name: Inspect Free Float Source
+
+on:
+  push:
+    branches:
+      - fix/foreign700-freefloat-semantics
+    paths:
+      - '.github/workflows/inspect-freefloat-source.yml'
+      - 'scripts/inspect_free_float_source.py'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python scripts/inspect_free_float_source.py
