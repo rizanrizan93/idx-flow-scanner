@@ -1,0 +1,68 @@
+name: Refresh IDX 700 Universe
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '15 11 * * 0'
+  push:
+    paths:
+      - 'scripts/materialize_universe_700.py'
+      - 'src/idx_flow_scanner/universe_700.py'
+      - '.github/workflows/refresh-universe-700.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-idx-700-universe-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  refresh-universe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -r requirements.txt
+
+      - name: Materialize current 700-ticker universe
+        env:
+          PYTHONPATH: src
+          ZAPI_KEY: ${{ secrets.ZAPI_KEY }}
+        run: python scripts/materialize_universe_700.py
+
+      - name: Validate snapshot contract
+        run: |
+          python - <<'PY'
+          import pandas as pd
+          path = 'data/universe/idx_700_all.csv'
+          frame = pd.read_csv(path)
+          assert len(frame) == 700, len(frame)
+          assert frame['ticker'].astype(str).str.upper().nunique() == 700
+          assert int(frame['universe_source'].eq('LEGACY_400').sum()) == 400
+          assert int(frame['universe_source'].eq('IDX_ACTIVE_LIQUIDITY_ADD').sum()) == 300
+          print('700-universe contract OK')
+          PY
+
+      - name: Commit universe snapshot
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          cp data/universe/idx_700_all.csv /tmp/idx_700_all.csv
+          cp data/universe/idx_700_all.meta.json /tmp/idx_700_all.meta.json
+          git fetch origin "$GITHUB_REF_NAME"
+          git reset --hard "origin/$GITHUB_REF_NAME"
+          cp /tmp/idx_700_all.csv data/universe/idx_700_all.csv
+          cp /tmp/idx_700_all.meta.json data/universe/idx_700_all.meta.json
+          git add data/universe/idx_700_all.csv data/universe/idx_700_all.meta.json
+          if git diff --cached --quiet; then
+            echo "Universe snapshot unchanged"
+          else
+            git commit -m "Refresh IDX 700 universe snapshot"
+            git push origin HEAD:"$GITHUB_REF_NAME"
+          fi
