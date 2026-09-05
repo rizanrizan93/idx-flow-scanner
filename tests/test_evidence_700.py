@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 import pandas as pd
 
@@ -6,6 +7,14 @@ from idx_flow_scanner.evidence_700 import (
     enrich_universe_sector_metadata,
     write_evidence_coverage_report,
 )
+
+
+def test_persisted_700_universe_has_complete_sector_metadata():
+    frame = pd.read_csv(Path("data/universe/idx_700_all.csv"))
+    assert len(frame) == 700
+    assert frame["ticker"].astype(str).str.upper().nunique() == 700
+    sector = frame["sector"].fillna("UNKNOWN").astype(str).str.upper()
+    assert not sector.isin({"", "UNKNOWN", "NAN", "NONE", "NULL"}).any()
 
 
 def test_sector_enrichment_carries_forward_known_metadata_without_web(tmp_path):
