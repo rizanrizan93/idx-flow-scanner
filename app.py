@@ -18,6 +18,7 @@ from idx_flow_scanner.storage import SupabaseStore
 from idx_flow_scanner.universe_700 import materialize_universe_700
 
 BASE_UNIVERSE_PATH = ROOT / "data" / "universe" / "idx_400_syariah.csv"
+BUNDLED_UNIVERSE_700_PATH = ROOT / "data" / "universe" / "idx_700_all.csv"
 RUNTIME_UNIVERSE_PATH = Path("/tmp/idx_flow_runtime_universe_700.csv")
 SEED_700_PATH = ROOT / "data" / "cache" / "idx_700_ohlcv_1y.csv.gz"
 SEED_400_PATH = ROOT / "data" / "cache" / "idx_400_ohlcv_1y.csv.gz"
@@ -25,6 +26,8 @@ SEED_400_PATH = ROOT / "data" / "cache" / "idx_400_ohlcv_1y.csv.gz"
 
 @st.cache_data(ttl=1800, show_spinner=False)
 def _resolved_universe_path(api_key: str | None) -> str:
+    if BUNDLED_UNIVERSE_700_PATH.exists():
+        return str(BUNDLED_UNIVERSE_700_PATH)
     path = materialize_universe_700(
         BASE_UNIVERSE_PATH,
         api_key=api_key,
