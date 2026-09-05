@@ -7,6 +7,9 @@ on:
   push:
     paths:
       - 'scripts/build_flow_evidence_cache.py'
+      - 'scripts/build_flow_evidence_cache_700.py'
+      - 'scripts/materialize_universe_700.py'
+      - 'src/idx_flow_scanner/universe_700.py'
       - 'src/idx_flow_scanner/providers/zapi.py'
       - 'src/idx_flow_scanner/providers/zapi_slow.py'
       - 'src/idx_flow_scanner/slow_evidence.py'
@@ -23,7 +26,7 @@ concurrency:
 jobs:
   refresh-evidence:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
@@ -32,14 +35,14 @@ jobs:
           cache: pip
       - run: pip install -r requirements.txt
 
-      - name: Refresh ZAPI flow and slow evidence
+      - name: Refresh 700-ticker ZAPI flow and slow evidence
         env:
           PYTHONPATH: src
           ZAPI_KEY: ${{ secrets.ZAPI_KEY }}
           ZAPI_FOREIGN_TARGET_DAYS: '20'
           ZAPI_OWNERSHIP_REFRESH_WEEKDAY: '0'
           ZAPI_OWNERSHIP_PROFILE_FALLBACK_LIMIT: '40'
-        run: python scripts/build_flow_evidence_cache.py
+        run: python scripts/build_flow_evidence_cache_700.py
 
       - name: Publish provider telemetry
         if: always()
@@ -66,10 +69,11 @@ jobs:
           do
             test ! -f "data/cache/$name" || cp "data/cache/$name" "/tmp/zapi-flow-cache/$name"
           done
+          test ! -f data/universe/idx_700_all.csv || cp data/universe/idx_700_all.csv /tmp/zapi-flow-cache/idx_700_all.csv
 
           git fetch origin "$GITHUB_REF_NAME"
           git reset --hard "origin/$GITHUB_REF_NAME"
-          mkdir -p data/cache
+          mkdir -p data/cache data/universe
 
           python - <<'PY'
           from __future__ import annotations
@@ -113,6 +117,15 @@ jobs:
               changed = True
               print(f"{name}: evidence updated")
 
+          universe = fresh / "idx_700_all.csv"
+          if universe.exists():
+              target = Path("data/universe/idx_700_all.csv")
+              same = target.exists() and universe.read_bytes() == target.read_bytes()
+              if not same:
+                  shutil.copy2(universe, target)
+                  changed = True
+                  print("idx_700_all.csv: universe snapshot updated")
+
           meta = fresh / "flow_evidence_meta.json"
           if changed and meta.exists():
               shutil.copy2(meta, current / meta.name)
@@ -130,10 +143,11 @@ jobs:
           do
             test ! -f "data/cache/$name" || git add "data/cache/$name"
           done
+          test ! -f data/universe/idx_700_all.csv || git add data/universe/idx_700_all.csv
 
           if git diff --cached --quiet; then
             echo "ZAPI evidence unchanged; no repository commit"
           else
-            git commit -m "Refresh ZAPI flow evidence cache"
+            git commit -m "Refresh 700-ticker ZAPI flow evidence cache"
             git push origin HEAD:"$GITHUB_REF_NAME"
           fi
