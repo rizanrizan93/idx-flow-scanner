@@ -1,0 +1,16 @@
+{
+  "actual_universe_count": 700,
+  "generated_at": "2026-09-05T13:29:22.357325+00:00",
+  "legacy_anchor_count": 400,
+  "liquidity_addition_count": 300,
+  "liquidity_source_contract": "ZAPI_STOCK_SUMMARY_IF_AVAILABLE_YAHOO_OHLCV_FALLBACK",
+  "membership_source_contract": "IDX_OFFICIAL_PRIMARY_ZAPI_FALLBACK",
+  "membership_state": "CURRENT_SNAPSHOT_ONLY_NOT_HISTORICAL_MEMBERSHIP",
+  "point_in_time_historical_membership_verified": false,
+  "schema_version": 2,
+  "selection_policy": "LEGACY_400_PLUS_CURRENT_IDX_LISTED_RANKED_BY_TRADED_VALUE_FREQUENCY_VOLUME",
+  "snapshot_date": "2026-09-05",
+  "target_universe_count": 700,
+  "unique_tickers": 700,
+  "zapi_quota_required_for_universe": false
+}
