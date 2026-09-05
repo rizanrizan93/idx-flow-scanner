@@ -108,7 +108,6 @@ def _parse_archive(raw_zip: bytes, source_url: str, allowed: set[str]) -> tuple[
         if sec_num <= 0 or local_total < 0 or foreign_total < 0 or scripless <= 0:
             invalid += 1
             continue
-        # KSEI's scripless balance should never materially exceed the issued/security reference.
         if scripless > sec_num * 1.05:
             invalid += 1
             continue
@@ -190,7 +189,6 @@ def main() -> int:
         ["ticker", "report_date", "category", "holder_identity_hash"], keep="last"
     ).sort_values(["report_date", "ticker", "holder_classification"], kind="stable")
 
-    # Strong validation of the latest archive: every scanner ticker should have four canonical rows.
     latest = frame[frame["report_date"].eq("2026-08-31")]
     latest_counts = latest.groupby("ticker")["holder_classification"].nunique()
     latest_complete = int((latest_counts == 4).sum())
@@ -199,8 +197,11 @@ def main() -> int:
 
     OUT_CSV.parent.mkdir(parents=True, exist_ok=True)
     frame.to_csv(OUT_CSV, index=False, compression="gzip")
-    records = frame.where(pd.notna(frame), None).to_dict("records")
-    OUT_JSON.write_text(json.dumps(records, ensure_ascii=False, separators=(",", ":"), allow_nan=False), encoding="utf-8")
+    # pandas' native JSON writer converts NaN/NaT to JSON null reliably.
+    OUT_JSON.write_text(
+        frame.to_json(orient="records", force_ascii=False, date_format="iso"),
+        encoding="utf-8",
+    )
 
     foreign = frame[frame["holder_classification"].eq("KSEI_FOREIGN_TOTAL")].copy()
     history_counts = foreign.groupby("ticker")["report_date"].nunique()
