@@ -11,18 +11,22 @@ TARGET_UNIVERSE_SIZE = 700
 IDX_COMPANIES_URL = "https://www.idx.co.id/primary/ListedCompany/GetCompanyProfiles"
 IDX_COMPANIES_PAGE_URL = "https://www.idx.co.id/id/perusahaan-tercatat/profil-perusahaan/"
 ZAPI_COMPANIES_URL = "https://api.zpi.web.id/v1/finance:idx/companies"
+STOCKANALYSIS_LIST_URL = "https://stockanalysis.com/list/indonesia-stock-exchange/"
 
 _SECTOR_MAP = {
     "energi": "Energy",
     "energy": "Energy",
     "barang baku": "Basic Materials",
     "basic materials": "Basic Materials",
+    "materials": "Basic Materials",
     "perindustrian": "Industrials",
     "industrials": "Industrials",
     "barang konsumen primer": "Consumer Non-Cyclicals",
     "consumer non-cyclicals": "Consumer Non-Cyclicals",
+    "consumer staples": "Consumer Non-Cyclicals",
     "barang konsumen non-primer": "Consumer Cyclicals",
     "consumer cyclicals": "Consumer Cyclicals",
+    "consumer discretionary": "Consumer Cyclicals",
     "kesehatan": "Healthcare",
     "healthcare": "Healthcare",
     "keuangan": "Financials",
@@ -30,10 +34,13 @@ _SECTOR_MAP = {
     "properti & real estat": "Properties & Real Estate",
     "properti dan real estat": "Properties & Real Estate",
     "properties & real estate": "Properties & Real Estate",
+    "real estate": "Properties & Real Estate",
     "teknologi": "Technology",
     "technology": "Technology",
     "infrastruktur": "Infrastructures",
     "infrastructures": "Infrastructures",
+    "communication services": "Infrastructures",
+    "utilities": "Infrastructures",
     "transportasi & logistik": "Transportation & Logistic",
     "transportasi dan logistik": "Transportation & Logistic",
     "transportation & logistic": "Transportation & Logistic",
@@ -88,6 +95,7 @@ def _normalize_company_rows(rows: object) -> pd.DataFrame:
                     or item.get("ListingDate")
                     or item.get("listing_date")
                 ),
+                "market_rank": _numeric(item.get("market_rank")) or 999999.0,
             }
         )
     if not normalized:
@@ -101,12 +109,7 @@ def _normalize_company_rows(rows: object) -> pd.DataFrame:
 
 
 def fetch_idx_listed_companies(*, timeout: float = 35.0) -> pd.DataFrame:
-    """Fetch the current official IDX listed-company directory.
-
-    Prime a browser-like session on the public company-profile page before
-    requesting the JSON directory. This carries Cloudflare/session cookies from
-    the same browser fingerprint into the API request.
-    """
+    """Fetch the current official IDX listed-company directory."""
     from curl_cffi import requests as curl_requests
 
     headers = {
@@ -123,8 +126,6 @@ def fetch_idx_listed_companies(*, timeout: float = 35.0) -> pd.DataFrame:
                 timeout=timeout,
             )
         except Exception:
-            # The directory call can still succeed even when the HTML warmup is
-            # unavailable, so do not fail solely on the warmup request.
             pass
         response = session.get(
             IDX_COMPANIES_URL,
@@ -168,6 +169,57 @@ def fetch_zapi_listed_companies(
     )
     rows = payload.get("data") if isinstance(payload, dict) else None
     return _normalize_company_rows(rows)
+
+
+def fetch_stockanalysis_active_companies(*, timeout: float = 30.0) -> pd.DataFrame:
+    """Tertiary membership source: daily active IDX list from StockAnalysis.
+
+    This source is used only when the official IDX directory is blocked from the
+    GitHub runner and ZAPI membership is unavailable. Sector remains UNKNOWN in
+    this fallback; market/sector logic must not fabricate a sector classification.
+    """
+    from bs4 import BeautifulSoup
+    from curl_cffi import requests as curl_requests
+
+    rows: list[dict[str, object]] = []
+    with curl_requests.Session(impersonate="chrome") as session:
+        for page in (1, 2):
+            params = {} if page == 1 else {"page": page}
+            response = session.get(
+                STOCKANALYSIS_LIST_URL,
+                params=params,
+                headers={
+                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                    "Accept-Language": "en-US,en;q=0.9",
+                },
+                timeout=timeout,
+            )
+            response.raise_for_status()
+            soup = BeautifulSoup(response.text, "html.parser")
+            table = soup.find("table")
+            if table is None:
+                raise RuntimeError(f"StockAnalysis page {page} has no stock table")
+            for tr in table.select("tbody tr"):
+                cells = tr.find_all("td")
+                if len(cells) < 3:
+                    continue
+                rank = pd.to_numeric(cells[0].get_text(" ", strip=True), errors="coerce")
+                ticker = canonical_ticker(cells[1].get_text(" ", strip=True))
+                if len(ticker) != 4 or not ticker.isalnum():
+                    continue
+                rows.append(
+                    {
+                        "ticker": ticker,
+                        "sector": "UNKNOWN",
+                        "board": "",
+                        "listing_date": None,
+                        "market_rank": float(rank) if pd.notna(rank) else 999999.0,
+                    }
+                )
+    if not rows:
+        return pd.DataFrame()
+    frame = pd.DataFrame(rows).drop_duplicates("ticker", keep="first")
+    return frame.sort_values(["market_rank", "ticker"], kind="stable").reset_index(drop=True)
 
 
 def fetch_zapi_latest_stock_activity(
@@ -270,8 +322,9 @@ def build_universe_700_frame(
 ) -> pd.DataFrame:
     """Keep the legacy universe, then add the best current listed stocks to target.
 
-    Additions are ranked by traded-value liquidity, then frequency and volume.
-    Listed stocks without an activity row are used only as deterministic fill.
+    Additions are ranked by traded-value liquidity, then frequency, volume and
+    current active-list market rank. The market-rank tie-break keeps fallback
+    selection useful even when Yahoo does not return a bar for every candidate.
     """
     target = max(1, int(target_size))
     base = _normalize_base(base_frame)
@@ -287,7 +340,10 @@ def build_universe_700_frame(
     companies["ticker"] = companies["ticker"].map(canonical_ticker)
     if "sector" not in companies.columns:
         companies["sector"] = "UNKNOWN"
+    if "market_rank" not in companies.columns:
+        companies["market_rank"] = 999999.0
     companies["sector"] = companies["sector"].map(normalize_sector)
+    companies["market_rank"] = pd.to_numeric(companies["market_rank"], errors="coerce").fillna(999999.0)
     companies = companies[companies["ticker"].ne("")].drop_duplicates("ticker", keep="last")
 
     activity = activity_frame.copy() if activity_frame is not None else pd.DataFrame()
@@ -312,8 +368,8 @@ def build_universe_700_frame(
         ranked[col] = pd.to_numeric(ranked[col], errors="coerce").fillna(0.0)
     ranked = ranked[~ranked["ticker"].isin(base_names)].copy()
     ranked = ranked.sort_values(
-        ["traded_value", "frequency", "volume", "ticker"],
-        ascending=[False, False, False, True],
+        ["traded_value", "frequency", "volume", "market_rank", "ticker"],
+        ascending=[False, False, False, True, True],
         kind="stable",
     )
 
@@ -323,7 +379,7 @@ def build_universe_700_frame(
         selected = base_names | set(additions["ticker"])
         fill = (
             companies[~companies["ticker"].isin(selected)]
-            .sort_values("ticker", kind="stable")
+            .sort_values(["market_rank", "ticker"], kind="stable")
             .head(need - len(additions))[["ticker", "sector"]]
         )
         additions = pd.concat([additions, fill], ignore_index=True)
@@ -343,10 +399,10 @@ def materialize_universe_700(
     target_size: int = TARGET_UNIVERSE_SIZE,
     strict: bool = False,
 ) -> Path:
-    """Materialize a current 700-stock universe without depending on ZAPI quota.
+    """Materialize a current 700-stock universe with independent fallbacks.
 
-    Membership: official IDX first, ZAPI second.
-    Liquidity rank: ZAPI stock-summary when available, Yahoo OHLCV proxy otherwise.
+    Membership: official IDX -> ZAPI -> StockAnalysis daily active list.
+    Liquidity: ZAPI stock-summary -> Yahoo OHLCV proxy.
     """
     base_path = Path(base_path)
     output_path = Path(output_path)
@@ -354,16 +410,25 @@ def materialize_universe_700(
 
     try:
         source_errors: list[str] = []
+        membership_source = "IDX_OFFICIAL"
         try:
             companies = fetch_idx_listed_companies()
         except Exception as exc:
             source_errors.append(f"IDX_OFFICIAL:{type(exc).__name__}:{exc}")
             companies = pd.DataFrame()
         if (companies.empty or len(companies) < int(target_size)) and key:
+            membership_source = "ZAPI_COMPANIES"
             try:
                 companies = fetch_zapi_listed_companies(api_key=key)
             except Exception as exc:
                 source_errors.append(f"ZAPI_COMPANIES:{type(exc).__name__}:{exc}")
+        if companies.empty or len(companies) < int(target_size):
+            membership_source = "STOCKANALYSIS_ACTIVE_IDX"
+            try:
+                companies = fetch_stockanalysis_active_companies()
+            except Exception as exc:
+                source_errors.append(f"STOCKANALYSIS:{type(exc).__name__}:{exc}")
+                companies = pd.DataFrame()
         if companies.empty or len(companies) < int(target_size):
             errors = " | ".join(source_errors) if source_errors else "no source error captured"
             raise RuntimeError(
@@ -387,6 +452,7 @@ def materialize_universe_700(
             activity,
             target_size=target_size,
         )
+        expanded.attrs["membership_source"] = membership_source
     except Exception:
         if strict:
             raise
