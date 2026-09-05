@@ -1,0 +1,53 @@
+name: Bootstrap IDX 700 Stock Summary
+
+on:
+  push:
+    branches:
+      - fix/foreign700-freefloat-semantics
+    paths:
+      - '.github/workflows/bootstrap-stock-summary-700.yml'
+      - 'scripts/bootstrap_stock_summary_700.py'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bootstrap-idx700-stock-summary-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Fetch 20-session full-market stock summary
+        env:
+          PYTHONPATH: src
+          ZAPI_KEY: ${{ secrets.ZAPI_KEY }}
+        run: python scripts/bootstrap_stock_summary_700.py
+      - name: Export database-ready mirrors
+        env:
+          PYTHONPATH: src
+        run: python scripts/export_supabase_evidence_mirrors.py
+      - name: Commit evidence
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/cache/zapi_idx_foreign_60d.csv.gz \
+                  data/cache/zapi_idx_foreign_60d.json \
+                  data/cache/zapi_stock_summary_latest.csv.gz \
+                  data/cache/zapi_stock_summary_latest.json \
+                  data/cache/idx_700_evidence_coverage.json
+          if git diff --cached --quiet; then
+            echo "No semantic evidence change"
+          else
+            git commit -m "Refresh ZAPI flow evidence cache"
+            git push origin HEAD:"$GITHUB_REF_NAME"
+          fi
