@@ -148,6 +148,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "ZAPI evidence unchanged; no repository commit"
           else
-            git commit -m "Refresh 700-ticker ZAPI flow evidence cache"
+            git commit -m "Refresh ZAPI flow evidence cache"
             git push origin HEAD:"$GITHUB_REF_NAME"
           fi
