@@ -16,7 +16,8 @@ permissions:
   contents: write
 
 concurrency:
-  group: warm-ohlcv-seed-${{ github.ref }}
+  # Serialize all workflows that may commit back to the same branch.
+  group: warm-zapi-flow-evidence-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:

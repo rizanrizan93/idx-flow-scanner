@@ -14,7 +14,8 @@ permissions:
   contents: write
 
 concurrency:
-  group: refresh-idx-700-universe-${{ github.ref }}
+  # Serialize all workflows that may commit back to the same branch.
+  group: warm-zapi-flow-evidence-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
