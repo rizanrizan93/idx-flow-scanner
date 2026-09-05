@@ -33,7 +33,9 @@ BUNDLED_UNIVERSE_700_PATH = ROOT / "data" / "universe" / "idx_700_all.csv"
 RUNTIME_UNIVERSE_PATH = Path("/tmp/idx_flow_runtime_universe_700.csv")
 SEED_700_PATH = ROOT / "data" / "cache" / "idx_700_ohlcv_1y.csv.gz"
 SEED_400_PATH = ROOT / "data" / "cache" / "idx_400_ohlcv_1y.csv.gz"
-EXPECTED_SUPABASE_PROJECT_REF = "djqvhbeonmicztxfisav"
+# Physical Supabase project currently hosting the isolated IDX Flow namespace.
+# Project separation remains enforced at table level: IDX Flow uses only flow_* tables.
+EXPECTED_SUPABASE_PROJECT_REF = "mbtsvflwszcgdtijdgas"
 
 
 @st.cache_data(ttl=1800, show_spinner=False)
@@ -118,7 +120,7 @@ def _locked_connect_store(enabled: bool):
     url = str(streamlit_app._secret("SUPABASE_URL") or "").strip()
     if url and EXPECTED_SUPABASE_PROJECT_REF not in url:
         return None, (
-            "SUPABASE_URL bukan dedicated IDX Flow Scanner "
+            "SUPABASE_URL bukan physical database IDX Flow yang diizinkan "
             f"({EXPECTED_SUPABASE_PROJECT_REF}); koneksi ditolak oleh hard lock"
         )
     return _original_connect_store(enabled)
