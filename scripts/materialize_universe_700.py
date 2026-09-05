@@ -48,9 +48,6 @@ def main() -> int:
         .to_dict()
     )
     sector = frame.get("sector", pd.Series("UNKNOWN", index=frame.index)).fillna("UNKNOWN").astype(str)
-    known_sector = int(~sector.str.upper().isin({"", "UNKNOWN", "NAN", "NONE", "NULL"}).sum())
-    # The expression above is deliberately recomputed below without relying on
-    # Python's bool/int coercion, keeping telemetry explicit and readable.
     known_sector = int((~sector.str.upper().isin({"", "UNKNOWN", "NAN", "NONE", "NULL"})).sum())
     meta = {
         "schema_version": 4,
