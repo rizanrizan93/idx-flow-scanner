@@ -40,7 +40,7 @@ def main() -> int:
         .to_dict()
     )
     meta = {
-        "schema_version": 1,
+        "schema_version": 2,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "snapshot_date": str(pd.Timestamp.now(tz="Asia/Jakarta").date()),
         "target_universe_count": 700,
@@ -48,10 +48,12 @@ def main() -> int:
         "unique_tickers": int(frame["ticker"].astype(str).str.upper().nunique()),
         "legacy_anchor_count": int(source_counts.get("LEGACY_400", 0)),
         "liquidity_addition_count": int(source_counts.get("IDX_ACTIVE_LIQUIDITY_ADD", 0)),
-        "selection_policy": "LEGACY_400_PLUS_CURRENT_IDX_ACTIVE_RANKED_BY_VALUE_FREQUENCY_VOLUME",
+        "selection_policy": "LEGACY_400_PLUS_CURRENT_IDX_LISTED_RANKED_BY_TRADED_VALUE_FREQUENCY_VOLUME",
         "membership_state": "CURRENT_SNAPSHOT_ONLY_NOT_HISTORICAL_MEMBERSHIP",
         "point_in_time_historical_membership_verified": False,
-        "source": "ZAPI_IDX_COMPANIES_AND_STOCK_SUMMARY",
+        "membership_source_contract": "IDX_OFFICIAL_PRIMARY_ZAPI_FALLBACK",
+        "liquidity_source_contract": "ZAPI_STOCK_SUMMARY_IF_AVAILABLE_YAHOO_OHLCV_FALLBACK",
+        "zapi_quota_required_for_universe": False,
     }
     META_PATH.write_text(json.dumps(meta, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(json.dumps(meta, indent=2, sort_keys=True))
