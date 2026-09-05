@@ -14,6 +14,7 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from idx_flow_scanner.data import fetch_yfinance_prices_batch, parse_universe
+from idx_flow_scanner.evidence_700 import enrich_universe_sector_metadata
 from idx_flow_scanner.universe_700 import materialize_universe_700
 
 BASE_UNIVERSE_PATH = ROOT / "data" / "universe" / "idx_400_syariah.csv"
@@ -29,12 +30,23 @@ TARGET_UNIVERSE_COUNT = 700
 
 
 def main() -> int:
+    previous_universe = (
+        pd.read_csv(UNIVERSE_PATH)
+        if UNIVERSE_PATH.exists()
+        else pd.DataFrame()
+    )
     materialize_universe_700(
         BASE_UNIVERSE_PATH,
         api_key=os.getenv("ZAPI_KEY"),
         output_path=UNIVERSE_PATH,
         target_size=TARGET_UNIVERSE_COUNT,
         strict=True,
+    )
+    sector_meta = enrich_universe_sector_metadata(
+        UNIVERSE_PATH,
+        previous_frame=previous_universe,
+        max_web_requests=int(os.getenv("IDX700_SECTOR_WEB_FALLBACK_LIMIT", "350") or "350"),
+        workers=int(os.getenv("IDX700_SECTOR_WORKERS", "8") or "8"),
     )
     universe = parse_universe(pd.read_csv(UNIVERSE_PATH))
     if len(universe) != TARGET_UNIVERSE_COUNT:
@@ -76,6 +88,9 @@ def main() -> int:
         "latest_trade_date": max(latest_dates) if latest_dates else None,
         "rejected": rejected,
         "source": "Yahoo Finance public chart/download endpoints",
+        "sector_coverage_count": int(sector_meta.get("known", 0)),
+        "sector_coverage_pct": float(sector_meta.get("coverage_pct", 0.0) or 0.0),
+        "sector_enrichment": sector_meta,
     }
 
     print(json.dumps({k: v for k, v in meta.items() if k != "rejected"}, indent=2))
