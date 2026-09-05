@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Iterable
 
 import pandas as pd
 
-from .data import canonical_ticker
-from .providers.zapi import ZAPI_STOCK_SUMMARY_URL, ZapiUnavailable, _get_json
+from .data import canonical_ticker, fetch_yfinance_prices_batch
+from .providers.zapi import ZAPI_STOCK_SUMMARY_URL, _get_json
 
 TARGET_UNIVERSE_SIZE = 700
+IDX_COMPANIES_URL = "https://www.idx.co.id/primary/ListedCompany/GetCompanyProfiles"
 ZAPI_COMPANIES_URL = "https://api.zpi.web.id/v1/finance:idx/companies"
 
 _SECTOR_MAP = {
@@ -51,40 +51,42 @@ def _numeric(value: object) -> float:
     return float(out) if pd.notna(out) else 0.0
 
 
-def fetch_zapi_listed_companies(
-    *,
-    api_key: str,
-    timeout: float = 30.0,
-) -> pd.DataFrame:
-    """Fetch current IDX listed-stock master from ZAPI's IDX companies endpoint."""
-    key = str(api_key or "").strip()
-    if not key:
-        return pd.DataFrame()
-    payload = _get_json(
-        ZAPI_COMPANIES_URL,
-        {"length": 1000, "start": 0},
-        key,
-        timeout,
-    )
-    rows = payload.get("data") if isinstance(payload, dict) else None
+def _normalize_company_rows(rows: object) -> pd.DataFrame:
     if not isinstance(rows, list):
         return pd.DataFrame()
-
     normalized: list[dict[str, object]] = []
     for item in rows:
         if not isinstance(item, dict):
             continue
         if item.get("EfekEmiten_Saham") is False:
             continue
-        ticker = canonical_ticker(item.get("KodeEmiten") or item.get("Code"))
-        if not ticker:
+        ticker = canonical_ticker(
+            item.get("KodeEmiten")
+            or item.get("Code")
+            or item.get("code")
+            or item.get("StockCode")
+        )
+        if len(ticker) != 4 or not ticker.isalnum():
             continue
         normalized.append(
             {
                 "ticker": ticker,
-                "sector": normalize_sector(item.get("Sektor") or item.get("Sector")),
-                "board": str(item.get("PapanPencatatan") or item.get("ListingBoard") or "").strip(),
-                "listing_date": item.get("TanggalPencatatan") or item.get("ListingDate"),
+                "sector": normalize_sector(
+                    item.get("Sektor")
+                    or item.get("Sector")
+                    or item.get("sector")
+                ),
+                "board": str(
+                    item.get("PapanPencatatan")
+                    or item.get("ListingBoard")
+                    or item.get("listing_board")
+                    or ""
+                ).strip(),
+                "listing_date": (
+                    item.get("TanggalPencatatan")
+                    or item.get("ListingDate")
+                    or item.get("listing_date")
+                ),
             }
         )
     if not normalized:
@@ -95,6 +97,50 @@ def fetch_zapi_listed_companies(
         .sort_values("ticker", kind="stable")
         .reset_index(drop=True)
     )
+
+
+def fetch_idx_listed_companies(*, timeout: float = 35.0) -> pd.DataFrame:
+    """Fetch the current official IDX listed-company directory.
+
+    curl_cffi with a browser TLS fingerprint is already a project dependency and
+    is materially more reliable against IDX Cloudflare than plain requests.
+    """
+    from curl_cffi import requests as curl_requests
+
+    response = curl_requests.get(
+        IDX_COMPANIES_URL,
+        params={"start": 0, "length": 9999},
+        headers={
+            "Accept": "application/json, text/plain, */*",
+            "Referer": "https://www.idx.co.id/id/perusahaan-tercatat/profil-perusahaan/",
+            "Accept-Language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
+        },
+        impersonate="chrome",
+        timeout=timeout,
+    )
+    response.raise_for_status()
+    payload = response.json()
+    rows = payload.get("data") if isinstance(payload, dict) else None
+    return _normalize_company_rows(rows)
+
+
+def fetch_zapi_listed_companies(
+    *,
+    api_key: str,
+    timeout: float = 30.0,
+) -> pd.DataFrame:
+    """Secondary current listed-stock source when the official IDX path is unavailable."""
+    key = str(api_key or "").strip()
+    if not key:
+        return pd.DataFrame()
+    payload = _get_json(
+        ZAPI_COMPANIES_URL,
+        {"length": 1000, "start": 0},
+        key,
+        timeout,
+    )
+    rows = payload.get("data") if isinstance(payload, dict) else None
+    return _normalize_company_rows(rows)
 
 
 def fetch_zapi_latest_stock_activity(
@@ -141,6 +187,39 @@ def fetch_zapi_latest_stock_activity(
     return pd.DataFrame(normalized).drop_duplicates("ticker", keep="last").reset_index(drop=True)
 
 
+def fetch_yahoo_liquidity_activity(tickers: list[str]) -> pd.DataFrame:
+    """Build a free liquidity proxy when ZAPI stock-summary quota is unavailable."""
+    names = list(dict.fromkeys(canonical_ticker(t) for t in tickers if canonical_ticker(t)))
+    if not names:
+        return pd.DataFrame()
+    frames = fetch_yfinance_prices_batch(
+        names,
+        period="1mo",
+        chunk_size=40,
+        retries=2,
+        inter_chunk_delay_seconds=1.0,
+        retry_backoff_seconds=5.0,
+        fallback_limit=80,
+    )
+    rows: list[dict[str, object]] = []
+    for ticker in names:
+        frame = frames.get(ticker, pd.DataFrame())
+        if frame is None or frame.empty:
+            continue
+        close = pd.to_numeric(frame.get("close"), errors="coerce")
+        volume = pd.to_numeric(frame.get("volume"), errors="coerce").fillna(0.0)
+        value = (close * volume).replace([float("inf"), float("-inf")], pd.NA).dropna()
+        rows.append(
+            {
+                "ticker": ticker,
+                "traded_value": float(value.median()) if not value.empty else 0.0,
+                "frequency": float(volume.gt(0).sum()),
+                "volume": float(volume.median()) if not volume.empty else 0.0,
+            }
+        )
+    return pd.DataFrame(rows)
+
+
 def _normalize_base(base_frame: pd.DataFrame) -> pd.DataFrame:
     if base_frame is None or base_frame.empty:
         return pd.DataFrame(columns=["ticker", "sector"])
@@ -164,10 +243,8 @@ def build_universe_700_frame(
 ) -> pd.DataFrame:
     """Keep the legacy universe, then add the best current listed stocks to target.
 
-    Additions are ranked by the latest traded value, then frequency and volume.
-    This makes the expansion useful for a flow scanner instead of selecting 300
-    arbitrary alphabetical names. Listed stocks without an activity row are used
-    only as deterministic fill after liquid candidates.
+    Additions are ranked by traded-value liquidity, then frequency and volume.
+    Listed stocks without an activity row are used only as deterministic fill.
     """
     target = max(1, int(target_size))
     base = _normalize_base(base_frame)
@@ -239,18 +316,41 @@ def materialize_universe_700(
     target_size: int = TARGET_UNIVERSE_SIZE,
     strict: bool = False,
 ) -> Path:
-    """Materialize a current expanded universe; fall back to base unless strict."""
+    """Materialize a current 700-stock universe without depending on ZAPI quota.
+
+    Membership: official IDX first, ZAPI second.
+    Liquidity rank: ZAPI stock-summary when available, Yahoo OHLCV proxy otherwise.
+    """
     base_path = Path(base_path)
     output_path = Path(output_path)
     key = str(api_key or "").strip()
-    if not key:
-        if strict:
-            raise ZapiUnavailable("ZAPI_KEY is required to build the 700-ticker universe")
-        return base_path
 
     try:
-        companies = fetch_zapi_listed_companies(api_key=key)
-        activity = fetch_zapi_latest_stock_activity(api_key=key)
+        try:
+            companies = fetch_idx_listed_companies()
+        except Exception:
+            companies = pd.DataFrame()
+        if (companies.empty or len(companies) < int(target_size)) and key:
+            try:
+                companies = fetch_zapi_listed_companies(api_key=key)
+            except Exception:
+                pass
+        if companies.empty or len(companies) < int(target_size):
+            raise RuntimeError(
+                f"Listed-company directory incomplete: need >= {target_size}, got {len(companies)}"
+            )
+
+        activity = pd.DataFrame()
+        if key:
+            try:
+                activity = fetch_zapi_latest_stock_activity(api_key=key)
+            except Exception:
+                activity = pd.DataFrame()
+        if activity.empty:
+            base_names = set(_normalize_base(pd.read_csv(base_path))["ticker"])
+            candidates = [t for t in companies["ticker"].tolist() if t not in base_names]
+            activity = fetch_yahoo_liquidity_activity(candidates)
+
         expanded = build_universe_700_frame(
             pd.read_csv(base_path),
             companies,
