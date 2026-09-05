@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "source": "KSEI_OFFICIAL_HOLDING_COMPOSITION_ARCHIVE",
+  "provenance_state": "VERIFIED_KSEI_REGISTRATION_COMPOSITION",
+  "report_dates": [
+    "2026-01-30",
+    "2026-02-27",
+    "2026-03-31",
+    "2026-04-30",
+    "2026-05-29",
+    "2026-06-30",
+    "2026-07-31",
+    "2026-08-31"
+  ],
+  "rows": 22244,
+  "tickers": 700,
+  "latest_complete_tickers": 700,
+  "tickers_with_2plus_foreign_snapshots": 700,
+  "tickers_with_8_foreign_snapshots": 693,
+  "no_fabricated_evidence": true,
+  "semantics": {
+    "ownership": "MONTH_END_KSEI_REGISTRATION_COMPOSITION",
+    "daily_foreign_flow_substitute": false,
+    "regulatory_free_float_source": false
+  }
+}
