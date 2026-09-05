@@ -40,6 +40,113 @@ def _existing_ownership_tickers(universe: list[str]) -> set[str]:
     }
 
 
+def _bootstrap_foreign_universe_gap(universe: list[str]) -> dict[str, object]:
+    """Backfill the full target history when the persisted universe expands.
+
+    The legacy cache can already contain >20 distinct market dates while only
+    covering the old 400 tickers. The base incremental refresher would otherwise
+    fetch just one new session and leave the 300 additions without a 20-session
+    foreign-flow history. A universe coverage gap therefore triggers one full
+    market-wide 20-session bootstrap. ZAPI's endpoint is date-scoped, so fetching
+    all 700 symbols costs the same date-call count as fetching only the additions.
+    """
+    names = [str(t).strip().upper() for t in universe if str(t).strip()]
+    target_days = max(20, int(os.getenv("ZAPI_FOREIGN_TARGET_DAYS", "20") or "20"))
+    existing = flow_cache.load_bundled_zapi_foreign_flows(
+        names,
+        flow_cache.ZAPI_FOREIGN_CACHE,
+        lookback_calendar_days=120,
+    )
+    covered = (
+        set(existing["ticker"].astype(str).str.upper().dropna().tolist())
+        if existing is not None and not existing.empty and "ticker" in existing.columns
+        else set()
+    )
+    missing = [ticker for ticker in names if ticker not in covered]
+    if not missing:
+        counts = (
+            existing.assign(
+                trade_date=pd.to_datetime(existing.get("trade_date"), errors="coerce").dt.normalize()
+            )
+            .dropna(subset=["ticker", "trade_date"])
+            .groupby("ticker", observed=True)["trade_date"]
+            .nunique()
+        )
+        under_history = [ticker for ticker in names if int(counts.get(ticker, 0)) < target_days]
+    else:
+        under_history = missing
+
+    if not under_history:
+        return {
+            "status": "NOT_REQUIRED",
+            "covered_before": len(covered),
+            "missing_before": 0,
+            "target_history_days": target_days,
+        }
+
+    if not bool(str(os.getenv("ZAPI_KEY") or "").strip()):
+        return {
+            "status": "NO_TOKEN",
+            "covered_before": len(covered),
+            "missing_before": len(under_history),
+            "target_history_days": target_days,
+        }
+
+    target = flow_cache._latest_completed_idx_weekday()
+    try:
+        fresh = flow_cache.fetch_zapi_foreign_flow_history(
+            names,
+            end_date=target.date(),
+            target_trading_days=target_days,
+            max_calendar_days=55,
+        )
+    except flow_cache.ZapiQuotaExhausted as exc:
+        return {
+            "status": f"QUOTA_EXHAUSTED: {exc}",
+            "covered_before": len(covered),
+            "missing_before": len(under_history),
+            "target_history_days": target_days,
+        }
+    except flow_cache.ZapiUnavailable as exc:
+        return {
+            "status": f"UNAVAILABLE: {exc}",
+            "covered_before": len(covered),
+            "missing_before": len(under_history),
+            "target_history_days": target_days,
+        }
+    except Exception as exc:
+        return {
+            "status": f"ERROR: {type(exc).__name__}: {exc}",
+            "covered_before": len(covered),
+            "missing_before": len(under_history),
+            "target_history_days": target_days,
+        }
+
+    if fresh is None or fresh.empty:
+        return {
+            "status": "NO_DATA",
+            "covered_before": len(covered),
+            "missing_before": len(under_history),
+            "target_history_days": target_days,
+        }
+
+    merged = flow_cache._merge_foreign(existing, fresh)
+    flow_cache.write_zapi_foreign_cache(merged, flow_cache.ZAPI_FOREIGN_CACHE)
+    flow_cache._write_json_foreign(merged)
+    dates = merged.copy()
+    dates["trade_date"] = pd.to_datetime(dates.get("trade_date"), errors="coerce").dt.normalize()
+    counts = dates.dropna(subset=["ticker", "trade_date"]).groupby("ticker", observed=True)["trade_date"].nunique()
+    complete = sum(int(counts.get(ticker, 0)) >= target_days for ticker in names)
+    return {
+        "status": "UPDATED_FULL_HISTORY",
+        "covered_before": len(covered),
+        "missing_before": len(under_history),
+        "target_history_days": target_days,
+        "complete_after": int(complete),
+        "rows_after": int(len(merged)),
+    }
+
+
 def _install_uncovered_first_ownership_policy() -> dict[str, object]:
     original_selector = flow_cache._ownership_profile_candidates
     target_ratio = min(
@@ -138,6 +245,7 @@ def main() -> int:
     _install_per_ticker_ownership_retention()
 
     universe = flow_cache.load_bundled_universe(path)
+    foreign_bootstrap = _bootstrap_foreign_universe_gap(universe)
     covered = _existing_ownership_tickers(universe)
     target_count = int(math.ceil(len(universe) * float(ownership_policy["target_ratio"])))
     if len(covered) < target_count:
@@ -149,6 +257,7 @@ def main() -> int:
         json.dumps(
             {
                 "sector_enrichment": sector_meta,
+                "foreign_universe_bootstrap": foreign_bootstrap,
                 "ownership_backfill_policy": {
                     **ownership_policy,
                     "covered_before_run": len(covered),
