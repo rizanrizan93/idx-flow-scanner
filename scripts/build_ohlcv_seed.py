@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -13,21 +14,33 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from idx_flow_scanner.data import fetch_yfinance_prices_batch, parse_universe
+from idx_flow_scanner.universe_700 import materialize_universe_700
 
-UNIVERSE_PATH = ROOT / "data" / "universe" / "idx_400_syariah.csv"
+BASE_UNIVERSE_PATH = ROOT / "data" / "universe" / "idx_400_syariah.csv"
+UNIVERSE_PATH = ROOT / "data" / "universe" / "idx_700_all.csv"
 OUT_DIR = ROOT / "data" / "cache"
-OUT_PATH = OUT_DIR / "idx_400_ohlcv_1y.csv.gz"
+OUT_PATH = OUT_DIR / "idx_700_ohlcv_1y.csv.gz"
 META_PATH = OUT_DIR / "ohlcv_seed_meta.json"
-RECENT_JSON_PATH = OUT_DIR / "idx_400_ohlcv_recent.json"
+RECENT_JSON_PATH = OUT_DIR / "idx_700_ohlcv_recent.json"
 MIN_BARS = 80
 MIN_VALID_RATIO = 0.90
 RECENT_MIRROR_BARS = 10
+TARGET_UNIVERSE_COUNT = 700
 
 
 def main() -> int:
+    materialize_universe_700(
+        BASE_UNIVERSE_PATH,
+        api_key=os.getenv("ZAPI_KEY"),
+        output_path=UNIVERSE_PATH,
+        target_size=TARGET_UNIVERSE_COUNT,
+        strict=True,
+    )
     universe = parse_universe(pd.read_csv(UNIVERSE_PATH))
-    if len(universe) != 400:
-        raise RuntimeError(f"Expected 400 bundled tickers, got {len(universe)}")
+    if len(universe) != TARGET_UNIVERSE_COUNT:
+        raise RuntimeError(
+            f"Expected {TARGET_UNIVERSE_COUNT} bundled tickers, got {len(universe)}"
+        )
 
     frames = fetch_yfinance_prices_batch(
         universe,
@@ -67,11 +80,12 @@ def main() -> int:
 
     print(json.dumps({k: v for k, v in meta.items() if k != "rejected"}, indent=2))
     if valid_ratio < MIN_VALID_RATIO or not accepted:
-        print(f"Seed integrity gate failed: {valid_count}/{len(universe)} valid; tracked seed preserved", file=sys.stderr)
+        print(
+            f"Seed integrity gate failed: {valid_count}/{len(universe)} valid; tracked seed preserved",
+            file=sys.stderr,
+        )
         return 2
 
-    # Write atomically only after the integrity gate. Provider outages must never
-    # replace a known-good seed with a partial/empty artifact.
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     tmp_data = OUT_PATH.with_name(OUT_PATH.name + ".tmp")
     tmp_meta = META_PATH.with_name(META_PATH.name + ".tmp")
@@ -88,7 +102,8 @@ def main() -> int:
     recent["date"] = pd.to_datetime(recent["date"], errors="raise").dt.strftime("%Y-%m-%d")
     tmp_recent.write_text(
         recent[["ticker", "date", "open", "high", "low", "close", "volume"]]
-        .to_json(orient="records", double_precision=15) + "\n",
+        .to_json(orient="records", double_precision=15)
+        + "\n",
         encoding="utf-8",
     )
     meta["recent_mirror_rows"] = int(len(recent))
