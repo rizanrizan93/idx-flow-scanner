@@ -5,7 +5,6 @@ import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Iterable
 
 import pandas as pd
 
@@ -19,27 +18,40 @@ STOCKANALYSIS_QUOTE_URL = "https://stockanalysis.com/quote/idx/{ticker}/"
 
 _CANONICAL_SECTORS = {
     "energy": "Energy",
+    "energi": "Energy",
     "basic materials": "Basic Materials",
     "materials": "Basic Materials",
+    "barang baku": "Basic Materials",
     "industrials": "Industrials",
     "industrial": "Industrials",
+    "perindustrian": "Industrials",
     "consumer non-cyclicals": "Consumer Non-Cyclicals",
     "consumer defensive": "Consumer Non-Cyclicals",
     "consumer staples": "Consumer Non-Cyclicals",
+    "barang konsumen primer": "Consumer Non-Cyclicals",
     "consumer cyclicals": "Consumer Cyclicals",
     "consumer cyclical": "Consumer Cyclicals",
     "consumer discretionary": "Consumer Cyclicals",
+    "barang konsumen non-primer": "Consumer Cyclicals",
     "healthcare": "Healthcare",
+    "kesehatan": "Healthcare",
     "financials": "Financials",
     "financial services": "Financials",
+    "keuangan": "Financials",
     "properties & real estate": "Properties & Real Estate",
     "real estate": "Properties & Real Estate",
+    "properti & real estat": "Properties & Real Estate",
+    "properti dan real estat": "Properties & Real Estate",
     "technology": "Technology",
+    "teknologi": "Technology",
     "infrastructures": "Infrastructures",
+    "infrastruktur": "Infrastructures",
     "communication services": "Infrastructures",
     "utilities": "Infrastructures",
     "transportation & logistic": "Transportation & Logistic",
     "transportation": "Transportation & Logistic",
+    "transportasi & logistik": "Transportation & Logistic",
+    "transportasi dan logistik": "Transportation & Logistic",
 }
 
 
@@ -114,8 +126,7 @@ def enrich_universe_sector_metadata(
         return {"status": "NO_UNIVERSE", "known": 0, "unknown": 0, "requests": 0, "resolved": 0}
     if "sector" not in frame.columns:
         frame["sector"] = "UNKNOWN"
-    frame["sector"] = frame["sector"].map(lambda value: _canonical_sector(value) if _canonical_sector(value) != "UNKNOWN" else str(value or "UNKNOWN").strip())
-    frame.loc[frame["sector"].astype(str).str.upper().isin({"", "UNKNOWN", "NAN", "NONE", "NULL"}), "sector"] = "UNKNOWN"
+    frame["sector"] = frame["sector"].map(_canonical_sector)
 
     previous = previous_frame.copy() if previous_frame is not None else pd.DataFrame()
     if not previous.empty:
