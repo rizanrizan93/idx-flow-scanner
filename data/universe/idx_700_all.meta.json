@@ -1,7 +1,7 @@
 {
   "actual_universe_count": 700,
   "fallback_sector_policy": "UNKNOWN_IF_UNVERIFIED_NEVER_FABRICATED",
-  "generated_at": "2026-09-05T13:45:41.424352+00:00",
+  "generated_at": "2026-09-05T15:28:07.532157+00:00",
   "legacy_anchor_count": 400,
   "liquidity_addition_count": 300,
   "liquidity_source_contract": "ZAPI_STOCK_SUMMARY_IF_AVAILABLE_YAHOO_OHLCV_FALLBACK",
