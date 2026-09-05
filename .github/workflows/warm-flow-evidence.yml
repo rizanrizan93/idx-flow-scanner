@@ -8,8 +8,10 @@ on:
     paths:
       - 'scripts/build_flow_evidence_cache.py'
       - 'scripts/build_flow_evidence_cache_700.py'
+      - 'scripts/export_supabase_evidence_mirrors.py'
       - 'scripts/materialize_universe_700.py'
       - 'src/idx_flow_scanner/evidence_700.py'
+      - 'src/idx_flow_scanner/slow_evidence_store.py'
       - 'src/idx_flow_scanner/universe_700.py'
       - 'src/idx_flow_scanner/providers/zapi.py'
       - 'src/idx_flow_scanner/providers/zapi_slow.py'
@@ -48,6 +50,11 @@ jobs:
           IDX700_SECTOR_WORKERS: '8'
         run: python scripts/build_flow_evidence_cache_700.py
 
+      - name: Export database-ready evidence mirrors
+        env:
+          PYTHONPATH: src
+        run: python scripts/export_supabase_evidence_mirrors.py
+
       - name: Publish provider telemetry
         if: always()
         run: |
@@ -73,12 +80,18 @@ jobs:
             zapi_idx_foreign_60d.csv.gz \
             zapi_idx_foreign_60d.json \
             zapi_stock_summary_latest.csv.gz \
+            zapi_stock_summary_latest.json \
             zapi_ownership_latest.csv.gz \
-            zapi_capital_actions.csv.gz
+            zapi_ownership_latest.json \
+            zapi_capital_actions.csv.gz \
+            zapi_capital_actions.json
           do
             test ! -f "data/cache/$name" || cp "data/cache/$name" "/tmp/zapi-flow-cache/$name"
           done
-          test ! -f data/universe/idx_700_all.csv || cp data/universe/idx_700_all.csv /tmp/zapi-flow-cache/idx_700_all.csv
+          for name in idx_700_all.csv idx_700_all.json
+          do
+            test ! -f "data/universe/$name" || cp "data/universe/$name" "/tmp/zapi-flow-cache/$name"
+          done
 
           git fetch origin "$GITHUB_REF_NAME"
           git reset --hard "origin/$GITHUB_REF_NAME"
@@ -110,8 +123,11 @@ jobs:
               "zapi_idx_foreign_60d.csv.gz",
               "zapi_idx_foreign_60d.json",
               "zapi_stock_summary_latest.csv.gz",
+              "zapi_stock_summary_latest.json",
               "zapi_ownership_latest.csv.gz",
+              "zapi_ownership_latest.json",
               "zapi_capital_actions.csv.gz",
+              "zapi_capital_actions.json",
               "idx_700_evidence_coverage.json",
           )
           for name in evidence_files:
@@ -132,14 +148,16 @@ jobs:
               changed = True
               print(f"{name}: evidence updated")
 
-          universe = fresh / "idx_700_all.csv"
-          if universe.exists():
-              target = Path("data/universe/idx_700_all.csv")
+          for name in ("idx_700_all.csv", "idx_700_all.json"):
+              universe = fresh / name
+              if not universe.exists():
+                  continue
+              target = Path("data/universe") / name
               same = target.exists() and universe.read_bytes() == target.read_bytes()
               if not same:
                   shutil.copy2(universe, target)
                   changed = True
-                  print("idx_700_all.csv: universe snapshot updated")
+                  print(f"{name}: universe snapshot updated")
 
           meta = fresh / "flow_evidence_meta.json"
           if changed and meta.exists():
@@ -154,12 +172,18 @@ jobs:
             zapi_idx_foreign_60d.csv.gz \
             zapi_idx_foreign_60d.json \
             zapi_stock_summary_latest.csv.gz \
+            zapi_stock_summary_latest.json \
             zapi_ownership_latest.csv.gz \
-            zapi_capital_actions.csv.gz
+            zapi_ownership_latest.json \
+            zapi_capital_actions.csv.gz \
+            zapi_capital_actions.json
           do
             test ! -f "data/cache/$name" || git add "data/cache/$name"
           done
-          test ! -f data/universe/idx_700_all.csv || git add data/universe/idx_700_all.csv
+          for name in idx_700_all.csv idx_700_all.json
+          do
+            test ! -f "data/universe/$name" || git add "data/universe/$name"
+          done
 
           if git diff --cached --quiet; then
             echo "ZAPI evidence unchanged; no repository commit"
