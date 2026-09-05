@@ -11,12 +11,16 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 import idx_flow_scanner.streamlit_app as streamlit_app
+import idx_flow_scanner.zapi_pipeline as zapi_pipeline
+from idx_flow_scanner.canonical_slow_evidence import (
+    compute_slow_evidence_canonical,
+    load_canonical_capital_actions,
+    load_canonical_ownership,
+    merge_canonical_capital_actions,
+    merge_canonical_ownership,
+)
 from idx_flow_scanner.evidence_database import (
-    load_capital_actions,
-    load_ownership,
     load_stock_summary,
-    merge_capital_actions,
-    merge_ownership,
     merge_stock_summary,
     upsert_capital_actions,
     upsert_ownership,
@@ -99,7 +103,7 @@ def _database_first_slow_loader(original_loader, database_loader, merger, writer
             return bundled
         database = database_loader(store, universe)
         merged = merger(database, bundled)
-        if bundled is not None and not bundled.empty:
+        if bundled is not None and not bundled.empty and writer is not None:
             try:
                 writer(store, bundled)
             except Exception:
@@ -151,16 +155,20 @@ streamlit_app.load_bundled_zapi_stock_summary = _database_first_slow_loader(
 )
 streamlit_app.load_bundled_zapi_ownership = _database_first_slow_loader(
     streamlit_app.load_bundled_zapi_ownership,
-    load_ownership,
-    merge_ownership,
+    load_canonical_ownership,
+    merge_canonical_ownership,
     upsert_ownership,
 )
 streamlit_app.load_bundled_zapi_capital_actions = _database_first_slow_loader(
     streamlit_app.load_bundled_zapi_capital_actions,
-    load_capital_actions,
-    merge_capital_actions,
+    load_canonical_capital_actions,
+    merge_canonical_capital_actions,
     upsert_capital_actions,
 )
+# scan_one_zapi resolves this symbol from the zapi_pipeline module at runtime.
+# Patch only the slow-evidence adapter; foreign-flow remains ZAPI-only.
+zapi_pipeline.compute_slow_evidence = compute_slow_evidence_canonical
+
 install_current_result_persistence(SupabaseStore, batch_size=20)
 install_truthful_run_metadata(SupabaseStore)
 
