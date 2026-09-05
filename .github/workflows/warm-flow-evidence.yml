@@ -9,6 +9,7 @@ on:
       - 'scripts/build_flow_evidence_cache.py'
       - 'scripts/build_flow_evidence_cache_700.py'
       - 'scripts/materialize_universe_700.py'
+      - 'src/idx_flow_scanner/evidence_700.py'
       - 'src/idx_flow_scanner/universe_700.py'
       - 'src/idx_flow_scanner/providers/zapi.py'
       - 'src/idx_flow_scanner/providers/zapi_slow.py'
@@ -26,7 +27,7 @@ concurrency:
 jobs:
   refresh-evidence:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 55
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
@@ -41,7 +42,10 @@ jobs:
           ZAPI_KEY: ${{ secrets.ZAPI_KEY }}
           ZAPI_FOREIGN_TARGET_DAYS: '20'
           ZAPI_OWNERSHIP_REFRESH_WEEKDAY: '0'
-          ZAPI_OWNERSHIP_PROFILE_FALLBACK_LIMIT: '40'
+          ZAPI_OWNERSHIP_PROFILE_FALLBACK_LIMIT: '60'
+          ZAPI_OWNERSHIP_TARGET_COVERAGE: '0.90'
+          IDX700_SECTOR_WEB_FALLBACK_LIMIT: '350'
+          IDX700_SECTOR_WORKERS: '8'
         run: python scripts/build_flow_evidence_cache_700.py
 
       - name: Publish provider telemetry
@@ -50,6 +54,10 @@ jobs:
           echo '## ZAPI Flow evidence telemetry' >> "$GITHUB_STEP_SUMMARY"
           echo '' >> "$GITHUB_STEP_SUMMARY"
           cat data/cache/flow_evidence_meta.json 2>/dev/null >> "$GITHUB_STEP_SUMMARY" || echo '{"status":"meta_unavailable"}' >> "$GITHUB_STEP_SUMMARY"
+          echo '' >> "$GITHUB_STEP_SUMMARY"
+          echo '## IDX 700 evidence coverage' >> "$GITHUB_STEP_SUMMARY"
+          echo '' >> "$GITHUB_STEP_SUMMARY"
+          cat data/cache/idx_700_evidence_coverage.json 2>/dev/null >> "$GITHUB_STEP_SUMMARY" || echo '{"status":"coverage_unavailable"}' >> "$GITHUB_STEP_SUMMARY"
 
       - name: Commit semantic evidence changes
         run: |
@@ -61,6 +69,7 @@ jobs:
           mkdir -p /tmp/zapi-flow-cache
           for name in \
             flow_evidence_meta.json \
+            idx_700_evidence_coverage.json \
             zapi_idx_foreign_60d.csv.gz \
             zapi_idx_foreign_60d.json \
             zapi_stock_summary_latest.csv.gz \
@@ -79,6 +88,7 @@ jobs:
           from __future__ import annotations
 
           import gzip
+          import json
           import shutil
           from pathlib import Path
 
@@ -90,6 +100,10 @@ jobs:
               if path.name.endswith(".csv.gz"):
                   with gzip.open(path, "rb") as handle:
                       return handle.read()
+              if path.name == "idx_700_evidence_coverage.json":
+                  payload = json.loads(path.read_text(encoding="utf-8"))
+                  payload.pop("generated_at", None)
+                  return json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
               return path.read_bytes()
 
           evidence_files = (
@@ -98,6 +112,7 @@ jobs:
               "zapi_stock_summary_latest.csv.gz",
               "zapi_ownership_latest.csv.gz",
               "zapi_capital_actions.csv.gz",
+              "idx_700_evidence_coverage.json",
           )
           for name in evidence_files:
               new_path = fresh / name
@@ -135,6 +150,7 @@ jobs:
 
           for name in \
             flow_evidence_meta.json \
+            idx_700_evidence_coverage.json \
             zapi_idx_foreign_60d.csv.gz \
             zapi_idx_foreign_60d.json \
             zapi_stock_summary_latest.csv.gz \
@@ -148,6 +164,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "ZAPI evidence unchanged; no repository commit"
           else
-            git commit -m "Refresh ZAPI flow evidence cache"
+            git commit -m "Refresh IDX 700 evidence cache"
             git push origin HEAD:"$GITHUB_REF_NAME"
           fi
