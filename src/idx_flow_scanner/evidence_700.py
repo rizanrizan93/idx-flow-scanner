@@ -204,7 +204,7 @@ def write_evidence_coverage_report(
     `TradebleShares` from ZAPI/IDX stock-summary is deliberately not interpreted
     as regulatory free float. Until a rule-complete free-float source is present,
     free float is reported as unavailable and is not part of the core readiness
-    intersection.
+    intersection. Canonical KSEI history is included in ownership coverage.
     """
     universe = _read_csv(Path(universe_path))
     names = _ticker_set(universe)
@@ -214,13 +214,14 @@ def write_evidence_coverage_report(
     foreign = _read_csv(Path(cache_dir) / "zapi_idx_foreign_60d.csv.gz")
     stock = _read_csv(Path(cache_dir) / "zapi_stock_summary_latest.csv.gz")
     ownership = _read_csv(Path(cache_dir) / "zapi_ownership_latest.csv.gz")
+    ksei_ownership = _read_csv(Path(cache_dir) / "ksei_ownership_history_2026.csv.gz")
     actions = _read_csv(Path(cache_dir) / "zapi_capital_actions.csv.gz")
     flow_meta = _json(Path(cache_dir) / "flow_evidence_meta.json")
 
     ohlcv_names = _ticker_set(ohlcv) & names
     foreign_names = _ticker_set(foreign) & names
     stock_names = _ticker_set(stock) & names
-    ownership_names = _ticker_set(ownership) & names
+    ownership_names = (_ticker_set(ownership) | _ticker_set(ksei_ownership)) & names
     action_names = _ticker_set(actions) & names
 
     # Do not infer regulatory free float from stock-summary TradebleShares.
