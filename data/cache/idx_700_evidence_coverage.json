@@ -37,7 +37,7 @@
       "tickers": 400
     }
   },
-  "generated_at": "2026-09-05T13:48:03.005770+00:00",
+  "generated_at": "2026-09-05T13:49:23.239720+00:00",
   "missing_core_sample": [
     "AADI",
     "AALI",
@@ -204,7 +204,7 @@
   ],
   "provider_status": {
     "capital_actions": "QUOTA_EXHAUSTED: Zapi rate/monthly quota exhausted",
-    "foreign_flow": "UNAVAILABLE: Zapi HTTP 522",
+    "foreign_flow": "QUOTA_EXHAUSTED: Zapi rate/monthly quota exhausted",
     "ownership": "QUOTA_EXHAUSTED: Zapi rate/monthly quota exhausted",
     "stock_summary": "QUOTA_EXHAUSTED: Zapi rate/monthly quota exhausted"
   },
