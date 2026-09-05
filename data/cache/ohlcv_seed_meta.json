@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-09-04T16:34:05.502572+00:00",
+  "generated_at": "2026-09-05T13:31:29.664682+00:00",
   "latest_trade_date": "2026-09-04",
   "minimum_bars": 80,
   "period": "1y",
   "recent_mirror_bars_per_ticker": 10,
-  "recent_mirror_rows": 3980,
+  "recent_mirror_rows": 6920,
   "rejected": [
     {
       "bars": 1,
@@ -13,10 +13,34 @@
     {
       "bars": 20,
       "ticker": "META"
+    },
+    {
+      "bars": 41,
+      "ticker": "BACH"
+    },
+    {
+      "bars": 39,
+      "ticker": "RANS"
+    },
+    {
+      "bars": 40,
+      "ticker": "PRDL"
+    },
+    {
+      "bars": 42,
+      "ticker": "JECX"
+    },
+    {
+      "bars": 42,
+      "ticker": "JELI"
+    },
+    {
+      "bars": 41,
+      "ticker": "EMMI"
     }
   ],
   "source": "Yahoo Finance public chart/download endpoints",
-  "universe_count": 400,
-  "valid_ratio": 0.995,
-  "valid_tickers": 398
+  "universe_count": 700,
+  "valid_ratio": 0.9885714285714285,
+  "valid_tickers": 692
 }
