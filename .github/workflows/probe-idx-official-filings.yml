@@ -1,0 +1,27 @@
+name: Probe Official IDX Filings
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/probe_idx_official_filings.py'
+      - '.github/workflows/probe-idx-official-filings.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Probe official IDX announcement and financial endpoints
+        env:
+          PYTHONPATH: src
+        run: python scripts/probe_idx_official_filings.py
