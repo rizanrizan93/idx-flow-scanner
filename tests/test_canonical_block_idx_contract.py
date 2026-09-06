@@ -29,14 +29,15 @@ def test_official_issuer_registry_is_block_idx_only() -> None:
 
 def test_capital_action_dependency_is_flow_namespaced_and_private() -> None:
     sql = _text("supabase/migrations/20260906110000_canonical_capital_action_evidence_base.sql")
+    compact = "".join(sql.split()).lower()
     assert "public.flow_capital_action_evidence" in sql
-    assert "enable row level security" in sql.lower()
-    assert "from public,anon,authenticated" in sql.replace(" ", "").lower()
+    assert "enablerowlevelsecurity" in compact
+    assert "frompublic,anon,authenticated" in compact
 
 
 def test_shareholder_rotation_covers_full_official_registry() -> None:
     sql = _text("supabase/migrations/20260906132000_canonical_flow_security_and_shareholder_rotation.sql")
-    compact = "".join(sql.split())
-    assert "whereactive" in compact.lower()
+    compact = "".join(sql.split()).lower()
+    assert "whereactive" in compact
     assert "%10" in compact
     assert "https://block.idx.id/primary/ListedCompany/GetCompanyProfilesDetail" in sql
