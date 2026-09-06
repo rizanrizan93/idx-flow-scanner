@@ -12,6 +12,7 @@ OFFICIAL_IDX_BROKER_SOURCE = "IDX_OFFICIAL_BROKER_SUMMARY"
 BROKER_BEHAVIOR_BASIS = (
     "MARKET_WIDE_IDX_BROKER_ACTIVITY_X_TICKER_FLOW_ALIGNMENT_NOT_PER_TICKER_BROKER_TRADES"
 )
+_QUERY_PAGE_SIZE = 500
 
 
 def _clip(value: float) -> float:
@@ -40,15 +41,11 @@ def _robust_z(latest: float, history: pd.Series) -> float:
     return float(np.clip((float(latest) - median) / scale, -8.0, 8.0))
 
 
-def load_official_broker_activity(
-    store: Any,
-    *,
-    lookback_calendar_days: int = 120,
-) -> pd.DataFrame:
-    if store is None:
-        return pd.DataFrame()
-    since = (date.today() - timedelta(days=int(lookback_calendar_days))).isoformat()
-    try:
+def _load_broker_pages(store: Any, *, since: str) -> list[dict[str, object]]:
+    """Read complete official broker history with explicit PostgREST pagination."""
+    rows: list[dict[str, object]] = []
+    offset = 0
+    while True:
         response = (
             store.client.table("flow_official_broker_activity")
             .select(
@@ -59,11 +56,30 @@ def load_official_broker_activity(
             .eq("source_verified", True)
             .gte("trade_date", since)
             .order("trade_date")
+            .order("broker_code")
+            .range(offset, offset + _QUERY_PAGE_SIZE - 1)
             .execute()
         )
+        batch = list(response.data or [])
+        rows.extend(batch)
+        if len(batch) < _QUERY_PAGE_SIZE:
+            break
+        offset += _QUERY_PAGE_SIZE
+    return rows
+
+
+def load_official_broker_activity(
+    store: Any,
+    *,
+    lookback_calendar_days: int = 120,
+) -> pd.DataFrame:
+    if store is None:
+        return pd.DataFrame()
+    since = (date.today() - timedelta(days=int(lookback_calendar_days))).isoformat()
+    try:
+        rows = _load_broker_pages(store, since=since)
     except Exception:
         return pd.DataFrame()
-    rows = response.data or []
     if not rows:
         return pd.DataFrame()
     out = pd.DataFrame(rows)
