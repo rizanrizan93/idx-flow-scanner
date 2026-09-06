@@ -1,0 +1,48 @@
+name: Refresh Official IDX XBRL Metrics
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 11 * * 1-5'
+  push:
+    branches:
+      - feat/idx-official-announcements-xbrl
+    paths:
+      - 'src/idx_flow_scanner/official_xbrl.py'
+      - 'scripts/refresh_official_xbrl_metrics.py'
+      - '.github/workflows/refresh-official-xbrl.yml'
+      - 'requirements.txt'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: official-idx-xbrl-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Refresh verified latest XBRL metrics
+        env:
+          PYTHONPATH: src
+        run: python scripts/refresh_official_xbrl_metrics.py --workers 8
+      - name: Commit refreshed evidence cache
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/cache/idx_official_financial_metrics_latest.csv.gz data/cache/idx_official_financial_metrics_latest.meta.json
+          if git diff --cached --quiet; then
+            echo 'No XBRL cache changes.'
+            exit 0
+          fi
+          git commit -m 'data: refresh official IDX XBRL metrics [skip ci]'
+          git push
