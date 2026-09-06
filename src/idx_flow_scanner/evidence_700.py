@@ -199,7 +199,13 @@ def write_evidence_coverage_report(
     cache_dir: Path = DEFAULT_CACHE_DIR,
     output_path: Path = COVERAGE_PATH,
 ) -> dict[str, object]:
-    """Measure real 700-ticker evidence coverage from persisted cache contents."""
+    """Measure real 700-ticker evidence coverage from persisted cache contents.
+
+    `TradebleShares` from ZAPI/IDX stock-summary is deliberately not interpreted
+    as regulatory free float. Until a rule-complete free-float source is present,
+    free float is reported as unavailable and is not part of the core readiness
+    intersection. Canonical KSEI history is included in ownership coverage.
+    """
     universe = _read_csv(Path(universe_path))
     names = _ticker_set(universe)
     total = len(names)
@@ -208,34 +214,31 @@ def write_evidence_coverage_report(
     foreign = _read_csv(Path(cache_dir) / "zapi_idx_foreign_60d.csv.gz")
     stock = _read_csv(Path(cache_dir) / "zapi_stock_summary_latest.csv.gz")
     ownership = _read_csv(Path(cache_dir) / "zapi_ownership_latest.csv.gz")
+    ksei_ownership = _read_csv(Path(cache_dir) / "ksei_ownership_history_2026.csv.gz")
     actions = _read_csv(Path(cache_dir) / "zapi_capital_actions.csv.gz")
     flow_meta = _json(Path(cache_dir) / "flow_evidence_meta.json")
 
     ohlcv_names = _ticker_set(ohlcv) & names
     foreign_names = _ticker_set(foreign) & names
     stock_names = _ticker_set(stock) & names
-    ownership_names = _ticker_set(ownership) & names
+    ownership_names = (_ticker_set(ownership) | _ticker_set(ksei_ownership)) & names
     action_names = _ticker_set(actions) & names
 
+    # Do not infer regulatory free float from stock-summary TradebleShares.
     free_float_names: set[str] = set()
-    if not stock.empty and {"ticker", "listed_shares", "tradable_shares"}.issubset(stock.columns):
-        listed = pd.to_numeric(stock["listed_shares"], errors="coerce")
-        tradable = pd.to_numeric(stock["tradable_shares"], errors="coerce")
-        valid = listed.gt(0) & tradable.gt(0) & tradable.le(listed * 1.05)
-        free_float_names = _ticker_set(stock.loc[valid]) & names
 
     sector_names: set[str] = set()
     if not universe.empty and {"ticker", "sector"}.issubset(universe.columns):
         known = ~universe["sector"].fillna("UNKNOWN").astype(str).str.upper().isin({"", "UNKNOWN", "NAN", "NONE", "NULL"})
         sector_names = _ticker_set(universe.loc[known]) & names
 
-    core = names & ohlcv_names & foreign_names & free_float_names & sector_names
+    core = names & ohlcv_names & foreign_names & sector_names
     full = core & ownership_names
     missing_core = sorted(names - core)
     missing_full = sorted(names - full)
 
     report = {
-        "schema_version": 1,
+        "schema_version": 2,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "universe_count": total,
         "coverage": {
@@ -243,7 +246,12 @@ def write_evidence_coverage_report(
             "sector": {"tickers": len(sector_names), "pct": _pct(len(sector_names), total)},
             "foreign_flow": {"tickers": len(foreign_names), "pct": _pct(len(foreign_names), total)},
             "stock_summary": {"tickers": len(stock_names), "pct": _pct(len(stock_names), total)},
-            "free_float": {"tickers": len(free_float_names), "pct": _pct(len(free_float_names), total)},
+            "free_float": {
+                "tickers": 0,
+                "pct": 0.0,
+                "semantics": "UNAVAILABLE_NOT_INFERRED_FROM_TRADABLE_SHARES",
+                "required_for_core": False,
+            },
             "ownership": {"tickers": len(ownership_names), "pct": _pct(len(ownership_names), total)},
             "corporate_action_events": {
                 "tickers_with_events": len(action_names),
@@ -263,6 +271,7 @@ def write_evidence_coverage_report(
         "readiness_contract": {
             "core_target_pct": 95.0,
             "ownership_target_pct": 90.0,
+            "free_float_required_for_core": False,
             "no_fabricated_evidence": True,
         },
     }

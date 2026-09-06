@@ -92,3 +92,32 @@ def test_ksei_registration_composition_does_not_double_count_major_holder() -> N
     assert result["reported_foreign_ownership_pct"] == 60.0
     assert result["ownership_basis"] == "KSEI_REGISTRATION_COMPOSITION"
     assert result["ownership_score"] == 50.0
+
+
+def test_tradable_shares_are_not_relabelled_as_regulatory_free_float() -> None:
+    stock = pd.DataFrame(
+        [
+            {
+                "ticker": "TEST",
+                "trade_date": "2026-08-31",
+                "listed_shares": 1_000_000_000,
+                "tradable_shares": 1_000_000_000,
+            }
+        ]
+    )
+
+    result = compute_slow_evidence_canonical(
+        "TEST",
+        _price(),
+        {"foreign_net_20d": 10_000.0},
+        stock_summary=stock,
+    )
+
+    assert result["listed_shares"] == 1_000_000_000.0
+    assert result["tradable_shares"] == 1_000_000_000.0
+    assert result["free_float_pct"] is None
+    assert result["free_float_structure_score"] == 50.0
+    assert result["float_turnover_20d_pct"] is None
+    assert result["foreign_net_to_float_20d_pct"] is None
+    assert result["free_float_available"] is False
+    assert result["free_float_basis"] == "UNAVAILABLE_NOT_INFERRED_FROM_TRADABLE_SHARES"
