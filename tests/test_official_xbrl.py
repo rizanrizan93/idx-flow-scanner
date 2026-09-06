@@ -21,8 +21,16 @@ def _zip(xml: str, name: str = "instance.xbrl") -> bytes:
     return buffer.getvalue()
 
 
-def _xml(*, ticker: str = "TEST", end: str = "2026-06-30", conflicting_assets: bool = False) -> str:
+def _xml(
+    *,
+    ticker: str = "TEST",
+    context_identifier: str = "test_user",
+    end: str = "2026-06-30",
+    conflicting_assets: bool = False,
+    include_entity_code: bool = True,
+) -> str:
     extra = '<id:Assets contextRef="CurrentYearInstant" unitRef="IDR" decimals="-6">999</id:Assets>' if conflicting_assets else ""
+    entity_code = f'<id:EntityCode contextRef="CurrentYearInstant">{ticker}</id:EntityCode>' if include_entity_code else ""
     return f'''<?xml version="1.0" encoding="UTF-8"?>
 <xbrli:xbrl xmlns:xbrli="http://www.xbrl.org/2003/instance"
  xmlns:xbrldi="http://xbrl.org/2006/xbrldi"
@@ -30,20 +38,21 @@ def _xml(*, ticker: str = "TEST", end: str = "2026-06-30", conflicting_assets: b
  xmlns:iso4217="http://www.xbrl.org/2003/iso4217"
  xmlns:id="http://example.com/idx-taxonomy/2026">
  <xbrli:context id="CurrentYearInstant">
-  <xbrli:entity><xbrli:identifier scheme="https://idx.co.id/ticker">{ticker}</xbrli:identifier></xbrli:entity>
+  <xbrli:entity><xbrli:identifier scheme="https://idx.co.id/entity">{context_identifier}</xbrli:identifier></xbrli:entity>
   <xbrli:period><xbrli:instant>{end}</xbrli:instant></xbrli:period>
  </xbrli:context>
  <xbrli:context id="CurrentYearDuration">
-  <xbrli:entity><xbrli:identifier scheme="https://idx.co.id/ticker">{ticker}</xbrli:identifier></xbrli:entity>
+  <xbrli:entity><xbrli:identifier scheme="https://idx.co.id/entity">{context_identifier}</xbrli:identifier></xbrli:entity>
   <xbrli:period><xbrli:startDate>2026-01-01</xbrli:startDate><xbrli:endDate>{end}</xbrli:endDate></xbrli:period>
  </xbrli:context>
  <xbrli:context id="SegmentDuration">
-  <xbrli:entity><xbrli:identifier scheme="https://idx.co.id/ticker">{ticker}</xbrli:identifier>
+  <xbrli:entity><xbrli:identifier scheme="https://idx.co.id/entity">{context_identifier}</xbrli:identifier>
    <xbrli:segment><xbrldi:explicitMember dimension="id:SegmentAxis">id:SegmentA</xbrldi:explicitMember></xbrli:segment>
   </xbrli:entity>
   <xbrli:period><xbrli:startDate>2026-01-01</xbrli:startDate><xbrli:endDate>{end}</xbrli:endDate></xbrli:period>
  </xbrli:context>
  <xbrli:unit id="IDR"><xbrli:measure>iso4217:IDR</xbrli:measure></xbrli:unit>
+ {entity_code}
  <id:Assets contextRef="CurrentYearInstant" unitRef="IDR" decimals="-6">1000</id:Assets>
  {extra}
  <id:Liabilities contextRef="CurrentYearInstant" unitRef="IDR" decimals="-6">400</id:Liabilities>
@@ -60,6 +69,8 @@ def test_exact_context_unit_period_mapping_and_raw_provenance_fields():
     rows, metadata = standardized_metric_rows(content, expected_ticker="TEST", report_year=2026, report_period="TW2")
     mapped = {row["metric_name"]: row for row in rows}
     assert metadata["metric_validation_state"] == "VALIDATED_CONTEXT_UNIT_PERIOD_CONCEPT"
+    assert metadata["entity_code"] == "TEST"
+    assert metadata["entity_identifier"] == "test_user"
     assert mapped["assets"]["metric_value"] == Decimal("1000")
     assert mapped["revenue"]["metric_value"] == Decimal("800")
     assert mapped["net_income_attributable"]["metric_value"] == Decimal("120")
@@ -69,11 +80,27 @@ def test_exact_context_unit_period_mapping_and_raw_provenance_fields():
     raw = raw_fact_rows(parsed)
     assert any(row["decimals"] == "-6" and row["concept_local_name"] == "Assets" for row in raw)
     assert any(row["dimensions"] for row in raw if row["context_id"] == "SegmentDuration")
+    assert all(row["is_consolidated"] is None for row in raw)
 
 
-def test_cross_ticker_contamination_is_rejected():
-    with pytest.raises(ValueError, match="identifier mismatch"):
-        standardized_metric_rows(_zip(_xml(ticker="OTHER")), expected_ticker="TEST", report_year=2026, report_period="TW2")
+def test_cross_ticker_contamination_is_rejected_from_entity_code():
+    with pytest.raises(ValueError, match="EntityCode mismatch"):
+        standardized_metric_rows(
+            _zip(_xml(ticker="OTHER", context_identifier="test_user")),
+            expected_ticker="TEST",
+            report_year=2026,
+            report_period="TW2",
+        )
+
+
+def test_missing_entity_code_is_fail_closed_when_ticker_validation_requested():
+    with pytest.raises(ValueError, match="EntityCode missing"):
+        standardized_metric_rows(
+            _zip(_xml(include_entity_code=False)),
+            expected_ticker="TEST",
+            report_year=2026,
+            report_period="TW2",
+        )
 
 
 def test_wrong_period_fails_neutral_without_reusing_tw2_facts():
