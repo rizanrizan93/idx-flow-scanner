@@ -52,7 +52,7 @@ begin
 
   insert into public.flow_vendor_foreign_flows
     (ticker,trade_date,foreign_buy,foreign_sell,foreign_net,volume,traded_value,
-     flow_unit,market_type,source,source_verified,source_url,provenance_state,ingested_at)
+     flow_unit,market_type,source,source_verified,source_url,provenance_state,retrieved_at)
   select
     upper(trim(x->>'StockCode')),
     (x->>'Date')::date,
@@ -87,7 +87,7 @@ begin
     source_verified=excluded.source_verified,
     source_url=excluded.source_url,
     provenance_state=excluded.provenance_state,
-    ingested_at=excluded.ingested_at;
+    retrieved_at=excluded.retrieved_at;
 
   get diagnostics affected = row_count;
   return affected;
