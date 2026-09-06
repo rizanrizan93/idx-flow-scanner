@@ -39,6 +39,11 @@ from idx_flow_scanner.official_idx_risk import (
     load_official_idx_risk_events,
     set_official_risk_context,
 )
+from idx_flow_scanner.official_index_context import (
+    apply_official_index_overlay,
+    load_official_index_summary,
+    set_official_index_context,
+)
 from idx_flow_scanner.run_metadata_guard import install_truthful_run_metadata
 from idx_flow_scanner.runtime_persistence import install_current_result_persistence
 from idx_flow_scanner.storage import SupabaseStore
@@ -189,6 +194,16 @@ def _database_first_zapi_foreign(universe, store, load_price):
 
 _original_scan_one_zapi = zapi_pipeline.scan_one_zapi
 _original_scan_universe_zapi = streamlit_app.scan_universe_zapi
+_original_ticker_market_features = zapi_pipeline.ticker_market_features
+
+
+def _official_index_market_features(ticker, context):
+    base = _original_ticker_market_features(ticker, context)
+    return apply_official_index_overlay(
+        ticker,
+        base,
+        reference_date=context.get("reference_date") if isinstance(context, dict) else None,
+    )
 
 
 def _broker_scored_base(ticker, price, **kwargs):
@@ -222,6 +237,11 @@ def _database_first_scan_universe(*args, **kwargs):
         lookback_calendar_days=270,
     )
     set_official_risk_context(risk_events)
+    index_summary = load_official_index_summary(
+        DEDICATED_EVIDENCE_STORE,
+        lookback_calendar_days=140,
+    )
+    set_official_index_context(index_summary)
     return _original_scan_universe_zapi(*args, **kwargs)
 
 
@@ -250,10 +270,12 @@ streamlit_app.load_bundled_zapi_capital_actions = _database_first_slow_loader(
     upsert_capital_actions,
 )
 # Runtime compatibility patches. Official IDX direct foreign flow is the primary
-# verified provider, market-wide broker behavior is a bounded ranking overlay,
-# and official UMA/suspension events can only de-rate or block authorization.
+# verified provider. Official IDX indices independently anchor market/sector
+# context, broker behavior is a bounded ranking overlay, and official UMA /
+# suspension events can only de-rate or block authorization.
 zapi_pipeline._zapi_ready = verified_daily_foreign_ready
 zapi_pipeline.compute_slow_evidence = compute_slow_evidence_canonical
+zapi_pipeline.ticker_market_features = _official_index_market_features
 zapi_pipeline.scan_one_zapi = _broker_risk_scored_scan_one
 streamlit_app.scan_universe_zapi = _database_first_scan_universe
 
