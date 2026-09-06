@@ -1,75 +1,80 @@
 from __future__ import annotations
 
-import io
-import zipfile
-from pathlib import PurePosixPath
-from urllib.parse import quote, urlencode, urljoin, urlsplit, urlunsplit
-from xml.etree import ElementTree as ET
+import json
+from datetime import date, timedelta
+from urllib.parse import urlencode
 
 from curl_cffi import requests
 
 BASE = "https://block.idx.id"
-API = f"{BASE}/primary/ListedCompany"
-TARGETS = ("Assets", "Liabilities", "Equity", "ProfitLoss", "ProfitLossAttributableToOwnersOfParent", "Revenue", "SalesAndRevenue", "NetSales", "CashAndCashEquivalents", "CashFlowsFromUsedInOperatingActivities")
+ANNOUNCEMENT_API = f"{BASE}/primary/ListedCompany/GetAnnouncement"
+FINANCIAL_API = f"{BASE}/primary/ListedCompany/GetFinancialReport"
 
 
-def _url(path: str) -> str:
-    parts = urlsplit(urljoin(BASE + "/", path.lstrip("/")))
-    return urlunsplit((parts.scheme, parts.netloc, quote(parts.path, safe="/%:@-._~!$&'()*+,;="), parts.query, ""))
+def _get_json(url: str, params: dict[str, object]) -> dict[str, object]:
+    response = requests.get(
+        f"{url}?{urlencode(params)}",
+        impersonate="chrome",
+        timeout=45,
+        headers={"Accept": "application/json, text/plain, */*", "Referer": BASE + "/"},
+        allow_redirects=False,
+    )
+    print("GET", url.rsplit("/", 1)[-1], "status", response.status_code, "location", response.headers.get("location"))
+    response.raise_for_status()
+    payload = response.json()
+    if not isinstance(payload, dict):
+        raise TypeError("IDX response is not an object")
+    return payload
 
 
-def _json(session, path, params):
-    r = session.get(f"{API}/{path}?{urlencode(params)}", headers={"Accept":"application/json","Referer":BASE+"/"}, timeout=45)
-    print(path, params.get("kodeEmiten"), r.status_code)
-    r.raise_for_status()
-    return r.json()
+def probe_announcements() -> None:
+    today = date.today()
+    payload = _get_json(
+        ANNOUNCEMENT_API,
+        {
+            "kodeEmiten": "BBCA",
+            "emitenType": "*",
+            "indexFrom": 0,
+            "pageSize": 5,
+            "dateFrom": (today - timedelta(days=90)).strftime("%Y%m%d"),
+            "dateTo": today.strftime("%Y%m%d"),
+            "lang": "id",
+            "keyword": "",
+        },
+    )
+    rows = payload.get("Results") or payload.get("results") or []
+    print("announcement_top_keys", sorted(payload.keys()))
+    print("announcement_count", payload.get("ResultCount") or payload.get("resultCount") or len(rows))
+    if rows and isinstance(rows[0], dict):
+        row = rows[0]
+        safe = {key: row.get(key) for key in sorted(row) if key.lower() not in {"content", "isi", "body"}}
+        print("announcement_row", json.dumps(safe, ensure_ascii=False, default=str)[:8000])
 
 
-def _context_map(root):
-    out = {}
-    for e in root:
-        if e.tag.rsplit("}",1)[-1] != "context" or not e.get("id"):
-            continue
-        instant = start = end = None
-        dims = []
-        for c in e.iter():
-            local = c.tag.rsplit("}",1)[-1]
-            if local == "instant": instant = (c.text or "").strip()
-            elif local == "startDate": start = (c.text or "").strip()
-            elif local == "endDate": end = (c.text or "").strip()
-            elif local in {"explicitMember","typedMember"}: dims.append(local)
-        out[e.get("id")] = {"instant":instant,"start":start,"end":end,"dims":dims}
-    return out
-
-
-def inspect_ticker(session, ticker):
-    payload = _json(session,"GetFinancialReport",{"periode":"TW2","year":2026,"indexFrom":0,"pageSize":20,"reportType":"rdf","kodeEmiten":ticker})
+def probe_financial() -> None:
+    payload = _get_json(
+        FINANCIAL_API,
+        {
+            "periode": "TW2",
+            "year": 2026,
+            "indexFrom": 0,
+            "pageSize": 5,
+            "reportType": "rdf",
+            "kodeEmiten": "BBCA",
+        },
+    )
     rows = payload.get("Results") or []
-    if not rows:
-        print(ticker,"NO REPORT"); return
-    att = next((a for a in rows[0].get("Attachments",[]) if str(a.get("File_Name","")).lower()=="instance.zip"),None)
-    if not att:
-        print(ticker,"NO INSTANCE"); return
-    r = session.get(_url(att["File_Path"]), headers={"Accept":"application/zip,*/*","Referer":BASE+"/"}, timeout=60)
-    print(ticker,"zip",r.status_code,len(r.content),att.get("File_Size"))
-    r.raise_for_status()
-    with zipfile.ZipFile(io.BytesIO(bytes(r.content))) as z:
-        name = next(n for n in z.namelist() if PurePosixPath(n).name.lower()=="instance.xbrl")
-        xml = z.read(name)
-    root = ET.fromstring(xml)
-    contexts = _context_map(root)
-    print("--",ticker,"--")
-    for e in root:
-        if e.get("contextRef") is None: continue
-        local = e.tag.rsplit("}",1)[-1]
-        if local in TARGETS or any(k in local for k in ("ProfitLoss","OperatingActivities","CashAndCashEquivalents","SalesAndRevenue")):
-            print("FACT",local,e.get("contextRef"),e.get("unitRef"),(e.text or "").strip(),contexts.get(e.get("contextRef")))
+    print("financial_count", payload.get("ResultCount") or len(rows))
+    if rows and isinstance(rows[0], dict):
+        print("financial_keys", sorted(rows[0].keys()))
+        attachments = rows[0].get("Attachments") or []
+        print("financial_attachment_names", [a.get("File_Name") for a in attachments if isinstance(a, dict)])
 
 
-def main():
-    session = requests.Session(impersonate="chrome")
-    for ticker in ("BBCA","ADRO","ICBP"):
-        inspect_ticker(session,ticker)
+def main() -> None:
+    probe_announcements()
+    probe_financial()
+
 
 if __name__ == "__main__":
     main()
