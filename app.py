@@ -26,11 +26,16 @@ from idx_flow_scanner.evidence_database import (
     upsert_ownership,
     upsert_stock_summary,
 )
+from idx_flow_scanner.foreign_evidence import prepare_foreign_evidence
 from idx_flow_scanner.large_universe_prices import prepare_large_universe_prices
 from idx_flow_scanner.run_metadata_guard import install_truthful_run_metadata
 from idx_flow_scanner.runtime_persistence import install_current_result_persistence
 from idx_flow_scanner.storage import SupabaseStore
 from idx_flow_scanner.universe_700 import materialize_universe_700
+from idx_flow_scanner.verified_foreign_store import (
+    IDX_OFFICIAL_STOCK_SUMMARY_SOURCE,
+    load_verified_daily_foreign_flows,
+)
 
 BASE_UNIVERSE_PATH = ROOT / "data" / "universe" / "idx_400_syariah.csv"
 BUNDLED_UNIVERSE_700_PATH = ROOT / "data" / "universe" / "idx_700_all.csv"
@@ -134,9 +139,39 @@ _original_zapi_foreign = streamlit_app._zapi_foreign
 
 
 def _database_first_zapi_foreign(universe, store, load_price):
+    resolved_store = store or DEDICATED_EVIDENCE_STORE
+    if resolved_store is not None:
+        verified = load_verified_daily_foreign_flows(
+            resolved_store,
+            universe,
+            lookback_calendar_days=120,
+            allow_zapi_fallback=True,
+        )
+        if (
+            verified is not None
+            and not verified.empty
+            and "source" in verified.columns
+            and verified["source"].eq(IDX_OFFICIAL_STOCK_SUMMARY_SOURCE).any()
+        ):
+            foreign_flow, selection_stats = prepare_foreign_evidence(
+                universe,
+                verified,
+                load_price,
+                lookback=20,
+            )
+            return (
+                foreign_flow,
+                {
+                    **streamlit_app.data_stats(verified),
+                    "source": IDX_OFFICIAL_STOCK_SUMMARY_SOURCE,
+                    "transport": "OFFICIAL_IDX_BLOCK",
+                    "zapi_role": "FALLBACK_ONLY_WHEN_OFFICIAL_ABSENT",
+                },
+                selection_stats,
+            )
     return _original_zapi_foreign(
         universe,
-        store or DEDICATED_EVIDENCE_STORE,
+        resolved_store,
         load_price,
     )
 
@@ -166,7 +201,8 @@ streamlit_app.load_bundled_zapi_capital_actions = _database_first_slow_loader(
     upsert_capital_actions,
 )
 # scan_one_zapi resolves this symbol from the zapi_pipeline module at runtime.
-# Patch only the slow-evidence adapter; foreign-flow remains ZAPI-only.
+# Slow evidence remains independently canonicalized; foreign flow is supplied by
+# verified official IDX daily share evidence with ZAPI only as an absence fallback.
 zapi_pipeline.compute_slow_evidence = compute_slow_evidence_canonical
 
 install_current_result_persistence(SupabaseStore, batch_size=20)
