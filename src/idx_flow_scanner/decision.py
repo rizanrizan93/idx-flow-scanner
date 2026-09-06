@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 
+import numpy as np
 import pandas as pd
 
 VERIFIED_FLOW_TIERS = frozenset({"OFFICIAL_IDX_FLOW", "ZAPI_FLOW"})
@@ -17,6 +18,10 @@ def _diag(value: object) -> dict[str, object]:
         except Exception:
             return {}
     return {}
+
+
+def _true_bool(value: object) -> bool:
+    return isinstance(value, (bool, np.bool_)) and bool(value)
 
 
 def select_zapi_decision_top(results: pd.DataFrame, *, top_n: int = 20) -> pd.DataFrame:
@@ -48,7 +53,7 @@ def select_zapi_decision_top(results: pd.DataFrame, *, top_n: int = 20) -> pd.Da
         evidence_tier.isin(VERIFIED_FLOW_TIERS)
         & work["foreign_window_state"].eq("FULL")
         & work["foreign_data_freshness"].eq("FRESH")
-        & work["foreign_data_valid"].map(lambda value: bool(value) if isinstance(value, bool) else False)
+        & work["foreign_data_valid"].map(_true_bool)
         & dist.lt(70.0)
         & quality.ge(70.0)
         & work.get("phase", pd.Series("", index=work.index)).ne("DISTRIBUTION")
@@ -88,7 +93,7 @@ def select_execution_ready(results: pd.DataFrame, *, top_n: int = 10) -> pd.Data
         "production_authorized", pd.Series(False, index=results.index)
     )
     if not pd.api.types.is_bool_dtype(authorized):
-        authorized = authorized.map(lambda value: value is True)
+        authorized = authorized.map(_true_bool)
     out = results.loc[authorized.fillna(False)].copy()
     if out.empty:
         return out
