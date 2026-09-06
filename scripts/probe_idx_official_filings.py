@@ -6,6 +6,7 @@ from urllib.parse import urlencode, urljoin
 
 from curl_cffi import requests
 
+from idx_flow_scanner.official_filings import sha256_bytes, validate_file_magic, validate_no_redirect, validate_official_url
 from idx_flow_scanner.official_xbrl import parse_instance_zip
 
 BASE = "https://block.idx.id"
@@ -23,6 +24,7 @@ def _get(url: str, *, accept: str):
     )
     print("GET", url.split("?", 1)[0].rsplit("/", 1)[-1], "status", response.status_code, "location", response.headers.get("location"))
     response.raise_for_status()
+    validate_no_redirect(response, expected_url=url)
     return response
 
 
@@ -45,10 +47,18 @@ def probe_announcements() -> None:
         },
     )
     rows = payload.get("Replies") or []
-    print("announcement_top_keys", sorted(payload.keys()))
     print("announcement_count", payload.get("ResultCount") or len(rows), "page_rows", len(rows))
-    if rows and isinstance(rows[0], dict):
-        print("announcement_reply", json.dumps(rows[0], ensure_ascii=False, default=str)[:12000])
+    if not rows or not isinstance(rows[0], dict):
+        return
+    print("announcement_reply", json.dumps(rows[0], ensure_ascii=False, default=str)[:12000])
+    attachments = rows[0].get("attachments") or []
+    candidate = next((a for a in attachments if isinstance(a, dict) and a.get("FullSavePath")), None)
+    if candidate:
+        url = validate_official_url(str(candidate["FullSavePath"]), allow_hosts=frozenset({"www.idx.co.id"}))
+        response = _get(url, accept="application/pdf, application/octet-stream, */*")
+        content = bytes(response.content)
+        validate_file_magic(content, "pdf")
+        print("announcement_static_pdf", json.dumps({"bytes": len(content), "sha256": sha256_bytes(content), "url_host": "www.idx.co.id"}))
 
 
 def probe_financial() -> None:
@@ -68,10 +78,10 @@ def probe_financial() -> None:
     parsed = parse_instance_zip(bytes(response.content))
     contexts = parsed.get("contexts") or {}
     identifiers = sorted({str(v.get("identifier")) for v in contexts.values() if isinstance(v, dict) and v.get("identifier")})
-    print("xbrl_identifiers", identifiers)
-    print("xbrl_context_sample", json.dumps(dict(list(contexts.items())[:8]), ensure_ascii=False, default=str))
     facts = parsed.get("facts") or []
-    print("xbrl_fact_sample", [getattr(f, "concept", None) for f in facts[:40]])
+    entity_codes = sorted({str(getattr(f, "raw_value", "")) for f in facts if getattr(f, "concept", "") == "EntityCode" and getattr(f, "raw_value", None)})
+    print("xbrl_identifiers", identifiers)
+    print("xbrl_entity_codes", entity_codes)
 
 
 def main() -> None:
