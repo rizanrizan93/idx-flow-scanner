@@ -7,3 +7,4 @@ supabase>=2.18,<3
 python-dotenv>=1.0,<2
 pytest>=8.3,<9
 openpyxl>=3.1,<4
+defusedxml>=0.7,<1
