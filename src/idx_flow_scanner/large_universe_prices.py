@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 from pathlib import Path
 from typing import Callable
 
@@ -15,6 +16,7 @@ DB_CHUNK_SIZE = 8
 DB_ROW_LIMIT = 120
 MAX_CONSECUTIVE_EMPTY_DB_CHUNKS = 2
 MAX_CACHE_CALENDAR_AGE_DAYS = 7
+YAHOO_HEARTBEAT_SECONDS = 20.0
 
 
 def _frame_recent_enough(frame: pd.DataFrame, *, max_age_days: int = MAX_CACHE_CALENDAR_AGE_DAYS) -> bool:
@@ -98,6 +100,37 @@ def _bounded_db_prices(
     return out, errors, state
 
 
+def _fetch_yahoo_with_heartbeat(
+    names: list[str],
+    *,
+    period: str,
+    status: Callable[[str], None] | None,
+) -> dict[str, pd.DataFrame]:
+    """Run bounded Yahoo fallback while keeping the durable scan heartbeat fresh.
+
+    ``fetch_yfinance_prices_batch`` can legitimately spend several minutes inside
+    yfinance retries and per-symbol chart fallbacks. Without an outer heartbeat,
+    Streamlit reruns make a live OHLCV preparation indistinguishable from an orphaned
+    lock. The provider call remains bounded by its own request timeouts; this helper
+    only emits liveness while waiting and never fabricates price data.
+    """
+    if not names:
+        return {}
+    if status is None:
+        return fetch_yfinance_prices_batch(names, period=period)
+
+    interval = max(0.01, float(YAHOO_HEARTBEAT_SECONDS))
+    with ThreadPoolExecutor(max_workers=1, thread_name_prefix="idx-flow-yahoo") as executor:
+        future = executor.submit(fetch_yfinance_prices_batch, names, period=period)
+        while True:
+            try:
+                return future.result(timeout=interval)
+            except FuturesTimeoutError:
+                status(
+                    f"Yahoo fallback active • pending {len(names)} • bounded provider retries still running"
+                )
+
+
 def prepare_large_universe_prices(
     universe: list[str],
     store: SupabaseStore | None,
@@ -157,7 +190,11 @@ def prepare_large_universe_prices(
     missing = [ticker for ticker in names if ticker not in frames]
     fetched_valid = 0
     if missing:
-        fresh_map = fetch_yfinance_prices_batch(missing, period=period)
+        fresh_map = _fetch_yahoo_with_heartbeat(
+            missing,
+            period=period,
+            status=status,
+        )
         for ticker in missing:
             frame = fresh_map.get(ticker, pd.DataFrame())
             if len(frame) >= int(min_rows) and _frame_recent_enough(frame):
