@@ -66,7 +66,7 @@ def test_unknown_sector_uses_market_only_30pct_overlay():
 def test_stale_official_index_is_fail_neutral():
     frame = _index_frame()
     base = _base("Energy", 61.0)
-    reference_date = frame["trade_date"].max() + pd.Timedelta(days=10)
+    reference_date = pd.Timestamp(frame["trade_date"].max()) + pd.Timedelta(days=10)
     result = apply_official_index_overlay(
         "ADRO",
         base,
