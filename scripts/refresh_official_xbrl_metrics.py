@@ -1,18 +1,22 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
-import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, datetime, timezone
 from pathlib import Path
-from urllib.parse import quote, urlencode, urljoin, urlsplit, urlunsplit
+from urllib.parse import urlencode
 
 import pandas as pd
 from curl_cffi import requests
 
 from idx_flow_scanner.data import canonical_ticker
+from idx_flow_scanner.official_filings import (
+    resolve_official_url,
+    sha256_bytes,
+    validate_file_magic,
+    validate_no_redirect,
+)
 from idx_flow_scanner.official_xbrl import standardized_metrics
 
 BASE = "https://block.idx.id"
@@ -24,13 +28,6 @@ META = ROOT / "data" / "cache" / "idx_official_financial_metrics_latest.meta.jso
 PERIOD_RANK = {"AUDIT": 0, "TW1": 1, "TW2": 2, "TW3": 3}
 
 
-def _official_url(path: str) -> str:
-    parts = urlsplit(urljoin(BASE + "/", str(path or "").lstrip("/")))
-    if parts.scheme != "https" or (parts.hostname or "").lower() != "block.idx.id":
-        raise ValueError("official XBRL file must resolve to block.idx.id")
-    return urlunsplit((parts.scheme, parts.netloc, quote(parts.path, safe="/%:@-._~!$&'()*+,;="), parts.query, ""))
-
-
 def _get_report_index(year: int, period: str) -> list[dict[str, object]]:
     params = {
         "periode": period if period != "AUDIT" else "audit",
@@ -40,12 +37,15 @@ def _get_report_index(year: int, period: str) -> list[dict[str, object]]:
         "reportType": "rdf",
         "kodeEmiten": "",
     }
+    url = f"{API}?{urlencode(params)}"
     response = requests.get(
-        f"{API}?{urlencode(params)}",
+        url,
         impersonate="chrome",
         timeout=60,
         headers={"Accept": "application/json, text/plain, */*", "Referer": BASE + "/"},
+        allow_redirects=False,
     )
+    validate_no_redirect(response, expected_url=url)
     if response.status_code != 200:
         raise RuntimeError(f"GetFinancialReport {year} {period}: HTTP {response.status_code}")
     payload = response.json()
@@ -100,26 +100,32 @@ def _latest_index(universe: set[str]) -> dict[str, dict[str, object]]:
 
 
 def _download_parse(item: dict[str, object]) -> dict[str, object]:
-    url = _official_url(str(item["instance_path"]))
+    url = resolve_official_url(str(item["instance_path"]))
     response = requests.get(
         url,
         impersonate="chrome",
         timeout=60,
         headers={"Accept": "application/zip, application/octet-stream, */*", "Referer": BASE + "/"},
+        allow_redirects=False,
     )
+    validate_no_redirect(response, expected_url=url)
     content = bytes(response.content)
     expected = int(item.get("instance_size_bytes") or 0)
     if response.status_code != 200:
         raise RuntimeError(f"HTTP {response.status_code}")
-    if not content.startswith(b"PK"):
-        raise RuntimeError("invalid ZIP magic")
+    validate_file_magic(content, "instance_xbrl_zip")
     if expected <= 0 or len(content) != expected:
         raise RuntimeError(f"size mismatch expected={expected} actual={len(content)}")
-    metrics = standardized_metrics(content)
+    metrics = standardized_metrics(
+        content,
+        expected_ticker=str(item["ticker"]),
+        report_year=int(item["report_year"]),
+        report_period=str(item["report_period"]),
+    )
     return {
         **item,
         **metrics,
-        "source_file_sha256": hashlib.sha256(content).hexdigest(),
+        "source_file_sha256": sha256_bytes(content),
         "source_file_size_bytes": len(content),
         "source_url": url,
         "source": "IDX_OFFICIAL_XBRL_INSTANCE",
