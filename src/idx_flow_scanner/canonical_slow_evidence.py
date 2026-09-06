@@ -204,6 +204,25 @@ def compute_slow_evidence_canonical(
     ksei = _ksei_ownership_features(own)
     if ksei is not None:
         base.update(ksei)
+
+    # ZAPI/IDX stock-summary `TradebleShares` is a market-structure field, not
+    # the IDX regulatory free-float percentage. Do not infer free float from
+    # TradebleShares / ListedShares. Keep the raw share counts as diagnostics,
+    # but neutralize every free-float-derived scoring/gating field until a
+    # rule-complete IDX free-float source is available.
+    base.update(
+        {
+            "free_float_structure_score": 50.0,
+            "free_float_pct": None,
+            "float_turnover_20d_pct": None,
+            "foreign_net_to_float_20d_pct": None,
+            "free_float_available": False,
+            "free_float_basis": "UNAVAILABLE_NOT_INFERRED_FROM_TRADABLE_SHARES",
+        }
+    )
+    base["slow_evidence_available"] = bool(
+        base.get("ownership_available") or base.get("corporate_action_available")
+    )
     return base
 
 

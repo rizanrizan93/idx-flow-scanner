@@ -111,11 +111,16 @@ def test_evidence_coverage_report_measures_real_intersections(tmp_path):
         output_path=output_path,
     )
 
+    assert report["schema_version"] == 2
     assert report["coverage"]["ohlcv"]["tickers"] == 3
     assert report["coverage"]["foreign_flow"]["tickers"] == 2
-    assert report["coverage"]["free_float"]["tickers"] == 2
+    assert report["coverage"]["stock_summary"]["tickers"] == 2
+    assert report["coverage"]["free_float"]["tickers"] == 0
+    assert report["coverage"]["free_float"]["required_for_core"] is False
+    assert report["coverage"]["free_float"]["semantics"] == "UNAVAILABLE_NOT_INFERRED_FROM_TRADABLE_SHARES"
     assert report["coverage"]["ownership"]["tickers"] == 1
     assert report["coverage"]["core_complete"]["tickers"] == 2
     assert report["coverage"]["full_complete_including_ownership"]["tickers"] == 1
     assert report["coverage"]["corporate_action_events"]["tickers_with_events"] == 1
+    assert report["readiness_contract"]["free_float_required_for_core"] is False
     assert output_path.exists()
