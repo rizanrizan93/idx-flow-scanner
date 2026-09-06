@@ -10,6 +10,8 @@ from typing import Any
 from defusedxml import ElementTree as SafeET
 from defusedxml.common import DefusedXmlException
 
+from .data import canonical_ticker
+
 XBRLI = "http://www.xbrl.org/2003/instance"
 XBRLDI = "http://xbrl.org/2006/xbrldi"
 XSI = "http://www.w3.org/2001/XMLSchema-instance"
@@ -17,8 +19,8 @@ MAX_ZIP_BYTES = 25 * 1024 * 1024
 MAX_UNCOMPRESSED_BYTES = 50 * 1024 * 1024
 MAX_MEMBERS = 10_000
 
-# Only explicit taxonomy concepts are accepted. EBITDA and other derived values are
-# intentionally absent until an issuer taxonomy supplies an exact, validated concept.
+# Only explicit taxonomy concepts are accepted. EBITDA and broad debt aliases are
+# intentionally absent until exact IDX taxonomy semantics are validated.
 METRIC_SPECS: dict[str, dict[str, object]] = {
     "assets": {"concepts": ("Assets",), "period": "instant", "unit": "idr"},
     "liabilities": {"concepts": ("Liabilities",), "period": "instant", "unit": "idr"},
@@ -31,7 +33,6 @@ METRIC_SPECS: dict[str, dict[str, object]] = {
     "profit_loss": {"concepts": ("ProfitLoss",), "period": "duration", "unit": "idr"},
     "operating_cash_flow": {"concepts": ("CashFlowsFromUsedInOperatingActivities",), "period": "duration", "unit": "idr"},
     "capex": {"concepts": ("PaymentsToAcquirePropertyPlantAndEquipment",), "period": "duration", "unit": "idr"},
-    "debt": {"concepts": ("Debt", "Borrowings"), "period": "instant", "unit": "idr"},
     "shares_outstanding": {"concepts": ("NumberOfSharesOutstanding",), "period": "instant", "unit": "shares"},
     "eps": {"concepts": ("BasicEarningsLossPerShare",), "period": "duration", "unit": "idr_per_share"},
 }
@@ -107,9 +108,8 @@ def _contexts(root: Any) -> dict[str, dict[str, object]]:
             "identifier": identifier,
             "identifier_scheme": identifier_scheme,
             "dimensions": dimensions,
-            # IDX current-year base contexts are undimensioned consolidated contexts.
-            # We keep this nullable semantics outside that narrow condition.
-            "is_consolidated": True if not dimensions else None,
+            # Consolidated/separate state is not inferred from absence of dimensions.
+            "is_consolidated": None,
         }
     return result
 
@@ -239,21 +239,38 @@ def expected_report_start(report_year: int) -> str:
     return f"{int(report_year):04d}-01-01"
 
 
+def _entity_codes(parsed: dict[str, object]) -> set[str]:
+    codes: set[str] = set()
+    for fact in parsed.get("facts") or []:
+        if not isinstance(fact, XbrlFact) or fact.concept != "EntityCode" or not fact.raw_value:
+            continue
+        code = canonical_ticker(fact.raw_value)
+        if code:
+            codes.add(code)
+    return codes
+
+
 def validate_instance_identity(parsed: dict[str, object], expected_ticker: str | None = None) -> str | None:
     contexts = parsed.get("contexts") or {}
     identifiers = {
-        str(ctx.get("identifier") or "").strip().upper()
+        str(ctx.get("identifier") or "").strip()
         for ctx in contexts.values()
         if isinstance(ctx, dict) and str(ctx.get("identifier") or "").strip()
     }
     if len(identifiers) > 1:
-        raise ValueError("XBRL contains multiple entity identifiers")
+        raise ValueError("XBRL contains multiple context entity identifiers")
     identifier = next(iter(identifiers), None)
-    if expected_ticker and identifier:
-        ticker = str(expected_ticker).strip().upper().removesuffix(".JK")
-        normalized = identifier.removesuffix(".JK")
-        if normalized != ticker and not normalized.endswith(f":{ticker}"):
-            raise ValueError(f"XBRL entity identifier mismatch: expected {ticker}, got {identifier}")
+
+    entity_codes = _entity_codes(parsed)
+    if len(entity_codes) > 1:
+        raise ValueError(f"XBRL contains multiple EntityCode values: {sorted(entity_codes)}")
+    entity_code = next(iter(entity_codes), None)
+    if expected_ticker:
+        expected = canonical_ticker(expected_ticker)
+        if not entity_code:
+            raise ValueError("XBRL EntityCode missing; ticker identity cannot be verified")
+        if entity_code != expected:
+            raise ValueError(f"XBRL EntityCode mismatch: expected {expected}, got {entity_code}")
     return identifier
 
 
@@ -261,7 +278,7 @@ def _eligible_fact(fact: XbrlFact, *, period_kind: str, report_year: int, report
     ctx = fact.context or {}
     if ctx.get("dimensions"):
         return False
-    if not _unit_matches(fact.unit, unit_kind):
+    if not fact.concept_namespace or not _unit_matches(fact.unit, unit_kind):
         return False
     report_end = expected_report_end(report_year, report_period)
     if period_kind == "instant":
@@ -278,6 +295,7 @@ def standardized_metric_rows(
 ) -> tuple[list[dict[str, object]], dict[str, object]]:
     parsed = parse_instance_zip(content)
     entity_identifier = validate_instance_identity(parsed, expected_ticker)
+    entity_code = next(iter(_entity_codes(parsed)), None)
     facts: list[XbrlFact] = list(parsed["facts"])
     rows: list[dict[str, object]] = []
     for metric_name, spec in METRIC_SPECS.items():
@@ -296,8 +314,6 @@ def standardized_metric_rows(
         ]
         if not candidates:
             continue
-        # Prefer concepts by declared order. Multiple conflicting facts for the same
-        # highest-priority concept are ambiguous and therefore not standardized.
         selected: XbrlFact | None = None
         for concept in concepts:
             same = [f for f in candidates if f.concept == concept]
@@ -325,6 +341,7 @@ def standardized_metric_rows(
         )
     metadata = {
         "entity_identifier": entity_identifier,
+        "entity_code": entity_code,
         "fact_count": len(facts),
         "context_count": len(parsed.get("contexts") or {}),
         "metric_validation_state": "VALIDATED_CONTEXT_UNIT_PERIOD_CONCEPT" if rows else "UNAVAILABLE_NO_HIGH_CONFIDENCE_MAPPING",
@@ -340,8 +357,6 @@ def standardized_metrics(
     report_period: str | None = None,
 ) -> dict[str, object]:
     if report_year is None or report_period is None:
-        # Backward-compatible conservative inference used only by the legacy cache
-        # refresher. Determine the latest undimensioned current-year context end.
         parsed = parse_instance_zip(content)
         validate_instance_identity(parsed, expected_ticker)
         ends = sorted({
