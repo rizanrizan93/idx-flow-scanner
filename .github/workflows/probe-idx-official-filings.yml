@@ -21,7 +21,8 @@ jobs:
           python-version: '3.12'
           cache: pip
       - run: pip install -r requirements.txt
-      - name: Probe official IDX announcement and financial endpoints
+      - name: Probe ZAPI discovery and official IDX attachment files
         env:
           PYTHONPATH: src
+          ZAPI_KEY: ${{ secrets.ZAPI_KEY }}
         run: python scripts/probe_idx_official_filings.py
