@@ -468,11 +468,12 @@ def render_header(
             <div class="idx-version">v{_escape(version)}</div>
           </div>
           <div class="idx-subtitle">
-            Flow-first decision engine combining ZAPI institutional activity, sector regime,
-            free-float structure, ownership, corporate actions and SMC/ICT execution.
+            Flow-first decision engine combining official IDX foreign and market evidence,
+            verified ZAPI fallback, ownership, corporate actions and SMC/ICT execution.
           </div>
           <div class="idx-chip-row">
-            <span class="idx-chip idx-chip-accent">ZAPI-ONLY</span>
+            <span class="idx-chip idx-chip-accent">IDX OFFICIAL PRIMARY</span>
+            <span class="idx-chip">ZAPI FALLBACK</span>
             <span class="idx-chip">{universe_count} TICKERS</span>
             <span class="idx-chip">{sector_count} SECTORS</span>
             <span class="idx-chip idx-chip-positive">BROKER-DIRECT RETIRED</span>
@@ -499,15 +500,15 @@ def render_section(title: str, caption: str | None = None) -> None:
 def render_funnel(
     *,
     valid: int,
-    zapi: int,
+    verified: int,
     decision: int,
     execution: int,
 ) -> None:
     items = [
         ("Research Universe", valid, "valid scored rows"),
-        ("ZAPI Qualified", zapi, "full/fresh/valid flow"),
-        ("Decision Top", decision, "guarded shortlist"),
-        ("Execution Ready", execution, "entry geometry authorized"),
+        ("Verified Flow", verified, "full/fresh/valid official or fallback flow"),
+        ("Decision Top", decision, "verified-flow shortlist"),
+        ("Execution Ready", execution, "authorized BUY action"),
     ]
     cards = "".join(
         f"""

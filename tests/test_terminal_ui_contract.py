@@ -11,16 +11,23 @@ def test_terminal_ui_modules_compile():
         compile(source, str(path), "exec")
 
 
-def test_terminal_ui_is_decision_first_and_preserves_zapi_contract():
+def test_terminal_ui_is_decision_first_and_preserves_official_first_contract():
     app = Path("src/idx_flow_scanner/streamlit_app.py").read_text(encoding="utf-8")
+    ui = Path("src/idx_flow_scanner/ui_terminal.py").read_text(encoding="utf-8")
     assert "Decision Center" in app
     assert "Research Universe" in app
     assert "Ticker Audit" in app
     assert "Evidence Health" in app
     assert "Execution Ready — Top 10" in app
-    assert "ZAPI Flow Decision — Top 20" in app
-    assert "Raw Research Priority — 400 Ticker" in app
-    assert "ZAPI-ONLY" in app
+    assert "Verified Flow Decision — Top 20" in app
+    assert "PRICE_PROXY rows remain research-only" in app
+    assert "IDX OFFICIAL" in app
+    assert "Official IDX primary" in app
+    assert "ZAPI fallback" in app
+    assert "ZAPI-ONLY" not in app
+    assert "IDX OFFICIAL PRIMARY" in ui
+    assert "ZAPI FALLBACK" in ui
+    assert "ZAPI-ONLY" not in ui
     assert "broker_direct_enabled" in app
     assert '"broker_direct_enabled": False' in app
 
