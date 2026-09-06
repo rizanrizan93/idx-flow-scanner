@@ -13,6 +13,8 @@ declare
   v_content text;
   v_payload jsonb;
   v_count integer;
+  v_valid_count integer;
+  v_active_count integer;
   v_upserted integer := 0;
 begin
   select h.status, h.content
@@ -35,8 +37,35 @@ begin
 
   v_count := jsonb_array_length(v_payload);
   if v_count <> 700 then
-    raise exception 'Canonical IDX universe count mismatch: expected 700, got %', v_count;
+    raise exception 'Canonical IDX universe row-count mismatch: expected 700, got %', v_count;
   end if;
+
+  with normalized as (
+    select
+      upper(trim(x->>'ticker')) as ticker,
+      coalesce((x->>'active')::boolean, true) as active
+    from jsonb_array_elements(v_payload) x
+    where nullif(trim(x->>'ticker'),'') is not null
+  ), validated as (
+    select distinct on (ticker) ticker, active
+    from normalized
+    where ticker ~ '^[A-Z0-9]{2,8}$'
+    order by ticker
+  )
+  select count(*)::integer,
+         count(*) filter (where active)::integer
+    into v_valid_count, v_active_count
+  from validated;
+
+  if v_valid_count <> 700 or v_active_count <> 700 then
+    raise exception 'Canonical IDX universe validation failed: unique %, active %',
+      v_valid_count, v_active_count;
+  end if;
+
+  -- Replace the active universe atomically after validating the complete source.
+  update public.flow_issuers
+  set active = false, updated_at = now()
+  where active;
 
   with normalized as (
     select
@@ -65,8 +94,8 @@ begin
   )
   select count(*)::integer into v_upserted from upserted;
 
-  if (select count(*) from public.flow_issuers where active) <> 700 then
-    raise exception 'flow_issuers active universe incomplete after sync';
+  if v_upserted <> 700 or (select count(*) from public.flow_issuers where active) <> 700 then
+    raise exception 'flow_issuers parity failed after canonical sync';
   end if;
 
   return v_upserted;
