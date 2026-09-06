@@ -34,6 +34,11 @@ from idx_flow_scanner.evidence_database import (
 )
 from idx_flow_scanner.foreign_evidence import prepare_foreign_evidence
 from idx_flow_scanner.large_universe_prices import prepare_large_universe_prices
+from idx_flow_scanner.official_controller_ownership import (
+    apply_official_controller_overlay,
+    load_official_controller_profiles,
+    set_official_controller_context,
+)
 from idx_flow_scanner.official_idx_risk import (
     apply_official_risk_overlay,
     load_official_idx_risk_events,
@@ -206,6 +211,20 @@ def _official_index_market_features(ticker, context):
     )
 
 
+def _controller_enriched_slow_evidence(ticker, price, foreign_features, **kwargs):
+    base = compute_slow_evidence_canonical(
+        ticker,
+        price,
+        foreign_features,
+        **kwargs,
+    )
+    return apply_official_controller_overlay(
+        ticker,
+        price,
+        base,
+    )
+
+
 def _broker_scored_base(ticker, price, **kwargs):
     return apply_broker_behavior_overlay(
         _original_scan_one_zapi,
@@ -231,9 +250,10 @@ def _database_first_scan_universe(*args, **kwargs):
     )
     set_broker_activity_context(activity)
     universe = args[0] if args else kwargs.get("universe", [])
+    universe_list = list(universe or [])
     risk_events = load_official_idx_risk_events(
         DEDICATED_EVIDENCE_STORE,
-        list(universe or []),
+        universe_list,
         lookback_calendar_days=270,
     )
     set_official_risk_context(risk_events)
@@ -242,6 +262,12 @@ def _database_first_scan_universe(*args, **kwargs):
         lookback_calendar_days=140,
     )
     set_official_index_context(index_summary)
+    controller_profiles = load_official_controller_profiles(
+        DEDICATED_EVIDENCE_STORE,
+        universe_list,
+        lookback_calendar_days=90,
+    )
+    set_official_controller_context(controller_profiles)
     return _original_scan_universe_zapi(*args, **kwargs)
 
 
@@ -270,11 +296,12 @@ streamlit_app.load_bundled_zapi_capital_actions = _database_first_slow_loader(
     upsert_capital_actions,
 )
 # Runtime compatibility patches. Official IDX direct foreign flow is the primary
-# verified provider. Official IDX indices independently anchor market/sector
-# context, broker behavior is a bounded ranking overlay, and official UMA /
-# suspension events can only de-rate or block authorization.
+# verified provider. Official IDX indices anchor market/sector context, Company
+# Profile contributes a distinct controller-identity dimension to KSEI ownership,
+# broker behavior is a bounded ranking overlay, and official UMA/suspension can
+# only de-rate or block authorization.
 zapi_pipeline._zapi_ready = verified_daily_foreign_ready
-zapi_pipeline.compute_slow_evidence = compute_slow_evidence_canonical
+zapi_pipeline.compute_slow_evidence = _controller_enriched_slow_evidence
 zapi_pipeline.ticker_market_features = _official_index_market_features
 zapi_pipeline.scan_one_zapi = _broker_risk_scored_scan_one
 streamlit_app.scan_universe_zapi = _database_first_scan_universe
