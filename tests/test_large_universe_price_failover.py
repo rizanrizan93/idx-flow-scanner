@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import time
+
 import numpy as np
 import pandas as pd
 
@@ -95,3 +97,27 @@ def test_large_universe_rejects_stale_seed_before_market_reference(monkeypatch):
     assert stats["seed_hits"] == 0
     assert stats["unavailable"] == 100
     assert stats["cache_freshness_contract"] == "MAX_7_CALENDAR_DAYS"
+
+
+def test_yahoo_fallback_keeps_ohlcv_heartbeat_alive(monkeypatch):
+    names = [f"T{i:03d}" for i in range(100)]
+    messages: list[str] = []
+
+    def slow_yahoo(*args, **kwargs):
+        time.sleep(0.04)
+        return {}
+
+    monkeypatch.setattr(lup, "fetch_yfinance_prices_batch", slow_yahoo)
+    monkeypatch.setattr(lup, "YAHOO_HEARTBEAT_SECONDS", 0.01)
+
+    _, stats = lup.prepare_large_universe_prices(
+        names,
+        None,
+        period="2y",
+        min_rows=80,
+        status=messages.append,
+    )
+
+    assert stats["unavailable"] == 100
+    assert any("Yahoo fallback active" in message for message in messages)
+    assert any("bounded provider retries still running" in message for message in messages)
