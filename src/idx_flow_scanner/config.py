@@ -57,15 +57,17 @@ class ScannerConfig:
 
 @dataclass(frozen=True)
 class ZapiFlowWeights:
-    """Active v0.4 ZAPI-only evidence weights.
+    """Active official-IDX-first evidence weights.
 
-    These are research priors. Calibration may recommend future revisions, but
-    runtime never mutates them automatically from in-sample outcomes.
+    Broker behavior is market-wide IDX broker activity cross-confirmed against
+    ticker-level foreign/price-flow evidence. It is not per-ticker broker buy/sell.
+    Runtime weights are fixed priors; calibration may recommend later revisions.
     """
 
-    accumulation: float = 0.24
+    accumulation: float = 0.21
     foreign_flow: float = 0.20
-    market_sector: float = 0.15
+    market_sector: float = 0.10
+    broker_behavior: float = 0.08
     free_float: float = 0.10
     ownership: float = 0.08
     corporate_action: float = 0.05
