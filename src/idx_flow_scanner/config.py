@@ -57,10 +57,12 @@ class ScannerConfig:
 
 @dataclass(frozen=True)
 class ZapiFlowWeights:
-    """Active v0.4 ZAPI-only evidence weights.
+    """Active official-IDX-first evidence weights.
 
     These are research priors. Calibration may recommend future revisions, but
-    runtime never mutates them automatically from in-sample outcomes.
+    runtime never mutates them automatically from in-sample outcomes. Official
+    market-wide broker behavior is applied separately as a neutral-centered
+    scoring overlay so it can alter ranking without bypassing hard gates.
     """
 
     accumulation: float = 0.24
