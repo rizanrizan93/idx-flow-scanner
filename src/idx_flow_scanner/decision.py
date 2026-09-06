@@ -4,6 +4,8 @@ import json
 
 import pandas as pd
 
+VERIFIED_FLOW_TIERS = frozenset({"OFFICIAL_IDX_FLOW", "ZAPI_FLOW"})
+
 
 def _diag(value: object) -> dict[str, object]:
     if isinstance(value, dict):
@@ -18,6 +20,12 @@ def _diag(value: object) -> dict[str, object]:
 
 
 def select_zapi_decision_top(results: pd.DataFrame, *, top_n: int = 20) -> pd.DataFrame:
+    """Select verified-flow decision candidates.
+
+    The historical function name is retained for API compatibility. Both the
+    authoritative official IDX tier and the verified ZAPI fallback tier must
+    still pass the same FULL/FRESH/VALID quality gates.
+    """
     if results is None or results.empty or top_n <= 0:
         return pd.DataFrame()
     work = results.copy()
@@ -28,14 +36,19 @@ def select_zapi_decision_top(results: pd.DataFrame, *, top_n: int = 20) -> pd.Da
         ("foreign_data_freshness", "UNKNOWN"),
         ("foreign_data_valid", False),
     ):
-        work[name] = work["diagnostics"].map(lambda value, key=name, d=default: _diag(value).get(key, d))
+        work[name] = work["diagnostics"].map(
+            lambda value, key=name, d=default: _diag(value).get(key, d)
+        )
     dist = pd.to_numeric(work.get("distribution_risk"), errors="coerce").fillna(100.0)
-    quality = pd.to_numeric(work.get("price_data_quality_score"), errors="coerce").fillna(0.0)
+    quality = pd.to_numeric(
+        work.get("price_data_quality_score"), errors="coerce"
+    ).fillna(0.0)
+    evidence_tier = work.get("evidence_tier", pd.Series("", index=work.index))
     gate = (
-        work.get("evidence_tier", pd.Series("", index=work.index)).eq("ZAPI_FLOW")
+        evidence_tier.isin(VERIFIED_FLOW_TIERS)
         & work["foreign_window_state"].eq("FULL")
         & work["foreign_data_freshness"].eq("FRESH")
-        & work["foreign_data_valid"].map(lambda value: value is True)
+        & work["foreign_data_valid"].map(lambda value: bool(value) if isinstance(value, bool) else False)
         & dist.lt(70.0)
         & quality.ge(70.0)
         & work.get("phase", pd.Series("", index=work.index)).ne("DISTRIBUTION")
@@ -44,10 +57,23 @@ def select_zapi_decision_top(results: pd.DataFrame, *, top_n: int = 20) -> pd.Da
     out = work.loc[gate].copy()
     if out.empty:
         return out
-    for col in ("final_score", "accumulation_score", "foreign_institutional_score", "market_context_score", "smc_execution_score"):
+    for col in (
+        "final_score",
+        "accumulation_score",
+        "foreign_institutional_score",
+        "market_context_score",
+        "smc_execution_score",
+    ):
         out[col] = pd.to_numeric(out.get(col), errors="coerce").fillna(0.0)
     out = out.sort_values(
-        ["final_score", "accumulation_score", "foreign_institutional_score", "market_context_score", "smc_execution_score", "ticker"],
+        [
+            "final_score",
+            "accumulation_score",
+            "foreign_institutional_score",
+            "market_context_score",
+            "smc_execution_score",
+            "ticker",
+        ],
         ascending=[False, False, False, False, False, True],
         kind="stable",
     ).head(int(top_n)).reset_index(drop=True)
@@ -58,12 +84,18 @@ def select_zapi_decision_top(results: pd.DataFrame, *, top_n: int = 20) -> pd.Da
 def select_execution_ready(results: pd.DataFrame, *, top_n: int = 10) -> pd.DataFrame:
     if results is None or results.empty or top_n <= 0:
         return pd.DataFrame()
-    authorized = results.get("production_authorized", pd.Series(False, index=results.index))
+    authorized = results.get(
+        "production_authorized", pd.Series(False, index=results.index)
+    )
     if not pd.api.types.is_bool_dtype(authorized):
         authorized = authorized.map(lambda value: value is True)
     out = results.loc[authorized.fillna(False)].copy()
     if out.empty:
         return out
-    out = out.sort_values(["final_score", "ticker"], ascending=[False, True], kind="stable").head(int(top_n)).reset_index(drop=True)
+    out = out.sort_values(
+        ["final_score", "ticker"],
+        ascending=[False, True],
+        kind="stable",
+    ).head(int(top_n)).reset_index(drop=True)
     out["execution_rank"] = range(1, len(out) + 1)
     return out
