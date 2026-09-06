@@ -165,8 +165,8 @@ def run() -> None:
         st.divider()
         st.markdown("**SCAN CONTROL**")
         period = st.selectbox("OHLCV lookback", ["6mo", "1y", "2y"], index=1)
-        use_zapi = st.checkbox("ZAPI evidence", value=True)
-        st.caption("Foreign flow · free float · ownership · corporate actions")
+        use_zapi = st.checkbox("Verified flow evidence", value=True)
+        st.caption("Official IDX primary · ZAPI fallback · slow evidence")
 
         st.divider()
         st.markdown("**PERSISTENCE**")
@@ -205,7 +205,7 @@ def run() -> None:
             type="primary",
             width="stretch",
         )
-        st.caption("Broker-direct retired · ZAPI-only production pipeline")
+        st.caption("Broker-direct retired · Official IDX primary · ZAPI fallback")
 
     for key, value in {
         "last_results": None,
@@ -224,7 +224,7 @@ def run() -> None:
     universe_frame = pd.read_csv(DEFAULT_UNIVERSE_PATH)
     universe = load_bundled_universe(DEFAULT_UNIVERSE_PATH)
     if not universe:
-        st.error("Bundled 400-ticker universe tidak tersedia.")
+        st.error("Bundled runtime universe tidak tersedia.")
         st.stop()
 
     sector_map: dict[str, str] = {}
@@ -269,7 +269,7 @@ def run() -> None:
     render_health_cards(
         [
             ("Universe", len(universe), "managed IDX coverage"),
-            ("Pipeline", "ZAPI-ONLY", "primary flow provider"),
+            ("Pipeline", "IDX OFFICIAL", "primary · ZAPI fallback"),
             ("Sectors", sector_count, "sector-aware context"),
             ("Database", "CONNECTED" if store is not None else "OFF", "persistence state"),
         ]
@@ -297,9 +297,10 @@ def run() -> None:
                     "version": APP_VERSION,
                     "mode": run_mode,
                     "universe_signature": signature,
-                    "pipeline": "OHLCV__ZAPI_FLOW__SECTOR__SLOW_EVIDENCE__SMC_ICT",
+                    "pipeline": "OHLCV__IDX_OFFICIAL_FLOW__ZAPI_FALLBACK__SECTOR__SLOW_EVIDENCE__SMC_ICT",
                     "broker_direct_enabled": False,
-                    "primary_flow_provider": "ZAPI",
+                    "primary_flow_provider": "IDX_OFFICIAL_STOCK_SUMMARY",
+                    "fallback_flow_provider": "ZAPI_IDX_FOREIGN_FLOW",
                     "zapi_stock_summary": True,
                     "zapi_ownership_files": True,
                     "zapi_capital_actions": True,
@@ -338,7 +339,7 @@ def run() -> None:
             "median_selected_coverage_pct": 0.0,
         }
         if use_zapi:
-            status_box.caption("Stage 2/5 • ZAPI foreign-flow evidence")
+            status_box.caption("Stage 2/5 • Official IDX foreign flow · ZAPI fallback")
             try:
                 (
                     foreign_flow,
@@ -347,11 +348,11 @@ def run() -> None:
                 ) = _zapi_foreign(universe, store, load_price)
             except Exception as exc:
                 st.warning(
-                    "ZAPI foreign evidence unavailable; scanner remains research-only: "
+                    "Verified foreign evidence unavailable; scanner remains research-only: "
                     f"{exc}"
                 )
 
-        status_box.caption("Stage 3/5 • ZAPI slow evidence")
+        status_box.caption("Stage 3/5 • Slow evidence")
         stock_snapshot = load_bundled_zapi_stock_summary(universe)
         ownership = load_bundled_zapi_ownership(universe)
         capital_actions = load_bundled_zapi_capital_actions(universe)
@@ -404,7 +405,7 @@ def run() -> None:
                 text=f"Stage 4/5 • {i}/{total} • {ticker}",
             )
             status_box.caption(
-                f"ZAPI + sector + slow evidence + SMC scoring "
+                f"Verified flow + sector + slow evidence + SMC scoring "
                 f"{ticker} • {i}/{total}"
             )
             if (
@@ -513,7 +514,7 @@ def run() -> None:
                 st.warning(f"Scan selesai, persistence gagal: {exc}")
 
         st.session_state.last_outcome_stats = outcome_stats
-        bar.progress(1.0, text="Stage 5/5 • ZAPI decision pipeline complete")
+        bar.progress(1.0, text="Stage 5/5 • Verified-flow decision pipeline complete")
         status_box.caption("Pipeline complete")
 
     results = st.session_state.last_results
@@ -588,11 +589,11 @@ def run() -> None:
             "tp2",
         ]
 
-        zapi_count = int(
+        verified_flow_count = int(
             display.get(
                 "evidence_tier",
                 pd.Series(dtype=object),
-            ).eq("ZAPI_FLOW").sum()
+            ).isin({"OFFICIAL_IDX_FLOW", "ZAPI_FLOW"}).sum()
         )
 
         terminal_views = [
@@ -616,11 +617,11 @@ def run() -> None:
         if active_view == "◈ Decision Center":
             render_section(
                 "Decision Funnel",
-                "From the full research universe to execution-authorized setups.",
+                "From the full research universe to execution-authorized BUY setups.",
             )
             render_funnel(
                 valid=len(display),
-                zapi=zapi_count,
+                verified=verified_flow_count,
                 decision=len(decision_display),
                 execution=len(ready_display),
             )
@@ -629,20 +630,20 @@ def run() -> None:
             render_section(
                 "Priority Board",
                 (
-                    "Execution-ready candidates ranked by the active production contract."
+                    "Execution-ready BUY candidates ranked by the active production contract."
                     if not ready_display.empty
-                    else "No execution-ready setup yet; showing the guarded decision shortlist."
+                    else "No execution-ready BUY setup yet; showing the verified-flow decision shortlist."
                 ),
             )
             render_leaderboard(primary, max_cards=5)
 
             render_section(
                 "Execution Ready — Top 10",
-                "ZAPI ≥80% · score ≥65 · valid SMC/ICT geometry · slow-evidence guards passed.",
+                "Production-authorized · explicit BUY action · valid SMC/ICT geometry · slow-evidence guards passed.",
             )
             if ready_display.empty:
                 st.info(
-                    "No setup currently satisfies every execution gate. "
+                    "No setup currently satisfies every execution gate and BUY-action threshold. "
                     "Use the Decision Top table below for research candidates."
                 )
             else:
@@ -656,11 +657,11 @@ def run() -> None:
                 )
 
             render_section(
-                "ZAPI Flow Decision — Top 20",
-                "FULL/FRESH/VALID ZAPI flow, quality ≥70 and distribution risk <70.",
+                "Verified Flow Decision — Top 20",
+                "FULL/FRESH/VALID official IDX or verified fallback flow, quality ≥70 and distribution risk <70.",
             )
             if decision_display.empty:
-                st.warning("No candidate currently passes the ZAPI decision gate.")
+                st.warning("No candidate currently passes the verified-flow decision gate.")
             else:
                 decision_cols = ["decision_rank"] + [
                     c for c in base_cols if c in decision_display.columns
@@ -673,8 +674,8 @@ def run() -> None:
 
         elif active_view == "⌁ Research Universe":
             render_section(
-                "Raw Research Priority — 400 Ticker",
-                "Complete scored universe. PRICE_PROXY rows remain research-only.",
+                f"Raw Research Priority — {len(display)} Valid Rows",
+                "Complete scored runtime universe. PRICE_PROXY rows remain research-only.",
             )
             filter_col, sector_col = st.columns([1, 1])
             with filter_col:
@@ -771,22 +772,22 @@ def run() -> None:
         elif active_view == "◇ Evidence Health":
             render_section(
                 "Evidence Health",
-                "Coverage and freshness of the active ZAPI-only production evidence stack.",
+                "Coverage and freshness of the official-first production evidence stack.",
             )
             render_health_cards(
                 [
                     (
-                        "ZAPI History",
+                        "Foreign History",
                         f"{int(zapi_stats.get('days', 0) or 0)} days",
                         str(zapi_stats.get("freshest") or "no freshness date"),
                     ),
                     (
-                        "ZAPI Coverage",
-                        int(foreign_stats.get("zapi_selected_tickers", 0) or 0),
-                        "tickers selected",
+                        "Verified Flow",
+                        verified_flow_count,
+                        "FULL/FRESH/VALID tickers",
                     ),
                     (
-                        "Free Float",
+                        "Stock Structure",
                         int(slow_stats.get("stock_snapshot_tickers", 0) or 0),
                         "stock-summary tickers",
                     ),
@@ -840,6 +841,6 @@ def run() -> None:
             "Run the market scan to populate Decision Center, Research Universe and Ticker Audit.",
         )
         st.info(
-            "The production UI is ready. ZAPI evidence is enabled by default; "
+            "The production UI is ready. Official IDX evidence is primary with ZAPI fallback; "
             "Supabase persistence stays OFF until the dedicated IDX Flow project is connected."
         )
