@@ -12,6 +12,12 @@ if str(SRC) not in sys.path:
 
 import idx_flow_scanner.streamlit_app as streamlit_app
 import idx_flow_scanner.zapi_pipeline as zapi_pipeline
+from idx_flow_scanner.broker_behavior import load_official_broker_activity
+from idx_flow_scanner.broker_behavior_runtime import (
+    apply_broker_behavior_overlay,
+    set_broker_activity_context,
+    verified_daily_foreign_ready,
+)
 from idx_flow_scanner.canonical_slow_evidence import (
     compute_slow_evidence_canonical,
     load_canonical_capital_actions,
@@ -176,6 +182,28 @@ def _database_first_zapi_foreign(universe, store, load_price):
     )
 
 
+_original_scan_one_zapi = zapi_pipeline.scan_one_zapi
+_original_scan_universe_zapi = streamlit_app.scan_universe_zapi
+
+
+def _broker_scored_scan_one(ticker, price, **kwargs):
+    return apply_broker_behavior_overlay(
+        _original_scan_one_zapi,
+        ticker,
+        price,
+        **kwargs,
+    )
+
+
+def _database_first_scan_universe(*args, **kwargs):
+    activity = load_official_broker_activity(
+        DEDICATED_EVIDENCE_STORE,
+        lookback_calendar_days=120,
+    )
+    set_broker_activity_context(activity)
+    return _original_scan_universe_zapi(*args, **kwargs)
+
+
 streamlit_app.DEFAULT_UNIVERSE_PATH = Path(
     _resolved_universe_path(streamlit_app._secret("ZAPI_KEY"))
 )
@@ -200,10 +228,14 @@ streamlit_app.load_bundled_zapi_capital_actions = _database_first_slow_loader(
     merge_canonical_capital_actions,
     upsert_capital_actions,
 )
-# scan_one_zapi resolves this symbol from the zapi_pipeline module at runtime.
-# Slow evidence remains independently canonicalized; foreign flow is supplied by
-# verified official IDX daily share evidence with ZAPI only as an absence fallback.
+# Runtime compatibility patches. Official IDX direct foreign flow is now a valid
+# primary provider; ZAPI remains an absence fallback. Market-wide broker activity
+# changes final ranking only through a bounded neutral-centered overlay and never
+# impersonates per-ticker broker buy/sell or overrides hard authorization gates.
+zapi_pipeline._zapi_ready = verified_daily_foreign_ready
 zapi_pipeline.compute_slow_evidence = compute_slow_evidence_canonical
+zapi_pipeline.scan_one_zapi = _broker_scored_scan_one
+streamlit_app.scan_universe_zapi = _database_first_scan_universe
 
 install_current_result_persistence(SupabaseStore, batch_size=20)
 install_truthful_run_metadata(SupabaseStore)
