@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import date, timedelta
 
 from idx_flow_scanner.verified_foreign_store import (
     IDX_OFFICIAL_STOCK_SUMMARY_SOURCE,
@@ -15,8 +16,11 @@ class _Response:
 
 
 class _Query:
+    SERVER_MAX_ROWS = 500
+
     def __init__(self, rows):
         self.rows = list(rows)
+        self._range: tuple[int, int] | None = None
 
     def select(self, *_args, **_kwargs):
         return self
@@ -33,11 +37,19 @@ class _Query:
     def gte(self, *_args, **_kwargs):
         return self
 
-    def order(self, *_args, **_kwargs):
+    def order(self, column, *_args, **_kwargs):
+        self.rows = sorted(self.rows, key=lambda row: str(row.get(column) or ""))
+        return self
+
+    def range(self, start, end):
+        self._range = (int(start), int(end))
         return self
 
     def execute(self):
-        return _Response(self.rows)
+        if self._range is None:
+            return _Response(self.rows[: self.SERVER_MAX_ROWS])
+        start, end = self._range
+        return _Response(self.rows[start : end + 1])
 
 
 class _Client:
@@ -54,10 +66,10 @@ class _Store:
         self.client = _Client(rows)
 
 
-def _row(ticker, source, buy, sell):
+def _row(ticker, source, buy, sell, *, trade_date="2026-09-04"):
     return {
         "ticker": ticker,
-        "trade_date": "2026-09-04",
+        "trade_date": trade_date,
         "foreign_buy": buy,
         "foreign_sell": sell,
         "foreign_net": buy - sell,
@@ -101,3 +113,32 @@ def test_zapi_can_be_disabled_without_affecting_official_idx_rows():
 
     assert out["ticker"].tolist() == ["BBCA"]
     assert out["source"].tolist() == [IDX_OFFICIAL_STOCK_SUMMARY_SOURCE]
+
+
+def test_official_idx_history_is_not_truncated_by_postgrest_page_limit():
+    tickers = [f"T{i:03d}" for i in range(40)]
+    start = date.today() - timedelta(days=19)
+    rows = []
+    for ticker_index, ticker in enumerate(tickers):
+        for day_offset in range(20):
+            rows.append(
+                _row(
+                    ticker,
+                    IDX_OFFICIAL_STOCK_SUMMARY_SOURCE,
+                    1000 + ticker_index + day_offset,
+                    100 + day_offset,
+                    trade_date=(start + timedelta(days=day_offset)).isoformat(),
+                )
+            )
+
+    assert len(rows) == 800
+    out = load_verified_daily_foreign_flows(
+        _Store(rows),
+        tickers,
+        lookback_calendar_days=120,
+        allow_zapi_fallback=False,
+    )
+
+    assert len(out) == 800
+    assert out["ticker"].nunique() == 40
+    assert out.groupby("ticker")["trade_date"].nunique().eq(20).all()
