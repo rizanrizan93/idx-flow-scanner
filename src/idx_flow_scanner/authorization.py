@@ -8,6 +8,9 @@ import pandas as pd
 
 from .config import ZapiFlowConfig
 
+OFFICIAL_IDX_FLOW_TIER = "OFFICIAL_IDX_FLOW"
+ZAPI_FLOW_TIER = "ZAPI_FLOW"
+
 
 def _diagnostics(value: object) -> dict[str, object]:
     if isinstance(value, dict):
@@ -68,14 +71,42 @@ def _number(
     return float(value)
 
 
+def _strict_bool(value: object, expected: bool) -> bool:
+    value = _normalize_scalar(value)
+    if not isinstance(value, (bool, np.bool_)):
+        return False
+    return bool(value) is expected
+
+
+def _provider_contract(
+    evidence_tier: str,
+    provider: str,
+    selection: str,
+) -> bool:
+    return bool(
+        (
+            evidence_tier == OFFICIAL_IDX_FLOW_TIER
+            and provider == "IDX_DIRECT"
+            and selection == "IDX_DIRECT"
+        )
+        or (
+            evidence_tier == ZAPI_FLOW_TIER
+            and provider == "ZAPI"
+            and selection == "ZAPI"
+        )
+    )
+
+
 def derive_production_authorized(
     row: Mapping[str, object],
     config: ZapiFlowConfig | None = None,
 ) -> bool:
-    """Re-prove v0.4 authorization from ZAPI + execution evidence.
+    """Re-prove production authorization from verified flow + execution evidence.
 
-    Unknown or malformed evidence fails closed. Legacy BROKER_DIRECT rows can
-    remain in historical storage but can never be re-authorized by this contract.
+    Official IDX direct foreign flow is authoritative and ZAPI is an allowed
+    verified fallback only when selected by the provider reconciler. Unknown or
+    malformed evidence fails closed. Legacy BROKER_DIRECT rows can remain in
+    historical storage but can never be re-authorized by this contract.
     """
     config = config or ZapiFlowConfig()
     diagnostics = _diagnostics(row.get("diagnostics"))
@@ -119,15 +150,13 @@ def derive_production_authorized(
     action = _text(row, diagnostics, "action")
 
     return bool(
-        evidence_tier == "ZAPI_FLOW"
+        _provider_contract(evidence_tier, provider, selection)
         and state == "ELIGIBLE"
-        and provider == "ZAPI"
-        and selection == "ZAPI"
         and reconciliation in {"AGREED", "SINGLE_PROVIDER"}
         and window == "FULL"
         and freshness == "FRESH"
-        and foreign_valid is True
-        and conflict is False
+        and _strict_bool(foreign_valid, True)
+        and _strict_bool(conflict, False)
         and coverage is not None
         and coverage >= config.minimum_foreign_coverage_pct
         and score is not None
@@ -138,14 +167,14 @@ def derive_production_authorized(
         and price_quality >= config.minimum_price_quality_score
         and staleness is not None
         and staleness <= config.max_price_staleness_days
-        and execution_geometry is True
-        and execution_tradeable is True
-        and entry_in_band is True
+        and _strict_bool(execution_geometry, True)
+        and _strict_bool(execution_tradeable, True)
+        and _strict_bool(entry_in_band, True)
         and (
             free_float is None
             or free_float >= config.extreme_low_free_float_pct
         )
-        and slow_block is not True
+        and not _strict_bool(slow_block, True)
         and phase != "DISTRIBUTION"
         and action != "REDUCE_AVOID"
     )
@@ -179,7 +208,7 @@ def apply_production_authorization(
     for value, allowed in zip(out["diagnostics"], authorized):
         diagnostics = dict(_diagnostics(value))
         diagnostics["production_authorized"] = bool(allowed)
-        diagnostics["authorization_contract"] = "ZAPI_FLOW_V0_4"
+        diagnostics["authorization_contract"] = "VERIFIED_FOREIGN_FLOW_V0_5"
         synchronized.append(diagnostics)
     out["diagnostics"] = synchronized
     return out
