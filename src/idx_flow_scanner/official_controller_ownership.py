@@ -150,7 +150,7 @@ def compute_official_controller_features(
     if pd.notna(price_as_of):
         # A weekend/after-close observation may legitimately follow the last
         # trading session. Older historical scans must not consume future snapshots.
-        allowed = pd.Timestamp(price_as_of).normalize() + pd.Timedelta(days=3)
+        allowed = pd.Timestamp(price_as_of).normalize() + timedelta(days=3)
         eligible = work[work["observed_on"].le(allowed)].copy()
         if eligible.empty:
             return default
