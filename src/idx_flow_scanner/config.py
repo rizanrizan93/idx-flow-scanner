@@ -59,15 +59,15 @@ class ScannerConfig:
 class ZapiFlowWeights:
     """Active official-IDX-first evidence weights.
 
-    Broker behavior is market-wide IDX broker activity cross-confirmed against
-    ticker-level foreign/price-flow evidence. It is not per-ticker broker buy/sell.
-    Runtime weights are fixed priors; calibration may recommend later revisions.
+    These are research priors. Calibration may recommend future revisions, but
+    runtime never mutates them automatically from in-sample outcomes. Official
+    market-wide broker behavior is applied separately as a neutral-centered
+    scoring overlay so it can alter ranking without bypassing hard gates.
     """
 
-    accumulation: float = 0.21
+    accumulation: float = 0.24
     foreign_flow: float = 0.20
-    market_sector: float = 0.10
-    broker_behavior: float = 0.08
+    market_sector: float = 0.15
     free_float: float = 0.10
     ownership: float = 0.08
     corporate_action: float = 0.05
