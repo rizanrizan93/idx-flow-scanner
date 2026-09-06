@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import hashlib
+import io
+import zipfile
 from pathlib import PurePosixPath
 from urllib.parse import quote, urlencode, urljoin, urlsplit, urlunsplit
+from xml.etree import ElementTree as ET
 
 from curl_cffi import requests
 
@@ -39,9 +42,32 @@ def _get_json(session: requests.Session, path: str, params: dict[str, object], *
     return payload
 
 
+def _inspect_xbrl(content: bytes) -> None:
+    with zipfile.ZipFile(io.BytesIO(content)) as archive:
+        names = archive.namelist()
+        print("zip members=", names)
+        instances = [name for name in names if PurePosixPath(name).name.lower() == "instance.xbrl"]
+        if len(instances) != 1:
+            raise SystemExit(f"expected exactly one instance.xbrl, got {len(instances)}")
+        xml = archive.read(instances[0])
+    if b"<!DOCTYPE" in xml.upper() or b"<!ENTITY" in xml.upper():
+        raise SystemExit("unsafe XML declarations found")
+    root = ET.fromstring(xml)
+    facts = []
+    keywords = ("asset", "liabil", "equity", "revenue", "income", "profit", "loss", "cash", "operating")
+    for element in root:
+        if element.get("contextRef") is None:
+            continue
+        local = element.tag.rsplit("}", 1)[-1]
+        if any(token in local.lower() for token in keywords):
+            facts.append((local, element.get("contextRef"), element.get("unitRef"), (element.text or "").strip()[:80]))
+    print("matched fact concepts=", len(facts))
+    for row in facts[:150]:
+        print("FACT", row)
+
+
 def main() -> None:
     session = requests.Session(impersonate="chrome")
-
     financial = _get_json(
         session,
         "GetFinancialReport",
@@ -51,7 +77,6 @@ def main() -> None:
     print("financial ResultCount=", financial.get("ResultCount"), "rows=", len(reports))
     if not reports:
         raise SystemExit("no BBCA 2026 TW2 financial report")
-
     attachments = reports[0].get("Attachments") or []
     print("attachments=", [(a.get("File_Name"), a.get("File_Type"), a.get("File_Size")) for a in attachments])
     candidates = [a for a in attachments if PurePosixPath(str(a.get("File_Name") or "")).name.lower() == "instance.zip"]
@@ -59,11 +84,7 @@ def main() -> None:
         raise SystemExit(f"expected exactly one instance.zip, got {len(candidates)}")
     attachment = candidates[0]
     download_url = _official_attachment_url(urljoin(f"{BASE}/", str(attachment.get("File_Path") or "")))
-    file_response = session.get(
-        download_url,
-        headers={"Accept": "application/zip, application/octet-stream, */*", "Referer": f"{BASE}/"},
-        timeout=60,
-    )
+    file_response = session.get(download_url, headers={"Accept": "application/zip, application/octet-stream, */*", "Referer": f"{BASE}/"}, timeout=60)
     content = bytes(file_response.content)
     print(
         "instance.zip status=", file_response.status_code,
@@ -73,6 +94,7 @@ def main() -> None:
     )
     if file_response.status_code != 200 or not content.startswith(b"PK") or len(content) != int(attachment.get("File_Size") or -1):
         raise SystemExit("official instance.zip failed integrity gate")
+    _inspect_xbrl(content)
 
     ann = _get_json(
         session,
