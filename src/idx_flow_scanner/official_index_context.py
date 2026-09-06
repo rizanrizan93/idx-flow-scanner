@@ -9,6 +9,7 @@ import pandas as pd
 
 OFFICIAL_INDEX_SOURCE = "IDX_OFFICIAL_INDEX_SUMMARY"
 OFFICIAL_INDEX_PROVENANCE = "VERIFIED_OFFICIAL_IDX_INDEX_SUMMARY"
+_QUERY_PAGE_SIZE = 500
 
 SECTOR_INDEX_MAP = {
     "Basic Materials": "IDXBASIC",
@@ -46,6 +47,30 @@ def _label(score: float) -> str:
     return "RISK_OFF"
 
 
+def _load_index_pages(store: Any, *, since: str) -> list[dict[str, object]]:
+    """Read complete official IDX index history with explicit pagination."""
+    rows: list[dict[str, object]] = []
+    offset = 0
+    while True:
+        response = (
+            store.client.table("flow_official_index_summary")
+            .select("*")
+            .gte("trade_date", since)
+            .eq("source", OFFICIAL_INDEX_SOURCE)
+            .eq("source_verified", True)
+            .order("trade_date")
+            .order("index_code")
+            .range(offset, offset + _QUERY_PAGE_SIZE - 1)
+            .execute()
+        )
+        batch = list(response.data or [])
+        rows.extend(batch)
+        if len(batch) < _QUERY_PAGE_SIZE:
+            break
+        offset += _QUERY_PAGE_SIZE
+    return rows
+
+
 def load_official_index_summary(
     store: Any,
     *,
@@ -60,18 +85,9 @@ def load_official_index_summary(
         return None
     since = (date.today() - timedelta(days=max(45, int(lookback_calendar_days)))).isoformat()
     try:
-        response = (
-            store.client.table("flow_official_index_summary")
-            .select("*")
-            .gte("trade_date", since)
-            .eq("source", OFFICIAL_INDEX_SOURCE)
-            .eq("source_verified", True)
-            .order("trade_date")
-            .execute()
-        )
+        rows = _load_index_pages(store, since=since)
     except Exception:
         return None
-    rows = response.data or []
     if not rows:
         return pd.DataFrame()
     out = pd.DataFrame(rows)
