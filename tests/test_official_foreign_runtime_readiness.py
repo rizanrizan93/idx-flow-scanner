@@ -5,7 +5,7 @@ import pandas as pd
 
 from idx_flow_scanner.authorization import derive_production_authorized
 from idx_flow_scanner.broker_behavior_runtime import verified_daily_foreign_ready
-from idx_flow_scanner.decision import select_zapi_decision_top
+from idx_flow_scanner.decision import select_execution_ready, select_zapi_decision_top
 
 
 def _official_diagnostics(**overrides):
@@ -91,3 +91,36 @@ def test_official_idx_tier_is_admitted_to_verified_flow_decision_lane():
 
     selected = select_zapi_decision_top(frame, top_n=20)
     assert selected["ticker"].tolist() == ["BBCA"]
+
+
+def test_execution_ready_requires_authorization_and_explicit_buy_action():
+    frame = pd.DataFrame(
+        [
+            {
+                "ticker": "PANS",
+                "final_score": 69.61,
+                "production_authorized": True,
+                "real_money_state": "ELIGIBLE",
+                "action": "WATCHLIST",
+            },
+            {
+                "ticker": "BBCA",
+                "final_score": 82.0,
+                "production_authorized": True,
+                "real_money_state": "ELIGIBLE",
+                "action": "BUY_ON_WEAKNESS",
+            },
+            {
+                "ticker": "BBRI",
+                "final_score": 84.0,
+                "production_authorized": False,
+                "real_money_state": "GUARDED",
+                "action": "BUY_RETEST",
+            },
+        ]
+    )
+
+    ready = select_execution_ready(frame, top_n=10)
+
+    assert ready["ticker"].tolist() == ["BBCA"]
+    assert ready["execution_rank"].tolist() == [1]
