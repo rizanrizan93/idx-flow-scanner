@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from datetime import date, timedelta
-from urllib.parse import urlencode, urljoin
+from urllib.parse import urlencode, urljoin, urlsplit
 
 from curl_cffi import requests
 
@@ -14,7 +14,7 @@ ANNOUNCEMENT_API = f"{BASE}/primary/ListedCompany/GetAnnouncement"
 FINANCIAL_API = f"{BASE}/primary/ListedCompany/GetFinancialReport"
 
 
-def _get(url: str, *, accept: str):
+def _get(url: str, *, accept: str, require_200: bool = True):
     response = requests.get(
         url,
         impersonate="chrome",
@@ -22,9 +22,10 @@ def _get(url: str, *, accept: str):
         headers={"Accept": accept, "Referer": BASE + "/"},
         allow_redirects=False,
     )
-    print("GET", url.split("?", 1)[0].rsplit("/", 1)[-1], "status", response.status_code, "location", response.headers.get("location"))
-    response.raise_for_status()
+    print("GET", urlsplit(url).hostname, urlsplit(url).path.rsplit("/", 1)[-1], "status", response.status_code, "location", response.headers.get("location"))
     validate_no_redirect(response, expected_url=url)
+    if require_200:
+        response.raise_for_status()
     return response
 
 
@@ -50,15 +51,19 @@ def probe_announcements() -> None:
     print("announcement_count", payload.get("ResultCount") or len(rows), "page_rows", len(rows))
     if not rows or not isinstance(rows[0], dict):
         return
-    print("announcement_reply", json.dumps(rows[0], ensure_ascii=False, default=str)[:12000])
     attachments = rows[0].get("attachments") or []
     candidate = next((a for a in attachments if isinstance(a, dict) and a.get("FullSavePath")), None)
-    if candidate:
-        url = validate_official_url(str(candidate["FullSavePath"]), allow_hosts=frozenset({"www.idx.co.id"}))
-        response = _get(url, accept="application/pdf, application/octet-stream, */*")
-        content = bytes(response.content)
-        validate_file_magic(content, "pdf")
-        print("announcement_static_pdf", json.dumps({"bytes": len(content), "sha256": sha256_bytes(content), "url_host": "www.idx.co.id"}))
+    if not candidate:
+        return
+    original = validate_official_url(str(candidate["FullSavePath"]), allow_hosts=frozenset({"www.idx.co.id"}))
+    direct = _get(original, accept="application/pdf, application/octet-stream, */*", require_200=False)
+    print("announcement_www_static_status", direct.status_code)
+    path = urlsplit(original).path
+    alternate = validate_official_url(f"https://block.idx.id{path}", allow_hosts=frozenset({"block.idx.id"}))
+    response = _get(alternate, accept="application/pdf, application/octet-stream, */*")
+    content = bytes(response.content)
+    validate_file_magic(content, "pdf")
+    print("announcement_block_static_pdf", json.dumps({"bytes": len(content), "sha256": sha256_bytes(content), "transport_url": alternate}))
 
 
 def probe_financial() -> None:
@@ -67,12 +72,10 @@ def probe_financial() -> None:
         {"periode": "TW2", "year": 2026, "indexFrom": 0, "pageSize": 5, "reportType": "rdf", "kodeEmiten": "BBCA"},
     )
     rows = payload.get("Results") or []
-    print("financial_count", payload.get("ResultCount") or len(rows))
     if not rows or not isinstance(rows[0], dict):
         return
     attachments = rows[0].get("Attachments") or []
     instance = next(a for a in attachments if isinstance(a, dict) and str(a.get("File_Name") or "").lower() == "instance.zip")
-    print("financial_instance", json.dumps(instance, ensure_ascii=False, default=str))
     path = str(instance.get("File_Path") or "")
     response = _get(urljoin(BASE + "/", path.lstrip("/")), accept="application/zip, application/octet-stream, */*")
     parsed = parse_instance_zip(bytes(response.content))
