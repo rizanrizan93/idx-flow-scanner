@@ -42,13 +42,15 @@ def probe_announcements() -> None:
             "keyword": "",
         },
     )
-    rows = payload.get("Results") or payload.get("results") or []
+    rows = payload.get("Replies") or []
     print("announcement_top_keys", sorted(payload.keys()))
-    print("announcement_count", payload.get("ResultCount") or payload.get("resultCount") or len(rows))
+    print("announcement_count", payload.get("ResultCount") or len(rows))
+    print("announcement_page_rows", len(rows))
     if rows and isinstance(rows[0], dict):
         row = rows[0]
+        print("announcement_reply_keys", sorted(row.keys()))
         safe = {key: row.get(key) for key in sorted(row) if key.lower() not in {"content", "isi", "body"}}
-        print("announcement_row", json.dumps(safe, ensure_ascii=False, default=str)[:8000])
+        print("announcement_reply", json.dumps(safe, ensure_ascii=False, default=str)[:12000])
 
 
 def probe_financial() -> None:
