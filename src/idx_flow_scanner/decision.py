@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 
 VERIFIED_FLOW_TIERS = frozenset({"OFFICIAL_IDX_FLOW", "ZAPI_FLOW"})
+EXECUTION_ACTIONS = frozenset({"BUY_ON_WEAKNESS", "BUY_RETEST"})
 
 
 def _diag(value: object) -> dict[str, object]:
@@ -87,6 +88,13 @@ def select_zapi_decision_top(results: pd.DataFrame, *, top_n: int = 20) -> pd.Da
 
 
 def select_execution_ready(results: pd.DataFrame, *, top_n: int = 10) -> pd.DataFrame:
+    """Return only production-authorized rows with an actionable BUY signal.
+
+    `production_authorized=True` means all hard evidence/execution guardrails pass.
+    It does not by itself turn a WATCHLIST/HOLD row into an executable order. The
+    execution-ready lane is therefore the strict intersection of authorization and
+    the scanner's explicit BUY actions.
+    """
     if results is None or results.empty or top_n <= 0:
         return pd.DataFrame()
     authorized = results.get(
@@ -94,7 +102,9 @@ def select_execution_ready(results: pd.DataFrame, *, top_n: int = 10) -> pd.Data
     )
     if not pd.api.types.is_bool_dtype(authorized):
         authorized = authorized.map(_true_bool)
-    out = results.loc[authorized.fillna(False)].copy()
+    actions = results.get("action", pd.Series("", index=results.index)).astype(str)
+    gate = authorized.fillna(False) & actions.isin(EXECUTION_ACTIONS)
+    out = results.loc[gate].copy()
     if out.empty:
         return out
     out = out.sort_values(
