@@ -34,6 +34,11 @@ from idx_flow_scanner.evidence_database import (
 )
 from idx_flow_scanner.foreign_evidence import prepare_foreign_evidence
 from idx_flow_scanner.large_universe_prices import prepare_large_universe_prices
+from idx_flow_scanner.official_idx_risk import (
+    apply_official_risk_overlay,
+    load_official_idx_risk_events,
+    set_official_risk_context,
+)
 from idx_flow_scanner.run_metadata_guard import install_truthful_run_metadata
 from idx_flow_scanner.runtime_persistence import install_current_result_persistence
 from idx_flow_scanner.storage import SupabaseStore
@@ -186,9 +191,18 @@ _original_scan_one_zapi = zapi_pipeline.scan_one_zapi
 _original_scan_universe_zapi = streamlit_app.scan_universe_zapi
 
 
-def _broker_scored_scan_one(ticker, price, **kwargs):
+def _broker_scored_base(ticker, price, **kwargs):
     return apply_broker_behavior_overlay(
         _original_scan_one_zapi,
+        ticker,
+        price,
+        **kwargs,
+    )
+
+
+def _broker_risk_scored_scan_one(ticker, price, **kwargs):
+    return apply_official_risk_overlay(
+        _broker_scored_base,
         ticker,
         price,
         **kwargs,
@@ -201,6 +215,13 @@ def _database_first_scan_universe(*args, **kwargs):
         lookback_calendar_days=120,
     )
     set_broker_activity_context(activity)
+    universe = args[0] if args else kwargs.get("universe", [])
+    risk_events = load_official_idx_risk_events(
+        DEDICATED_EVIDENCE_STORE,
+        list(universe or []),
+        lookback_calendar_days=270,
+    )
+    set_official_risk_context(risk_events)
     return _original_scan_universe_zapi(*args, **kwargs)
 
 
@@ -228,13 +249,12 @@ streamlit_app.load_bundled_zapi_capital_actions = _database_first_slow_loader(
     merge_canonical_capital_actions,
     upsert_capital_actions,
 )
-# Runtime compatibility patches. Official IDX direct foreign flow is now a valid
-# primary provider; ZAPI remains an absence fallback. Market-wide broker activity
-# changes final ranking only through a bounded neutral-centered overlay and never
-# impersonates per-ticker broker buy/sell or overrides hard authorization gates.
+# Runtime compatibility patches. Official IDX direct foreign flow is the primary
+# verified provider, market-wide broker behavior is a bounded ranking overlay,
+# and official UMA/suspension events can only de-rate or block authorization.
 zapi_pipeline._zapi_ready = verified_daily_foreign_ready
 zapi_pipeline.compute_slow_evidence = compute_slow_evidence_canonical
-zapi_pipeline.scan_one_zapi = _broker_scored_scan_one
+zapi_pipeline.scan_one_zapi = _broker_risk_scored_scan_one
 streamlit_app.scan_universe_zapi = _database_first_scan_universe
 
 install_current_result_persistence(SupabaseStore, batch_size=20)
