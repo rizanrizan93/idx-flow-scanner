@@ -63,9 +63,9 @@ BUNDLED_UNIVERSE_700_PATH = ROOT / "data" / "universe" / "idx_700_all.csv"
 RUNTIME_UNIVERSE_PATH = Path("/tmp/idx_flow_runtime_universe_700.csv")
 SEED_700_PATH = ROOT / "data" / "cache" / "idx_700_ohlcv_1y.csv.gz"
 SEED_400_PATH = ROOT / "data" / "cache" / "idx_400_ohlcv_1y.csv.gz"
-# Physical Supabase project currently hosting the isolated IDX Flow namespace.
-# Project separation remains enforced at table level: IDX Flow uses only flow_* tables.
-EXPECTED_SUPABASE_PROJECT_REF = "mbtsvflwszcgdtijdgas"
+# Canonical Supabase project for IDX Flow Scanner. Project separation remains
+# enforced at table level: IDX Flow reads/writes only the flow_* namespace.
+EXPECTED_SUPABASE_PROJECT_REF = "djqvhbeonmicztxfisav"
 
 
 @st.cache_data(ttl=1800, show_spinner=False)
