@@ -1,0 +1,60 @@
+name: Backfill Block IDX Financial Evidence
+
+on:
+  push:
+    branches:
+      - evidence-expansion/block-idx-historical-backfill
+    paths:
+      - 'src/idx_flow_scanner/providers/block_idx_financial_history.py'
+      - 'scripts/backfill_block_idx_financial_evidence.py'
+      - 'tests/test_block_idx_financial_history.py'
+      - '.github/workflows/backfill-block-idx-financial.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: block-idx-financial-backfill-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  backfill-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Run Block IDX financial history contract tests
+        run: PYTHONPATH=src pytest -q tests/test_block_idx_financial_history.py tests/test_block_idx_evidence.py
+      - name: Build bounded market-wide PIT financial cache
+        env:
+          PYTHONPATH: src
+        run: >-
+          python scripts/backfill_block_idx_financial_evidence.py
+          --start 2026-08-01
+          --end 2026-09-08
+          --report-year-start 2026
+          --report-year-end 2026
+          --download-smoke 3
+      - name: Publish proof telemetry
+        if: always()
+        run: |
+          echo '## Block IDX historical financial backfill proof' >> "$GITHUB_STEP_SUMMARY"
+          cat data/cache/evidence_v5/block_idx_historical_financial_backfill_meta.json 2>/dev/null >> "$GITHUB_STEP_SUMMARY" || true
+      - name: Commit proof cache
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/cache/evidence_v5/block_idx_historical_financial_filings.json data/cache/evidence_v5/block_idx_historical_financial_backfill_meta.json
+          if git diff --cached --quiet; then
+            echo "Historical financial evidence unchanged"
+          else
+            git commit -m "Backfill Block IDX PIT financial evidence proof"
+            git push origin HEAD:"$GITHUB_REF_NAME"
+          fi
