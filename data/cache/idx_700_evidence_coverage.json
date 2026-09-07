@@ -27,8 +27,8 @@
       "tickers": 689
     },
     "ownership": {
-      "pct": 99.57,
-      "tickers": 697
+      "pct": 99.43,
+      "tickers": 696
     },
     "sector": {
       "pct": 100.0,
@@ -39,7 +39,7 @@
       "tickers": 400
     }
   },
-  "generated_at": "2026-09-07T17:55:59.146407+00:00",
+  "generated_at": "2026-09-07T22:26:46.219300+00:00",
   "missing_core_sample": [
     "AADI",
     "AALI",
@@ -60,7 +60,6 @@
     "APEX",
     "APIC",
     "ARCI",
-    "ARGO",
     "ARKO",
     "ARTO",
     "ASII",
@@ -120,7 +119,8 @@
     "CMNT",
     "CMRY",
     "CNMA",
-    "COCO"
+    "COCO",
+    "COIN"
   ],
   "missing_full_sample": [
     "AADI",
@@ -142,7 +142,6 @@
     "APEX",
     "APIC",
     "ARCI",
-    "ARGO",
     "ARKO",
     "ARTO",
     "ASII",
@@ -202,7 +201,8 @@
     "CMNT",
     "CMRY",
     "CNMA",
-    "COCO"
+    "COCO",
+    "COIN"
   ],
   "provider_status": {
     "capital_actions": "QUOTA_EXHAUSTED: Zapi rate/monthly quota exhausted",
