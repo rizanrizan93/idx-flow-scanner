@@ -55,6 +55,13 @@ def test_phase1b_training_quality_is_fail_closed_and_not_fixed_to_88():
     assert "not\n-- forced to equal today's 88 active members" in sql
 
 
+def test_phase1b_avoids_reserved_overlaps_identifier():
+    sql = _sql().lower()
+    assert "membership_overlap as (" in sql
+    assert "), overlaps as (" not in sql
+    assert "join membership_overlap" in sql
+
+
 def test_phase1b_requires_at_least_250_clean_sessions_before_ready():
     sql = _sql()
     assert "flow_phase1b_broker_quality_summary" in sql

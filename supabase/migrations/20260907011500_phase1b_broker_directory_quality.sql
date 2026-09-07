@@ -41,7 +41,7 @@ declare
   records_total integer;
   distinct_codes integer;
   active_count integer;
-  suspended_count integer;
+  non_active_count integer;
   removed_count integer := 0;
   affected integer := 0;
 begin
@@ -86,8 +86,8 @@ begin
     raise exception 'IDX broker directory contains missing name/status/license';
   end if;
 
-  -- Only after full validation do we reconcile the current snapshot. Historical
-  -- identities remain preserved in flow_official_broker_activity and the views below.
+  -- Reconcile current snapshot only after full validation. Historical identities
+  -- stay preserved in flow_official_broker_activity and the views below.
   delete from public.flow_official_broker_directory d
   where not exists (
     select 1
@@ -133,7 +133,7 @@ begin
 
   select count(*) filter (where is_active),
          count(*) filter (where not is_active)
-    into active_count, suspended_count
+    into active_count, non_active_count
   from public.flow_official_broker_directory;
 
   insert into public.flow_ingestion_audit
@@ -146,7 +146,7 @@ begin
        'source','block.idx.id',
        'records_total',records_total,
        'active_brokers',active_count,
-       'non_active_brokers',suspended_count,
+       'non_active_brokers',non_active_count,
        'removed_from_current_snapshot',removed_count,
        'phase','PHASE1B_BROKER_IDENTITY_QUALITY'
      ));
@@ -155,7 +155,7 @@ begin
     'records_total',records_total,
     'rows_upserted',affected,
     'active_brokers',active_count,
-    'non_active_brokers',suspended_count,
+    'non_active_brokers',non_active_count,
     'removed_from_current_snapshot',removed_count
   );
 end;
@@ -290,7 +290,7 @@ with session_stats as (
   select count(*)::integer active_brokers
   from public.flow_official_broker_directory
   where source_verified and is_active
-), overlaps as (
+), membership_overlap as (
   select
     a.trade_date,
     count(distinct a.broker_code) filter (where d.broker_code is not null)::integer current_directory_overlap,
@@ -305,8 +305,8 @@ select
   s.rows_seen,
   s.broker_count,
   a.active_brokers as current_active_directory_brokers,
-  o.current_directory_overlap,
-  o.historical_only_codes,
+  m.current_directory_overlap,
+  m.historical_only_codes,
   round(100.0*s.broker_count/nullif(a.active_brokers,0),2) as count_vs_current_active_pct,
   s.unverified_rows,
   s.bad_source_url_rows,
@@ -337,7 +337,7 @@ select
   end as quality_reason
 from session_stats s
 cross join active_directory a
-join overlaps o using (trade_date);
+join membership_overlap m using (trade_date);
 
 revoke all on public.flow_broker_session_quality from public, anon, authenticated;
 grant select on public.flow_broker_session_quality to service_role;
@@ -352,8 +352,11 @@ with d as (
     count(*) filter (where source_url not like 'https://block.idx.id/%')::integer directory_bad_url
   from public.flow_official_broker_directory
 ), h as (
+  select count(distinct broker_code)::integer historical_codes
+  from public.flow_official_broker_activity
+  where source='IDX_OFFICIAL_BROKER_SUMMARY' and source_verified
+), r as (
   select
-    count(distinct broker_code)::integer historical_codes,
     count(*) filter (where reconciliation_state='HISTORICAL_ONLY')::integer historical_only_codes,
     count(*) filter (where name_variants > 1)::integer multi_name_codes
   from public.flow_broker_identity_reconciliation
@@ -367,7 +370,7 @@ with d as (
     max(trade_date) last_session
   from public.flow_broker_session_quality
 )
-select d.*,h.*,q.*,
+select d.*,h.*,r.*,q.*,
   case
     when d.directory_total between 80 and 100
       and d.directory_active >= 80
@@ -378,12 +381,11 @@ select d.*,h.*,q.*,
       then 'PHASE1B_READY'
     else 'PHASE1B_NOT_READY'
   end as phase1b_gate_state
-from d cross join h cross join q;
+from d cross join h cross join r cross join q;
 
 revoke all on public.flow_phase1b_broker_quality_summary from public, anon, authenticated;
 grant select on public.flow_phase1b_broker_quality_summary to service_role;
 
--- Low-cost current-directory refresh. Trading activity remains on its existing cron.
 do $$
 declare r record;
 begin
