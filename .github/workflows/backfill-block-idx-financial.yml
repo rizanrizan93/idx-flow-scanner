@@ -6,8 +6,10 @@ on:
       - evidence-expansion/block-idx-historical-backfill
     paths:
       - 'src/idx_flow_scanner/providers/block_idx_financial_history.py'
+      - 'src/idx_flow_scanner/providers/block_idx_financial_revisions.py'
       - 'scripts/backfill_block_idx_financial_evidence.py'
       - 'tests/test_block_idx_financial_history.py'
+      - 'tests/test_block_idx_financial_revisions.py'
       - '.github/workflows/backfill-block-idx-financial.yml'
   workflow_dispatch:
 
@@ -30,8 +32,12 @@ jobs:
           cache: pip
       - run: pip install -r requirements.txt
       - name: Run Block IDX financial history contract tests
-        run: PYTHONPATH=src pytest -q tests/test_block_idx_financial_history.py tests/test_block_idx_evidence.py
-      - name: Build bounded market-wide PIT financial cache
+        run: >-
+          PYTHONPATH=src pytest -q
+          tests/test_block_idx_financial_history.py
+          tests/test_block_idx_financial_revisions.py
+          tests/test_block_idx_evidence.py
+      - name: Build bounded revision-complete PIT financial cache
         env:
           PYTHONPATH: src
         run: >-
@@ -55,6 +61,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "Historical financial evidence unchanged"
           else
-            git commit -m "Backfill Block IDX PIT financial evidence proof"
+            git commit -m "Backfill revision-complete Block IDX PIT financial evidence proof"
             git push origin HEAD:"$GITHUB_REF_NAME"
           fi
