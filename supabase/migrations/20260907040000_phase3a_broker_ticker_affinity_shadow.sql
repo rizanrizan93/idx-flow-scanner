@@ -406,14 +406,6 @@ begin
       join sessions s using(trade_date)
       where s.seq<=eligible_n
       group by f.broker_code
-    ), s_coverage as (
-      select r.ticker,
-             count(*) filter(where r.source_verified)::integer observed_n,
-             count(*) filter(where r.source_verified and r.stock_residual_activity_z>=1.0)::integer event_n
-      from public.flow_stock_residual_activity_v2 r
-      join sessions s using(trade_date)
-      where s.seq>lag_n
-      group by r.ticker
     )
     select
       count(*) filter(where mature_n=eligible_n)::integer,
@@ -549,7 +541,7 @@ with latest as (
   where i.provider='IDX_OFFICIAL_DERIVED'
     and i.dataset='BROKER_TICKER_AFFINITY_V3_SHADOW'
 ), p as (
-  select phase2_gate_state,residual_sessions,last_residual_date
+  select q.phase2_gate_state,c.residual_sessions,c.last_residual_date
   from public.flow_phase2c_quality_summary c
   cross join public.flow_phase2_quality_summary q
 )
