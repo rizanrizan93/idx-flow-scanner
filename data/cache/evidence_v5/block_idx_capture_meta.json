@@ -1,0 +1,30 @@
+{
+  "announcement_rows": 10,
+  "captured_at": "2026-09-08T05:16:34.405064+07:00",
+  "download_smoke": [
+    {
+      "announcement_id": "BLOCKIDX-b10829b21bd99cd4a9a5727442beeb81",
+      "binary_persisted": false,
+      "bytes": 42399,
+      "content_type": "application/pdf",
+      "sha256": "84798f8b7821feec50de865afa04960efae1fc9620f8e799cdaf2ca3976fb3cc",
+      "ticker": "SWAT",
+      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/6fd612102e_928bcfb889.pdf"
+    },
+    {
+      "announcement_id": "BLOCKIDX-b10829b21bd99cd4a9a5727442beeb81",
+      "binary_persisted": false,
+      "bytes": 1067385,
+      "content_type": "application/pdf",
+      "sha256": "63e6f9ae476bf2334a138593bf345659b525fa360d834e9194a97ec3383c51cd",
+      "ticker": "SWAT",
+      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/b0dc9f11f1_21b59510f6.pdf"
+    }
+  ],
+  "financial_filing_rows": 0,
+  "no_fabricated_evidence": true,
+  "ownership_rows_on_current_page": 5,
+  "point_in_time_eligible_rows": 10,
+  "production_scoring_changed": false,
+  "source_page": "https://block.idx.id/id/berita/pengumuman"
+}
