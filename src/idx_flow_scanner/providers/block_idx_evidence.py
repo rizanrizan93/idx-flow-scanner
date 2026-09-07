@@ -6,7 +6,7 @@ import time
 from datetime import datetime
 from pathlib import PurePosixPath
 from typing import Any
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urljoin, urlparse, urlunparse
 from zoneinfo import ZoneInfo
 
 from bs4 import BeautifulSoup
@@ -33,6 +33,25 @@ def is_official_idx_url(url: str) -> bool:
     except Exception:
         return False
     return parsed.scheme == "https" and parsed.netloc.lower() in IDX_OFFICIAL_ATTACHMENT_HOSTS
+
+
+def official_idx_transport_candidates(url: str) -> list[str]:
+    """Return official transport URLs without changing evidence identity.
+
+    IDX static files linked as www.idx.co.id can be edge-blocked for cloud runners,
+    while the identical official path is also served by block.idx.id. The original
+    URL remains the evidence URL; the Block host is only an official transport
+    fallback for retrieving/verifying file bytes.
+    """
+    if not is_official_idx_url(url):
+        return []
+    parsed = urlparse(url)
+    candidates = [url]
+    if parsed.netloc.lower() in {"idx.co.id", "www.idx.co.id"}:
+        fallback = urlunparse(parsed._replace(netloc="block.idx.id"))
+        if fallback != url:
+            candidates.append(fallback)
+    return candidates
 
 
 def parse_block_idx_timestamp(text: str) -> datetime:
@@ -105,7 +124,6 @@ def parse_block_idx_announcement_html(html: str) -> list[dict[str, object]]:
 
         attachments: list[dict[str, str]] = []
         seen: set[str] = set()
-        # Preserve the primary document as evidence attachment 0.
         primary_name = PurePosixPath(urlparse(primary_url).path).name or "primary_document"
         attachments.append({"url": primary_url, "file_name": primary_name, "role": "PRIMARY"})
         seen.add(primary_url)
@@ -241,7 +259,8 @@ def financial_filings_from_announcements(rows: list[dict[str, object]]) -> list[
 
 
 def download_official_idx_attachment(url: str, *, timeout: float = 60.0, retries: int = 3) -> tuple[bytes, str, str | None]:
-    if not is_official_idx_url(url):
+    candidates = official_idx_transport_candidates(url)
+    if not candidates:
         raise ValueError("non-official IDX URL rejected")
     headers = {
         "Accept": "*/*",
@@ -249,23 +268,23 @@ def download_official_idx_attachment(url: str, *, timeout: float = 60.0, retries
         "Referer": BLOCK_IDX_ANNOUNCEMENT_PAGE,
         "User-Agent": "Mozilla/5.0",
     }
-    session = _new_session()
     last_status = 0
-    for attempt in range(max(1, int(retries))):
-        response = session.get(url, headers=headers, timeout=timeout)
-        last_status = int(response.status_code)
-        if response.status_code == 200 and response.content:
-            data = bytes(response.content)
-            # Reject HTML error/challenge pages pretending to be a file.
-            prefix = data[:32].lstrip().lower()
-            if prefix.startswith(b"<!doctype html") or prefix.startswith(b"<html"):
-                raise RuntimeError("IDX attachment returned HTML instead of evidence file")
-            digest = hashlib.sha256(data).hexdigest()
-            return data, digest, response.headers.get("content-type")
-        if response.status_code in {403, 429, 500, 502, 503, 504}:
-            time.sleep(min(8.0, 1.5 * (2**attempt)))
-            continue
-        break
+    for transport_url in candidates:
+        session = _new_session()
+        for attempt in range(max(1, int(retries))):
+            response = session.get(transport_url, headers=headers, timeout=timeout)
+            last_status = int(response.status_code)
+            if response.status_code == 200 and response.content:
+                data = bytes(response.content)
+                prefix = data[:32].lstrip().lower()
+                if prefix.startswith(b"<!doctype html") or prefix.startswith(b"<html"):
+                    break
+                digest = hashlib.sha256(data).hexdigest()
+                return data, digest, response.headers.get("content-type")
+            if response.status_code in {403, 429, 500, 502, 503, 504}:
+                time.sleep(min(8.0, 1.5 * (2**attempt)))
+                continue
+            break
     raise RuntimeError(f"IDX attachment download failed with HTTP {last_status}")
 
 
@@ -273,6 +292,7 @@ __all__ = [
     "BLOCK_IDX_ANNOUNCEMENT_PAGE",
     "BLOCK_IDX_ANNOUNCEMENT_API",
     "is_official_idx_url",
+    "official_idx_transport_candidates",
     "parse_block_idx_timestamp",
     "classify_disclosure",
     "parse_block_idx_announcement_html",
