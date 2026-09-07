@@ -14,6 +14,9 @@ from idx_flow_scanner.providers.block_idx_financial_history import (
     parse_profile_announcement_replies,
     verify_attachment_hashes,
 )
+from idx_flow_scanner.providers.block_idx_financial_revisions import (
+    financial_revision_filings_from_profile_replies,
+)
 
 WIB = ZoneInfo("Asia/Jakarta")
 PERIODS = ("TW1", "TW2", "TW3", "AUDIT")
@@ -100,12 +103,18 @@ def main() -> int:
             )
             print(json.dumps(financial_query_telemetry[-1], sort_keys=True))
 
-    filings, match_telemetry = match_point_in_time_financial_filings(
+    revision_filings, revision_telemetry = financial_revision_filings_from_profile_replies(
+        raw_announcements,
+        report_groups=report_groups,
+        now=now,
+    )
+    latest_filings, match_telemetry = match_point_in_time_financial_filings(
         report_groups,
         deduped_announcements,
         now=now,
     )
-    filings.sort(key=lambda row: (str(row["ticker"]), int(row["report_year"]), str(row["report_period"]), str(row["file_name"])))
+    filings = revision_filings
+    filings.sort(key=lambda row: (str(row["ticker"]), int(row["report_year"]), str(row["report_period"]), str(row["published_at"]), str(row["file_name"])))
 
     preferred = []
     used_ids: set[str] = set()
@@ -125,7 +134,7 @@ def main() -> int:
     download_telemetry = verify_attachment_hashes(preferred, limit=args.download_smoke) if args.download_smoke else []
 
     payload = {
-        "schema_version": "BLOCK_IDX_HISTORICAL_FINANCIAL_FILING_CACHE_V5_1",
+        "schema_version": "BLOCK_IDX_HISTORICAL_FINANCIAL_FILING_CACHE_V5_2",
         "generated_at": now.isoformat(),
         "source_authority": "INDONESIA_STOCK_EXCHANGE",
         "financial_report_endpoint": "https://block.idx.id/primary/ListedCompany/GetFinancialReport",
@@ -134,18 +143,21 @@ def main() -> int:
         "announcement_date_to": args.end.isoformat(),
         "report_year_start": report_year_start,
         "report_year_end": report_year_end,
-        "matching_contract": "TICKER_PLUS_EXACT_PUBLISH_SECOND_PLUS_ATTACHMENT_NAME_INTERSECTION",
+        "matching_contract": "PROFILE_ANNOUNCEMENT_PIT_ATTACHMENT_IDENTITY_WITH_LATEST_REPORT_CORROBORATION",
+        "revision_semantics": "EVERY_FINANCIAL_ANNOUNCEMENT_REVISION_RETAINED_WHEN_PERIOD_IS_VERIFIABLE",
         "rows": filings,
     }
     meta = {
-        "schema_version": "BLOCK_IDX_HISTORICAL_FINANCIAL_BACKFILL_META_V5_1",
+        "schema_version": "BLOCK_IDX_HISTORICAL_FINANCIAL_BACKFILL_META_V5_2",
         "generated_at": now.isoformat(),
         "announcement_months": month_telemetry,
         "financial_queries": financial_query_telemetry,
         "raw_announcement_replies": len(raw_announcements),
         "financial_announcement_rows": len(deduped_announcements),
         "report_groups": len(report_groups),
-        "match": match_telemetry,
+        "revision_backfill": revision_telemetry,
+        "latest_report_corroboration": match_telemetry,
+        "latest_report_corroborated_filing_rows": len(latest_filings),
         "download_smoke": download_telemetry,
         "production_scoring_changed": False,
     }
@@ -156,9 +168,10 @@ def main() -> int:
     args.meta_output.write_text(json.dumps(meta, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(json.dumps({
         "status": "OK",
-        "filing_rows": len(filings),
-        "matched_report_groups": match_telemetry["matched_report_groups"],
-        "unmatched_report_groups": match_telemetry["unmatched_report_groups"],
+        "revision_filing_rows": len(filings),
+        "revision_inferred_announcements": revision_telemetry["inferred_announcements"],
+        "revision_unresolved_period_announcements": revision_telemetry["unresolved_period_announcements"],
+        "latest_matched_report_groups": match_telemetry["matched_report_groups"],
         "download_smoke_verified": len(download_telemetry),
         "production_scoring_changed": False,
     }, sort_keys=True))
