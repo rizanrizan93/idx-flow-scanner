@@ -12,6 +12,11 @@ if str(SRC) not in sys.path:
 
 import idx_flow_scanner.streamlit_app as streamlit_app
 import idx_flow_scanner.zapi_pipeline as zapi_pipeline
+from idx_flow_scanner.adaptive_broker_scoring import (
+    apply_adaptive_broker_overlay,
+    load_adaptive_broker_context,
+    set_adaptive_broker_context,
+)
 from idx_flow_scanner.broker_behavior import load_official_broker_activity
 from idx_flow_scanner.broker_behavior_runtime import (
     apply_broker_behavior_overlay,
@@ -234,9 +239,18 @@ def _broker_scored_base(ticker, price, **kwargs):
     )
 
 
+def _adaptive_broker_scored_base(ticker, price, **kwargs):
+    return apply_adaptive_broker_overlay(
+        _broker_scored_base,
+        ticker,
+        price,
+        **kwargs,
+    )
+
+
 def _broker_risk_scored_scan_one(ticker, price, **kwargs):
     return apply_official_risk_overlay(
-        _broker_scored_base,
+        _adaptive_broker_scored_base,
         ticker,
         price,
         **kwargs,
@@ -251,6 +265,11 @@ def _database_first_scan_universe(*args, **kwargs):
     set_broker_activity_context(activity)
     universe = args[0] if args else kwargs.get("universe", [])
     universe_list = list(universe or [])
+    adaptive_context = load_adaptive_broker_context(
+        DEDICATED_EVIDENCE_STORE,
+        universe_list,
+    )
+    set_adaptive_broker_context(adaptive_context)
     risk_events = load_official_idx_risk_events(
         DEDICATED_EVIDENCE_STORE,
         universe_list,
@@ -298,8 +317,9 @@ streamlit_app.load_bundled_zapi_capital_actions = _database_first_slow_loader(
 # Runtime compatibility patches. Official IDX direct foreign flow is the primary
 # verified provider. Official IDX indices anchor market/sector context, Company
 # Profile contributes a distinct controller-identity dimension to KSEI ownership,
-# broker behavior is a bounded ranking overlay, and official UMA/suspension can
-# only de-rate or block authorization.
+# the total broker-family ranking budget remains bounded at 8%, Phase 3A/3B/3C
+# can consume an adaptively calibrated share of that budget, and official
+# UMA/suspension can only de-rate or block authorization.
 zapi_pipeline._zapi_ready = verified_daily_foreign_ready
 zapi_pipeline.compute_slow_evidence = _controller_enriched_slow_evidence
 zapi_pipeline.ticker_market_features = _official_index_market_features
