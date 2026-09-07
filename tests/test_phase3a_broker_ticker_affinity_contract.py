@@ -92,6 +92,7 @@ def test_phase3a_quality_gate_requires_current_four_lag_snapshot():
     assert "s.min_eligible_brokers>=80" in sql
     assert "s.min_eligible_tickers>=500" in sql
     assert "m.bad_semantics_rows=0" in sql
+    assert "select q.phase2_gate_state,c.residual_sessions,c.last_residual_date" in sql
 
 
 def test_phase3a_daily_refresh_runs_after_phase2_residual():
