@@ -1,0 +1,93 @@
+name: Warm Block IDX Evidence
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 16 * * 1-5'  # 23:30 WIB Mon-Fri
+    - cron: '30 23 * * 0-4'  # 06:30 WIB Mon-Fri
+  push:
+    branches:
+      - evidence-expansion/block-idx-downloader
+    paths:
+      - 'src/idx_flow_scanner/providers/block_idx_evidence.py'
+      - 'scripts/capture_block_idx_evidence.py'
+      - '.github/workflows/warm-block-idx-evidence.yml'
+      - 'requirements.txt'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: warm-block-idx-evidence-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Capture Block IDX metadata and verify official downloads
+        env:
+          PYTHONPATH: src
+        run: python scripts/capture_block_idx_evidence.py --download-smoke 2
+      - name: Publish evidence telemetry
+        if: always()
+        run: |
+          echo '## Block IDX evidence telemetry' >> "$GITHUB_STEP_SUMMARY"
+          cat data/cache/evidence_v5/block_idx_capture_meta.json 2>/dev/null >> "$GITHUB_STEP_SUMMARY" || echo '{"status":"meta_unavailable"}' >> "$GITHUB_STEP_SUMMARY"
+      - name: Commit semantic evidence changes
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          rm -rf /tmp/block-idx-evidence
+          mkdir -p /tmp/block-idx-evidence
+          cp -a data/cache/evidence_v5/. /tmp/block-idx-evidence/
+
+          git fetch origin "$GITHUB_REF_NAME"
+          git reset --hard "origin/$GITHUB_REF_NAME"
+          mkdir -p data/cache/evidence_v5
+
+          python - <<'PY'
+          from pathlib import Path
+          import shutil
+
+          fresh = Path('/tmp/block-idx-evidence')
+          current = Path('data/cache/evidence_v5')
+          semantic = (
+              'block_idx_current_announcements.json',
+              'block_idx_current_financial_filings.json',
+          )
+          changed = False
+          for name in semantic:
+              src = fresh / name
+              dst = current / name
+              if not src.exists():
+                  continue
+              if not dst.exists() or src.read_bytes() != dst.read_bytes():
+                  shutil.copy2(src, dst)
+                  changed = True
+                  print(f'{name}: evidence updated')
+              else:
+                  print(f'{name}: semantic evidence unchanged')
+          meta = fresh / 'block_idx_capture_meta.json'
+          if changed and meta.exists():
+              shutil.copy2(meta, current / meta.name)
+          elif meta.exists():
+              print('block_idx_capture_meta.json: telemetry-only change kept in Actions summary')
+          PY
+
+          git add data/cache/evidence_v5
+          if git diff --cached --quiet; then
+            echo "Block IDX evidence unchanged; no repository commit"
+          else
+            git commit -m "Refresh Block IDX point-in-time evidence cache"
+            git push origin HEAD:"$GITHUB_REF_NAME"
+          fi
