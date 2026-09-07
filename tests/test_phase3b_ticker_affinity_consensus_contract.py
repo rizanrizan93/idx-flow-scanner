@@ -65,8 +65,10 @@ def test_phase3b_retains_stock_and_foreign_confirmation_without_weighting_them()
     assert "frequency_residual_z" in sql
     assert "foreign_net_volume_pct" in sql
     assert "return_pct" in sql
-    score_section = sql.split("proxy_score", 1)[0][-3000:]
+    score_section = sql.split("), scored as (", 1)[1].split("from metrics m", 1)[0]
     assert "foreign_net_volume_pct" not in score_section
+    assert "return_pct" not in score_section
+    assert "stock_residual_activity_z" not in score_section
 
 
 def test_phase3b_quality_gate_requires_current_phase3a_and_private_tables():
