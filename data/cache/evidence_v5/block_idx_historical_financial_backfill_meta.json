@@ -1,0 +1,78 @@
+{
+  "announcement_months": [
+    {
+      "date_from": "2026-08-01",
+      "date_to": "2026-08-31",
+      "reply_rows": 4140
+    },
+    {
+      "date_from": "2026-09-01",
+      "date_to": "2026-09-08",
+      "reply_rows": 1230
+    }
+  ],
+  "download_smoke": [
+    {
+      "bytes": 512589,
+      "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "file_name": "FinancialStatement-2026-I-DOOH.xlsx",
+      "sha256": "8474f59c3bd4b2fabc6a594e6866649744fc65ebeada23176ee3ad9a0e3577ad",
+      "ticker": "DOOH"
+    },
+    {
+      "bytes": 512029,
+      "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "file_name": "FinancialStatement-2026-II-FLMC.xlsx",
+      "sha256": "d46ebaa1d0383724148436d5804d34d141c156244de8cef95ba9edf66129885f",
+      "ticker": "FLMC"
+    },
+    {
+      "bytes": 512124,
+      "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "file_name": "FinancialStatement-2026-I-MKNT.xlsx",
+      "sha256": "49d2662a057da88d0e3fffa04610884350a82fdae7ab87bccc4e22f0888e9b81",
+      "ticker": "MKNT"
+    }
+  ],
+  "financial_announcement_rows": 242,
+  "financial_queries": [
+    {
+      "parsed_report_groups": 856,
+      "report_period": "TW1",
+      "report_year": 2026,
+      "result_count": 856
+    },
+    {
+      "parsed_report_groups": 890,
+      "report_period": "TW2",
+      "report_year": 2026,
+      "result_count": 890
+    },
+    {
+      "parsed_report_groups": 0,
+      "report_period": "TW3",
+      "report_year": 2026,
+      "result_count": 0
+    },
+    {
+      "parsed_report_groups": 1,
+      "report_period": "AUDIT",
+      "report_year": 2026,
+      "result_count": 1
+    }
+  ],
+  "generated_at": "2026-09-08T06:55:52.113477+07:00",
+  "match": {
+    "filing_rows": 395,
+    "financial_announcement_rows": 242,
+    "matched_report_groups": 133,
+    "report_groups": 1747,
+    "skipped_attachment_identity": 0,
+    "skipped_non_pit_groups": 0,
+    "unmatched_report_groups": 1614
+  },
+  "production_scoring_changed": false,
+  "raw_announcement_replies": 5370,
+  "report_groups": 1747,
+  "schema_version": "BLOCK_IDX_HISTORICAL_FINANCIAL_BACKFILL_META_V5_1"
+}
