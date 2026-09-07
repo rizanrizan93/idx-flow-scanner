@@ -23,12 +23,12 @@
       "tickers": 398
     },
     "ohlcv": {
-      "pct": 98.86,
-      "tickers": 692
+      "pct": 98.43,
+      "tickers": 689
     },
     "ownership": {
-      "pct": 100.0,
-      "tickers": 700
+      "pct": 99.57,
+      "tickers": 697
     },
     "sector": {
       "pct": 100.0,
@@ -39,14 +39,13 @@
       "tickers": 400
     }
   },
-  "generated_at": "2026-09-05T23:18:05.567039+00:00",
+  "generated_at": "2026-09-07T17:55:59.146407+00:00",
   "missing_core_sample": [
     "AADI",
     "AALI",
     "ACES",
     "ACRO",
     "ADES",
-    "ADHI",
     "ADMF",
     "ADMR",
     "ADRO",
@@ -71,7 +70,6 @@
     "AUTO",
     "AVIA",
     "BABY",
-    "BACA",
     "BACH",
     "BAIK",
     "BAJA",
@@ -120,7 +118,9 @@
     "CENT",
     "CFIN",
     "CMNT",
-    "CMRY"
+    "CMRY",
+    "CNMA",
+    "COCO"
   ],
   "missing_full_sample": [
     "AADI",
@@ -128,7 +128,6 @@
     "ACES",
     "ACRO",
     "ADES",
-    "ADHI",
     "ADMF",
     "ADMR",
     "ADRO",
@@ -153,7 +152,6 @@
     "AUTO",
     "AVIA",
     "BABY",
-    "BACA",
     "BACH",
     "BAIK",
     "BAJA",
@@ -202,7 +200,9 @@
     "CENT",
     "CFIN",
     "CMNT",
-    "CMRY"
+    "CMRY",
+    "CNMA",
+    "COCO"
   ],
   "provider_status": {
     "capital_actions": "QUOTA_EXHAUSTED: Zapi rate/monthly quota exhausted",
