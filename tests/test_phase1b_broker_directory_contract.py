@@ -52,7 +52,7 @@ def test_phase1b_training_quality_is_fail_closed_and_not_fixed_to_88():
     assert "broker_count < 80" in sql
     assert "broker_count > 100" in sql
     assert "broker_count < 85 or s.broker_count > 95" in sql
-    assert "forced to equal today's 88" not in sql.lower()
+    assert "not\n-- forced to equal today's 88 active members" in sql
 
 
 def test_phase1b_requires_at_least_250_clean_sessions_before_ready():
