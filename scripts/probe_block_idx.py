@@ -8,15 +8,27 @@ from curl_cffi import requests
 
 BASE = "https://block.idx.id"
 PAGE = f"{BASE}/id/berita/pengumuman"
+API = f"{BASE}/primary/NewsAnnouncement/GetAllAnnouncement"
 HEADERS = {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     "Accept-Language": "id-ID,id;q=0.9,en;q=0.8",
     "User-Agent": "Mozilla/5.0",
+    "Referer": PAGE,
 }
 
 
-def get(url: str):
-    return requests.get(url, headers=HEADERS, impersonate="chrome", timeout=40)
+def get(url: str, **kwargs):
+    return requests.get(url, headers=HEADERS, impersonate="chrome", timeout=40, **kwargs)
+
+
+def compact(value):
+    if isinstance(value, dict):
+        return {k: compact(v) for k, v in value.items() if k not in {"Content", "Description", "Body"}}
+    if isinstance(value, list):
+        return [compact(v) for v in value[:4]]
+    if isinstance(value, str) and len(value) > 500:
+        return value[:500] + "..."
+    return value
 
 
 def main() -> int:
@@ -61,7 +73,6 @@ def main() -> int:
                 value = match if isinstance(match, str) else match[0]
                 if isinstance(value, str) and len(value) < 500:
                     candidates.add(value)
-        # Emit compact local contexts around useful tokens.
         for token in ("announcement", "pengumuman", "pageNumber", "pageSize"):
             pos = lowered.find(token.lower())
             if pos >= 0:
@@ -73,6 +84,26 @@ def main() -> int:
         if any(k in c.lower() for k in ("announcement", "pengumuman", "financial", "disclosure", "api", "listedcompany"))
     )
     print(json.dumps({"endpoint_candidates": filtered[:200]}, ensure_ascii=False, indent=2))
+
+    probes = [
+        {"keywords": "", "pageNumber": 1, "pageSize": 2, "dateFrom": "", "dateTo": "", "lang": "id"},
+        {"keywords": "Penyampaian Laporan Keuangan", "pageNumber": 1, "pageSize": 3, "dateFrom": "2026-09-01", "dateTo": "2026-09-08", "lang": "id"},
+        {"keywords": "Laporan Bulanan Registrasi Pemegang Efek", "pageNumber": 1, "pageSize": 2, "dateFrom": "2026-09-01", "dateTo": "2026-09-08", "lang": "id"},
+        {"keywords": "", "pageNumber": 1, "pageSize": 1, "dateFrom": "2025-08-01", "dateTo": "2025-08-02", "lang": "id"},
+    ]
+    for params in probes:
+        r = get(API, params=params)
+        payload = None
+        try:
+            payload = r.json()
+        except Exception:
+            pass
+        print(json.dumps({
+            "api_status": r.status_code,
+            "params": params,
+            "content_type": r.headers.get("content-type"),
+            "payload": compact(payload) if payload is not None else r.text[:1000],
+        }, ensure_ascii=False, default=str))
     return 0
 
 
