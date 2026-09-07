@@ -214,9 +214,6 @@ select
   c.unverified_rows,
   c.bad_semantics_rows,
   c.missing_stock_confirmation_rows,
-  c.missing_reliability_rows,
-  c.reliability_violation_rows,
-  c.full_breadth_reliability_violation_rows,
   a.failed_audit_rows,
   case
     when p.phase3a_gate_state='PHASE3A_READY'
@@ -234,7 +231,10 @@ select
       and a.failed_audit_rows=0
       then 'PHASE3B_READY'
     else 'PHASE3B_NOT_READY'
-  end phase3b_gate_state
+  end phase3b_gate_state,
+  c.missing_reliability_rows,
+  c.reliability_violation_rows,
+  c.full_breadth_reliability_violation_rows
 from p
 cross join s
 cross join c
