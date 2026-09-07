@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-05T15:31:04.127344+00:00",
+  "generated_at": "2026-09-07T17:54:15.700167+00:00",
   "latest_trade_date": "2026-09-04",
   "minimum_bars": 80,
   "period": "1y",
@@ -23,12 +23,12 @@
       "ticker": "RANS"
     },
     {
-      "bars": 40,
-      "ticker": "PRDL"
-    },
-    {
       "bars": 42,
       "ticker": "JECX"
+    },
+    {
+      "bars": 40,
+      "ticker": "PRDL"
     },
     {
       "bars": 42,
@@ -44,10 +44,10 @@
   "sector_enrichment": {
     "coverage_pct": 100.0,
     "known": 700,
-    "requests": 0,
-    "resolved": 0,
+    "requests": 3,
+    "resolved": 3,
     "source": "STOCKANALYSIS_PROFILE_FALLBACK_ONLY_FOR_UNKNOWN",
-    "status": "PRESERVED",
+    "status": "UPDATED",
     "unknown": 0
   },
   "source": "Yahoo Finance public chart/download endpoints",
