@@ -5,6 +5,7 @@ from idx_flow_scanner.providers.block_idx_evidence import (
     financial_filings_from_announcements,
     infer_financial_period,
     is_official_idx_url,
+    official_idx_transport_candidates,
     parse_block_idx_announcement_html,
     parse_block_idx_timestamp,
 )
@@ -16,6 +17,15 @@ def test_official_url_allowlist() -> None:
     assert not is_official_idx_url("http://www.idx.co.id/StaticData/a.pdf")
     assert not is_official_idx_url("https://example.com/a.pdf")
     assert not is_official_idx_url("https://idx.co.id.evil.example/a.pdf")
+
+
+def test_official_transport_falls_back_to_block_host_same_path() -> None:
+    original = "https://www.idx.co.id/StaticData/NewsAndAnnouncement/a.pdf?x=1"
+    assert official_idx_transport_candidates(original) == [
+        original,
+        "https://block.idx.id/StaticData/NewsAndAnnouncement/a.pdf?x=1",
+    ]
+    assert official_idx_transport_candidates("https://example.com/a.pdf") == []
 
 
 def test_timestamp_is_wib_point_in_time() -> None:
