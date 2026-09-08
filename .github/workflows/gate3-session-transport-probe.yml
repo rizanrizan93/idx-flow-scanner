@@ -1,0 +1,75 @@
+name: Gate 3 Session Transport Probe
+
+on:
+  push:
+    branches:
+      - evidence-v5/financial-facts-ingest-staging
+    paths:
+      - '.github/workflows/gate3-session-transport-probe.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Probe warmed official IDX sessions
+        run: |
+          PYTHONPATH=src:. python - <<'PY'
+          import hashlib,json
+          from io import BytesIO
+          from pathlib import Path
+          from zipfile import is_zipfile
+          from curl_cffi import requests
+
+          ids={
+            'BLOCKIDX-FILING-0d907e3492e16a634bff6d32024fa1f5',
+            'BLOCKIDX-FILING-6caf1b958e5011e942001bbfe37461c6',
+            'BLOCKIDX-FILING-f449718babbd82c224485c0ffc7d1764',
+          }
+          src=json.loads(Path('data/cache/evidence_v5/block_idx_historical_financial_filings.json').read_text())
+          rows=[r for r in src.get('rows',[]) if str(r.get('filing_id') or '') in ids]
+          headers={'Accept':'application/zip,application/octet-stream,*/*','Accept-Language':'id-ID,id;q=0.9,en;q=0.8','Referer':'https://www.idx.co.id/id/perusahaan-tercatat/laporan-keuangan-dan-tahunan','User-Agent':'Mozilla/5.0'}
+          warmups=[
+            'https://www.idx.co.id/',
+            'https://www.idx.co.id/id/perusahaan-tercatat/laporan-keuangan-dan-tahunan',
+            'https://block.idx.id/',
+          ]
+          out=[]
+          for row in rows:
+            item={'ticker':row['ticker'],'filing_id':row['filing_id'],'url':row['file_url'],'variants':[]}
+            for warm in warmups:
+              s=requests.Session(impersonate='chrome')
+              variant={'warmup_url':warm}
+              try:
+                wr=s.get(warm,headers={'User-Agent':'Mozilla/5.0','Accept':'text/html,*/*'},timeout=20,allow_redirects=True)
+                variant['warmup_status']=int(wr.status_code)
+                variant['warmup_final_url']=str(wr.url)
+                variant['cookie_names']=sorted([c.name for c in s.cookies.jar])
+              except Exception as exc:
+                variant['warmup_error']=f'{type(exc).__name__}: {exc}'
+              try:
+                r=s.get(str(row['file_url']),headers=headers,timeout=20,allow_redirects=True)
+                data=bytes(r.content or b'')
+                variant['attachment']={'status':int(r.status_code),'final_url':str(r.url),'bytes':len(data),'content_type':r.headers.get('content-type'),'is_zip':bool(is_zipfile(BytesIO(data))) if data else False,'sha256':hashlib.sha256(data).hexdigest() if data else None,'prefix_hex':data[:16].hex()}
+              except Exception as exc:
+                variant['attachment']={'error':f'{type(exc).__name__}: {exc}'}
+              item['variants'].append(variant)
+            out.append(item)
+          out.sort(key=lambda x:x['ticker'])
+          Path('gate3_session_transport_probe.json').write_text(json.dumps(out,ensure_ascii=False,indent=2,sort_keys=True)+'\n')
+          print(json.dumps(out,ensure_ascii=False,sort_keys=True))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gate3-session-transport-probe
+          path: gate3_session_transport_probe.json
+          retention-days: 7
