@@ -1,0 +1,92 @@
+name: Full Financial Facts Proof
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/full-financial-facts-proof.yml'
+      - 'scripts/backfill_block_idx_financial_facts.py'
+      - 'scripts/shard_block_idx_financial_facts.py'
+      - 'src/idx_flow_scanner/providers/block_idx_financial_facts.py'
+      - 'src/idx_flow_scanner/providers/block_idx_financial_locator.py'
+      - 'data/cache/evidence_v5/block_idx_historical_financial_filings.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: full-financial-facts-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  full-proof:
+    if: github.event.pull_request.number == 87
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Parser, locator, and shard contract tests
+        run: >-
+          PYTHONPATH=src:. pytest -q
+          tests/test_block_idx_financial_facts.py
+          tests/test_block_idx_financial_locator.py
+          tests/test_shard_block_idx_financial_facts.py
+      - name: Full official IDX instance-XBRL backfill
+        run: >-
+          PYTHONPATH=src python scripts/backfill_block_idx_financial_facts.py
+          --workers 8
+          --output /tmp/block_idx_financial_facts_full.json
+      - name: Build deterministic ingest shards
+        run: >-
+          PYTHONPATH=src:. python scripts/shard_block_idx_financial_facts.py
+          --source /tmp/block_idx_financial_facts_full.json
+          --out-dir financial_facts_full
+          --filings-per-shard 500
+      - name: Build compact proof summary
+        if: always()
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          src = Path('/tmp/block_idx_financial_facts_full.json')
+          out = Path('financial_facts_full_summary.json')
+          if not src.exists():
+              out.write_text(json.dumps({'status':'NO_BACKFILL_OUTPUT'}, indent=2) + '\n')
+              raise SystemExit(0)
+          data = json.loads(src.read_text())
+          summary = {
+              'schema_version': data.get('schema_version'),
+              'selected_filing_rows': data.get('selected_filing_rows'),
+              'parsed_filing_rows': data.get('parsed_filing_rows'),
+              'failed_filing_rows': data.get('failed_filing_rows'),
+              'fact_rows': data.get('fact_rows'),
+              'distinct_tickers': len(data.get('distinct_tickers') or []),
+              'distinct_metrics': data.get('distinct_metrics'),
+              'reporting_currencies': data.get('reporting_currencies'),
+              'exact_locator_resolution_rows': data.get('exact_locator_resolution_rows'),
+              'metric_catalog_sha256': data.get('metric_catalog_sha256'),
+              'failures': data.get('failures'),
+              'production_scoring_changed': data.get('production_scoring_changed'),
+          }
+          out.write_text(json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True) + '\n')
+          PY
+      - name: Upload compact full-backfill summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-financial-facts-summary
+          path: financial_facts_full_summary.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Upload validated financial fact shards
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-financial-facts-shards
+          path: financial_facts_full/
+          if-no-files-found: error
+          retention-days: 30
