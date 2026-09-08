@@ -1,0 +1,63 @@
+name: Gate 3 Sample Transport Probe
+
+on:
+  push:
+    branches:
+      - evidence-v5/financial-facts-ingest-staging
+    paths:
+      - '.github/workflows/gate3-sample-probe.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  sample-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Probe representative Gate 3 failures
+        run: |
+          PYTHONPATH=src:. python - <<'PY'
+          import json
+          from concurrent.futures import ThreadPoolExecutor, as_completed
+          from pathlib import Path
+          from idx_flow_scanner.providers.block_idx_financial_transport import OfficialIDXAttachmentDownloadError
+          from scripts.backfill_block_idx_financial_facts_resilient import _extract_one, _failure_record
+
+          ids = {
+              'BLOCKIDX-FILING-5d8fa34776c43c79ae121a28578c4985',  # prior 503 NFCX
+              'BLOCKIDX-FILING-71997c196121b9e69aadf3558287d4ed',  # prior 503 NICK
+              'BLOCKIDX-FILING-0d907e3492e16a634bff6d32024fa1f5',  # prior 404 ABBA
+              'BLOCKIDX-FILING-6caf1b958e5011e942001bbfe37461c6',  # prior 404 ADES
+              'BLOCKIDX-FILING-f449718babbd82c224485c0ffc7d1764',  # prior invalid ZIP PIKI
+              'BLOCKIDX-FILING-9068963ca8bea95e6672016a8bc0594b',  # prior timeout PPAP
+          }
+          source = json.loads(Path('data/cache/evidence_v5/block_idx_historical_financial_filings.json').read_text())
+          rows = [r for r in source.get('rows', []) if str(r.get('filing_id') or '') in ids]
+          if len(rows) != len(ids):
+              raise SystemExit(f'sample identity mismatch: {len(rows)}/{len(ids)}')
+          out=[]
+          with ThreadPoolExecutor(max_workers=6) as pool:
+              pending={pool.submit(_extract_one,row,timeout=20,retries=1):row for row in rows}
+              for fut in as_completed(pending):
+                  row=pending[fut]
+                  try:
+                      facts,t=fut.result()
+                      out.append({'status':'OK','ticker':t.get('ticker'),'filing_id':t.get('filing_id'),'fact_rows':len(facts),'currency':t.get('reporting_currency'),'url_resolution_state':t.get('url_resolution_state'),'resolved_file_url':t.get('resolved_file_url'),'transport_attempts':t.get('transport_attempts')})
+                  except Exception as exc:
+                      out.append({'status':'FAIL',**_failure_record(row,exc,pass_number=1)})
+          out.sort(key=lambda x:(x.get('ticker',''),x.get('filing_id','')))
+          Path('gate3_sample_probe.json').write_text(json.dumps(out,ensure_ascii=False,indent=2,sort_keys=True)+'\n')
+          print(json.dumps(out,ensure_ascii=False,sort_keys=True))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gate3-sample-probe
+          path: gate3_sample_probe.json
+          retention-days: 7
