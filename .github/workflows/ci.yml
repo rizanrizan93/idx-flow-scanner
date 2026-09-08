@@ -17,3 +17,9 @@ jobs:
       - run: PYTHONPATH=src pytest -q
       - name: Temporary official IDX workbook probe
         run: PYTHONPATH=src python scripts/probe_idx_financial_workbook.py
+      - name: Upload temporary taxonomy report
+        uses: actions/upload-artifact@v4
+        with:
+          name: financial-taxonomy-report
+          path: taxonomy_report.json
+          if-no-files-found: error
