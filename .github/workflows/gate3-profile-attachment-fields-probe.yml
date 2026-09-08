@@ -1,0 +1,62 @@
+name: Gate 3 Profile Attachment Fields Probe
+
+on:
+  push:
+    branches:
+      - evidence-v5/financial-facts-ingest-staging
+    paths:
+      - '.github/workflows/gate3-profile-attachment-fields-probe.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Inspect exact official profile attachment fields
+        run: |
+          PYTHONPATH=src:. python - <<'PY'
+          import json
+          from pathlib import Path
+          from datetime import datetime
+          from idx_flow_scanner.providers.block_idx_financial_history import fetch_profile_announcements_market
+
+          ids={
+            'BLOCKIDX-FILING-0d907e3492e16a634bff6d32024fa1f5',
+            'BLOCKIDX-FILING-6caf1b958e5011e942001bbfe37461c6',
+            'BLOCKIDX-FILING-f449718babbd82c224485c0ffc7d1764',
+          }
+          src=json.loads(Path('data/cache/evidence_v5/block_idx_historical_financial_filings.json').read_text())
+          rows=[r for r in src.get('rows',[]) if str(r.get('filing_id') or '') in ids]
+          out=[]
+          for row in rows:
+            dt=datetime.fromisoformat(row['published_at'])
+            replies=fetch_profile_announcements_market(dt.date(),dt.date(),ticker=row['ticker'],timeout=30)
+            for reply in replies:
+              ann=reply.get('pengumuman') if isinstance(reply,dict) else None
+              if not isinstance(ann,dict) or str(ann.get('Id2') or '') != str(row.get('announcement_id') or ''):
+                continue
+              matches=[]
+              for att in reply.get('attachments') or []:
+                if not isinstance(att,dict): continue
+                name=str(att.get('OriginalFilename') or att.get('PDFFilename') or '').strip()
+                if name.casefold() != 'instance.zip': continue
+                # Exact official response fields; values are metadata only, no secrets.
+                matches.append(att)
+              out.append({'ticker':row['ticker'],'filing_id':row['filing_id'],'announcement':ann,'instance_attachments':matches})
+          Path('gate3_profile_attachment_fields.json').write_text(json.dumps(out,ensure_ascii=False,indent=2,sort_keys=True)+'\n')
+          print(json.dumps(out,ensure_ascii=False,sort_keys=True))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gate3-profile-attachment-fields
+          path: gate3_profile_attachment_fields.json
+          retention-days: 7
