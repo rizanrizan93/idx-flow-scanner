@@ -1,0 +1,45 @@
+name: Probe Block IDX Financial Workbook
+
+on:
+  push:
+    branches:
+      - evidence-expansion/block-idx-historical-backfill
+    paths:
+      - '.github/workflows/probe-block-idx-xlsx.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Download verified official IDX XLSX sample
+        env:
+          PYTHONPATH: src
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from idx_flow_scanner.providers.block_idx_evidence import download_official_idx_attachment
+          url = 'https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202505/20250502132830-52762-0/FinancialStatement-2025-I-AADI.xlsx'
+          data, digest, content_type = download_official_idx_attachment(url)
+          Path('aadi_financial_sample.xlsx').write_bytes(data)
+          Path('aadi_financial_sample.sha256').write_text(digest + '\n' + str(content_type) + '\n', encoding='utf-8')
+          print({'bytes': len(data), 'sha256': digest, 'content_type': content_type})
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: aadi-financial-workbook-sample
+          path: |
+            aadi_financial_sample.xlsx
+            aadi_financial_sample.sha256
+          if-no-files-found: error
+          retention-days: 1
