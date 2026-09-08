@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from io import BytesIO
+from pathlib import Path
 from zipfile import ZipFile
 import xml.etree.ElementTree as ET
 
@@ -20,6 +21,7 @@ KEYWORDS = (
     "cashandcash", "cashflow", "cashflows", "operatingactiv", "investingactiv",
     "financingactiv", "interestincome", "interestexpense", "deposit", "loan", "financing",
 )
+REPORT_PATH = Path("taxonomy_report.json")
 
 
 def local_name(tag: str) -> str:
@@ -143,7 +145,9 @@ def main() -> None:
             output.append(inspect_ticker(ticker))
         except Exception as exc:
             output.append({"ticker": ticker, "error": f"{type(exc).__name__}: {exc}"})
-    print(json.dumps(output, ensure_ascii=False, indent=2, default=str))
+    rendered = json.dumps(output, ensure_ascii=False, indent=2, default=str)
+    REPORT_PATH.write_text(rendered + "\n", encoding="utf-8")
+    print(rendered)
 
 
 if __name__ == "__main__":
