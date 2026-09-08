@@ -3,8 +3,8 @@ from __future__ import annotations
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-from scripts.backfill_block_idx_financial_evidence import dedupe_profile_replies
 from idx_flow_scanner.providers.block_idx_financial_revisions import (
+    dedupe_profile_replies,
     financial_revision_filings_from_profile_replies,
     infer_profile_financial_period,
 )
