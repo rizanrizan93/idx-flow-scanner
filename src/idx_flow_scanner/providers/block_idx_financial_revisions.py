@@ -89,7 +89,14 @@ def _infer_from_standard_financial_filename(file_name: str) -> tuple[int | None,
 
 
 def infer_profile_financial_period(title: str, attachment_names: Iterable[str]) -> tuple[int | None, str | None]:
-    names = [str(name) for name in attachment_names if str(name or "").strip()]
+    # Only structured attachments are allowed to determine the period of structured evidence.
+    # Supporting PDFs can legitimately contain prior-year comparative material and must not
+    # create a false period conflict (observed in MEDS/GPSO official announcements).
+    names = [
+        str(name)
+        for name in attachment_names
+        if str(name or "").strip() and PurePosixPath(str(name)).suffix.lower() in STRUCTURED_SUFFIXES
+    ]
 
     # The standardized IDX FinancialStatement filename is the strongest period authority.
     # This must be evaluated before title fallback because Indonesian phrases such as
@@ -198,6 +205,7 @@ def financial_revision_filings_from_profile_replies(
                 standard_candidates = sorted({
                     candidate
                     for name in attachment_names
+                    if PurePosixPath(name).suffix.lower() in STRUCTURED_SUFFIXES
                     for candidate in [_infer_from_standard_financial_filename(name)]
                     if candidate[0] is not None and candidate[1] is not None
                 })
@@ -218,7 +226,7 @@ def financial_revision_filings_from_profile_replies(
             skipped_non_pit += 1
             if len(anomaly_samples) < 50:
                 anomaly_samples.append({
-                    "reason": "NON_PIT_PUBLICATION_TIME",
+                    "reason": "SOURCE_PERIOD_CONFLICT_REJECTED",
                     "ticker": ticker,
                     "published_at": published.isoformat(),
                     "announcement_id": announcement_id,
