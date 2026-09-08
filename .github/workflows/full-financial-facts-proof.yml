@@ -6,15 +6,17 @@ on:
       - '.github/workflows/full-financial-facts-proof.yml'
       - 'scripts/backfill_block_idx_financial_facts.py'
       - 'scripts/backfill_block_idx_financial_facts_resilient.py'
-      - 'scripts/shard_block_idx_financial_facts.py'
+      - 'scripts/close_gate3_financial_facts.py'
       - 'src/idx_flow_scanner/providers/block_idx_financial_facts.py'
       - 'src/idx_flow_scanner/providers/block_idx_financial_locator.py'
       - 'src/idx_flow_scanner/providers/block_idx_financial_profile_locator.py'
       - 'src/idx_flow_scanner/providers/block_idx_financial_transport.py'
+      - 'tests/test_gate3_financial_facts_closure.py'
       - 'data/cache/evidence_v5/block_idx_historical_financial_filings.json'
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: full-financial-facts-${{ github.event.pull_request.number }}
@@ -24,69 +26,67 @@ jobs:
   full-proof:
     if: github.event.pull_request.number == 87
     runs-on: ubuntu-latest
-    timeout-minutes: 360
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
           cache: pip
       - run: pip install -r requirements.txt
-      - name: Parser, transport, locator, and shard contract tests
+
+      - name: Prove raw full-corpus extractor is unchanged since immutable proof
+        run: |
+          set -euo pipefail
+          BASE=3765c4cab4ccf9a04005439ae1df644dbdbb41f8
+          git cat-file -e "$BASE^{commit}"
+          bad=0
+          while IFS= read -r path; do
+            case "$path" in
+              .github/workflows/gate3-*|.github/workflows/staging-financial-facts-ingest-ci.yml|.github/workflows/full-financial-facts-proof.yml|scripts/close_gate3_financial_facts.py|tests/test_gate3_financial_facts_closure.py)
+                ;;
+              *)
+                echo "UNEXPECTED_POST_PROOF_CHANGE:$path"
+                bad=1
+                ;;
+            esac
+          done < <(git diff --name-only "$BASE"..HEAD)
+          test "$bad" -eq 0
+
+      - name: Parser, transport, locator, closure and shard contract tests
         run: >-
           PYTHONPATH=src:. pytest -q
           tests/test_block_idx_financial_facts.py
           tests/test_block_idx_financial_locator.py
           tests/test_block_idx_financial_transport.py
           tests/test_block_idx_financial_profile_locator.py
+          tests/test_gate3_financial_facts_closure.py
           tests/test_shard_block_idx_financial_facts.py
-      - name: Full official IDX instance-XBRL backfill
+
+      - name: Download immutable raw Full Proof 4 cache
+        uses: actions/download-artifact@v4
+        with:
+          name: full-financial-facts-cache
+          path: gate3-input
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: 34211607255
+
+      - name: Re-run fail-closed Gate 3 closure
+        id: closure
+        continue-on-error: true
         run: >-
-          PYTHONPATH=src:. python scripts/backfill_block_idx_financial_facts_resilient.py
-          --workers 8
-          --timeout 75
-          --retries 2
-          --retry-passes 2
-          --retry-workers 2
-          --retry-retries 4
+          PYTHONPATH=src:. python scripts/close_gate3_financial_facts.py
+          --source data/cache/evidence_v5/block_idx_historical_financial_filings.json
+          --cache gate3-input/block_idx_financial_facts_full.json
           --output /tmp/block_idx_financial_facts_full.json
-      - name: Build deterministic ingest shards
-        run: >-
-          PYTHONPATH=src:. python scripts/shard_block_idx_financial_facts.py
-          --source /tmp/block_idx_financial_facts_full.json
-          --out-dir financial_facts_full
-          --filings-per-shard 500
-      - name: Build compact proof summary
-        if: always()
-        run: |
-          python - <<'PY'
-          import json
-          from pathlib import Path
-          src = Path('/tmp/block_idx_financial_facts_full.json')
-          out = Path('financial_facts_full_summary.json')
-          if not src.exists():
-              out.write_text(json.dumps({'status':'NO_BACKFILL_OUTPUT'}, indent=2) + '\n')
-              raise SystemExit(0)
-          data = json.loads(src.read_text())
-          summary = {
-              'schema_version': data.get('schema_version'),
-              'selected_filing_rows': data.get('selected_filing_rows'),
-              'parsed_filing_rows': data.get('parsed_filing_rows'),
-              'failed_filing_rows': data.get('failed_filing_rows'),
-              'fact_rows': data.get('fact_rows'),
-              'distinct_tickers': len(data.get('distinct_tickers') or []),
-              'distinct_metrics': data.get('distinct_metrics'),
-              'reporting_currencies': data.get('reporting_currencies'),
-              'exact_locator_resolution_rows': data.get('exact_locator_resolution_rows'),
-              'metric_catalog_sha256': data.get('metric_catalog_sha256'),
-              'failure_class_counts': data.get('failure_class_counts'),
-              'retry_history': data.get('retry_history'),
-              'failures': data.get('failures'),
-              'production_scoring_changed': data.get('production_scoring_changed'),
-          }
-          out.write_text(json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True) + '\n')
-          PY
-      - name: Upload compact full-backfill summary
+          --summary financial_facts_full_summary.json
+          --workers 6
+          --timeout 20
+
+      - name: Upload compact full-corpus Gate 3 summary
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -94,7 +94,8 @@ jobs:
           path: financial_facts_full_summary.json
           if-no-files-found: error
           retention-days: 30
-      - name: Upload partial or complete full cache for diagnosis/resume
+
+      - name: Upload final classified full cache
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -103,11 +104,30 @@ jobs:
           if-no-files-found: warn
           compression-level: 9
           retention-days: 14
-      - name: Upload validated financial fact shards
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: full-financial-facts-shards
-          path: financial_facts_full/
-          if-no-files-found: error
-          retention-days: 30
+
+      - name: Enforce Gate 3 evidence contract
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          path=Path('financial_facts_full_summary.json')
+          if not path.exists():
+              raise SystemExit('GATE3_CLOSURE_SUMMARY_MISSING')
+          data=json.loads(path.read_text())
+          required={
+              'gate3_status':'PASS',
+              'selected_filing_rows':12285,
+              'distinct_metrics':19,
+              'retryable_failure_rows':0,
+              'parser_or_contract_failure_rows':0,
+              'production_scoring_changed':False,
+          }
+          bad={k:(data.get(k),v) for k,v in required.items() if data.get(k)!=v}
+          if bad:
+              raise SystemExit('GATE3_CONTRACT_FAIL:'+json.dumps(bad,sort_keys=True))
+          if data.get('parsed_filing_rows',0)+data.get('failed_filing_rows',0)!=data.get('selected_filing_rows'):
+              raise SystemExit('GATE3_RECONCILIATION_FAIL')
+          if data.get('no_fake_100_percent') is not True:
+              raise SystemExit('GATE3_NO_FAKE_100_PERCENT_GUARD_FAIL')
+          print(json.dumps({k:v for k,v in data.items() if k!='outcomes'},sort_keys=True))
+          PY
