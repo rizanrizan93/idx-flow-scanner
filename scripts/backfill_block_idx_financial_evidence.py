@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -21,6 +22,7 @@ from idx_flow_scanner.providers.block_idx_financial_revisions import (
 
 WIB = ZoneInfo("Asia/Jakarta")
 PERIODS = ("TW1", "TW2", "TW3", "AUDIT")
+EQUITY_TICKER_RE = re.compile(r"^[A-Z0-9]{4,12}$")
 DEFAULT_OUT = Path("data/cache/evidence_v5/block_idx_historical_financial_filings.json")
 DEFAULT_META = Path("data/cache/evidence_v5/block_idx_historical_financial_backfill_meta.json")
 
@@ -116,7 +118,16 @@ def main() -> int:
         deduped_announcements,
         now=now,
     )
-    filings = revision_filings
+
+    non_equity_rows = [
+        row for row in revision_filings
+        if not EQUITY_TICKER_RE.fullmatch(str(row.get("ticker") or "").strip().upper())
+    ]
+    non_equity_tickers = sorted({str(row.get("ticker") or "").strip().upper() for row in non_equity_rows})
+    filings = [
+        row for row in revision_filings
+        if EQUITY_TICKER_RE.fullmatch(str(row.get("ticker") or "").strip().upper())
+    ]
     filings.sort(key=lambda row: (str(row["ticker"]), int(row["report_year"]), str(row["report_period"]), str(row["published_at"]), str(row["file_name"])))
 
     preferred = []
@@ -160,6 +171,8 @@ def main() -> int:
         "financial_announcement_rows": len(deduped_announcements),
         "report_groups": len(report_groups),
         "revision_backfill": revision_telemetry,
+        "non_equity_filing_rows_excluded": len(non_equity_rows),
+        "non_equity_tickers_excluded": non_equity_tickers,
         "latest_report_corroboration": match_telemetry,
         "latest_report_corroborated_filing_rows": len(latest_filings),
         "download_smoke": download_telemetry,
@@ -173,6 +186,8 @@ def main() -> int:
     print(json.dumps({
         "status": "OK",
         "revision_filing_rows": len(filings),
+        "non_equity_filing_rows_excluded": len(non_equity_rows),
+        "non_equity_tickers_excluded": non_equity_tickers,
         "revision_inferred_announcements": revision_telemetry["inferred_announcements"],
         "revision_unresolved_period_announcements": revision_telemetry["unresolved_period_announcements"],
         "duplicate_profile_replies_merged": reply_dedupe_telemetry["duplicate_profile_replies_merged"],
