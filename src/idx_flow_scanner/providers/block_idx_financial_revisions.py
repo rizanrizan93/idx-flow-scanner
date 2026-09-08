@@ -89,17 +89,28 @@ def _infer_from_standard_financial_filename(file_name: str) -> tuple[int | None,
 
 
 def infer_profile_financial_period(title: str, attachment_names: Iterable[str]) -> tuple[int | None, str | None]:
-    candidates: set[tuple[int, str]] = set()
     names = [str(name) for name in attachment_names if str(name or "").strip()]
+
+    # The standardized IDX FinancialStatement filename is the strongest period authority.
+    # This must be evaluated before title fallback because Indonesian phrases such as
+    # "Tidak Diaudit" contain the substring "AUDIT" but do not mean annual/audited period.
+    standard_candidates: set[tuple[int, str]] = set()
+    for name in names:
+        year, period = _infer_from_standard_financial_filename(name)
+        if year is not None and period is not None:
+            standard_candidates.add((year, period))
+    if len(standard_candidates) == 1:
+        return next(iter(standard_candidates))
+    if len(standard_candidates) > 1:
+        return None, None
+
+    fallback_candidates: set[tuple[int, str]] = set()
     for name in names:
         year, period = infer_financial_period(title, name)
         if year is not None and period is not None:
-            candidates.add((year, period))
-        year2, period2 = _infer_from_standard_financial_filename(name)
-        if year2 is not None and period2 is not None:
-            candidates.add((year2, period2))
-    if len(candidates) == 1:
-        return next(iter(candidates))
+            fallback_candidates.add((year, period))
+    if len(fallback_candidates) == 1:
+        return next(iter(fallback_candidates))
     return None, None
 
 
@@ -129,9 +140,12 @@ def financial_revision_filings_from_profile_replies(
     filings: list[dict[str, object]] = []
     seen: set[tuple[str, int, str, str]] = set()
     financial_announcements = 0
+    structured_financial_announcements = 0
+    nonstructured_financial_notices = 0
     inferred_announcements = 0
     corroborated_fallback = 0
     unresolved_period = 0
+    unresolved_structured = 0
     skipped_non_pit = 0
     skipped_nonofficial = 0
     skipped_unstructured = 0
@@ -162,6 +176,13 @@ def financial_revision_filings_from_profile_replies(
             for item in attachments
             if _collapse(item.get("OriginalFilename") or item.get("PDFFilename"))
         ]
+        has_structured = any(PurePosixPath(name).suffix.lower() in STRUCTURED_SUFFIXES for name in attachment_names)
+        if has_structured:
+            structured_financial_announcements += 1
+        else:
+            nonstructured_financial_notices += 1
+            continue
+
         year, period = infer_profile_financial_period(title, attachment_names)
         file_modified_at: str | None = None
         if year is None or period is None:
@@ -171,6 +192,7 @@ def financial_revision_filings_from_profile_replies(
                 corroborated_fallback += 1
         if year is None or period is None:
             unresolved_period += 1
+            unresolved_structured += 1
             continue
         inferred_announcements += 1
         period_end = _period_end(int(year), str(period))
@@ -230,9 +252,12 @@ def financial_revision_filings_from_profile_replies(
     )
     return filings, {
         "financial_announcements": financial_announcements,
+        "structured_financial_announcements": structured_financial_announcements,
+        "nonstructured_financial_notices": nonstructured_financial_notices,
         "inferred_announcements": inferred_announcements,
         "corroborated_period_fallback": corroborated_fallback,
         "unresolved_period_announcements": unresolved_period,
+        "unresolved_structured_announcements": unresolved_structured,
         "skipped_non_pit_announcements": skipped_non_pit,
         "skipped_nonofficial_attachments": skipped_nonofficial,
         "skipped_unstructured_attachments": skipped_unstructured,
