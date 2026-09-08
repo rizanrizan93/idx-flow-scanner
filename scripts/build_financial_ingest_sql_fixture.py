@@ -51,6 +51,7 @@ def main():
       end;
     end $$;""")
     sql.append("do $$ begin if has_table_privilege('anon','public.flow_financial_fact_manifest_exclusion_v5','SELECT') or has_table_privilege('authenticated','public.flow_financial_fact_evidence_v5','INSERT') or has_function_privilege('anon','public.flow_register_block_idx_financial_fact_manifest_v5(text,text)','EXECUTE') or has_table_privilege('service_role','public.flow_financial_fact_manifest_exclusion_v5','DELETE') then raise exception 'ACL_FAILED'; end if; end $$;")
+    sql.append("do $$ declare r jsonb; begin r:=public.flow_audit_block_idx_financial_fact_manifest_v5('"+SHA+"'); if jsonb_array_length(r->'checks') <> 27 or r->>'gate6_status' <> 'FAIL' then raise exception 'AUDIT_PARTIAL_CORPUS_FALSE_PASS'; end if; end $$;")
     sql.append("select 'REAL_ARTIFACT_REGISTRATION_INGEST_IDEMPOTENCY_CONFLICT_ACL_PASS' as result;")
     Path('/tmp/financial_ingest_fixture.sql').write_text('\n'.join(sql)+'\n')
 
