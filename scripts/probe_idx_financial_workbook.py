@@ -15,11 +15,18 @@ from idx_flow_scanner.providers.block_idx_financial_history import (
 XBRLI = "http://www.xbrl.org/2003/instance"
 XBRLDI = "http://xbrl.org/2006/xbrldi"
 XSI = "http://www.w3.org/2001/XMLSchema-instance"
-TICKERS = ("BSSR", "ICBP", "BBCA", "BSDE")
+
+# Temporary, deliberately cross-sector taxonomy probe. These issuers cover the
+# general/mining, consumer, bank/sharia-finance, financing, infrastructure,
+# insurance, property, and securities IDX entry-point families where available.
+TICKERS = ("BSSR", "ICBP", "BBCA", "BFIN", "TLKM", "TUGU", "BSDE", "TRIM")
 KEYWORDS = (
     "asset", "liabil", "equity", "revenue", "sales", "income", "profit", "loss",
     "cashandcash", "cashflow", "cashflows", "operatingactiv", "investingactiv",
     "financingactiv", "interestincome", "interestexpense", "deposit", "loan", "financing",
+    "currentasset", "currentliabil", "noncurrentasset", "noncurrentliabil",
+    "propertyplant", "equipment", "paymentsforacquisition", "capitalexpend",
+    "premium", "underwriting", "commission", "securities", "costofsales", "expense",
 )
 REPORT_PATH = Path("taxonomy_report.json")
 
@@ -51,10 +58,13 @@ def context_map(root: ET.Element) -> dict[str, dict[str, object]]:
     out: dict[str, dict[str, object]] = {}
     for ctx in root.findall(f"{{{XBRLI}}}context"):
         period = ctx.find(f"{{{XBRLI}}}period")
+        identifier = ctx.find(f"./{{{XBRLI}}}entity/{{{XBRLI}}}identifier")
         dims = list(ctx.findall(f".//{{{XBRLDI}}}explicitMember")) + list(
             ctx.findall(f".//{{{XBRLDI}}}typedMember")
         )
         out[str(ctx.attrib.get("id") or "")] = {
+            "entity_identifier": str(identifier.text or "").strip() if identifier is not None else None,
+            "entity_scheme": str(identifier.attrib.get("scheme") or "").strip() if identifier is not None else None,
             "instant": period.findtext(f"{{{XBRLI}}}instant") if period is not None else None,
             "start": period.findtext(f"{{{XBRLI}}}startDate") if period is not None else None,
             "end": period.findtext(f"{{{XBRLI}}}endDate") if period is not None else None,
@@ -95,7 +105,7 @@ def inspect_ticker(ticker: str) -> dict[str, object]:
         and context_id in {"CurrentYearInstant", "CurrentYearDuration", "CurrentPeriodDuration"}
     }
     facts: list[dict[str, object]] = []
-    seen: set[tuple[str, str, str | None]] = set()
+    seen: set[tuple[str, str, str | None, str | None]] = set()
     for node in list(root):
         context_ref = str(node.attrib.get("contextRef") or "")
         if context_ref not in current_contexts:
@@ -103,7 +113,8 @@ def inspect_ticker(ticker: str) -> dict[str, object]:
         concept = local_name(node.tag)
         if not any(keyword in concept.lower() for keyword in KEYWORDS):
             continue
-        key = (concept, context_ref, node.attrib.get("unitRef"))
+        namespace = namespace_uri(node.tag)
+        key = (concept, context_ref, node.attrib.get("unitRef"), namespace)
         if key in seen:
             continue
         seen.add(key)
@@ -111,7 +122,7 @@ def inspect_ticker(ticker: str) -> dict[str, object]:
         facts.append(
             {
                 "concept": concept,
-                "namespace": namespace_uri(node.tag),
+                "namespace": namespace,
                 "context": context_ref,
                 "period": current_contexts[context_ref],
                 "unitRef": node.attrib.get("unitRef"),
@@ -122,7 +133,7 @@ def inspect_ticker(ticker: str) -> dict[str, object]:
                 "value": value[:100],
             }
         )
-    facts.sort(key=lambda item: (str(item["context"]), str(item["concept"])))
+    facts.sort(key=lambda item: (str(item["context"]), str(item["concept"]), str(item["namespace"])))
     return {
         "ticker": ticker,
         "report_period_end": report["report_period_end"],
@@ -134,6 +145,7 @@ def inspect_ticker(ticker: str) -> dict[str, object]:
         "instance_member": member,
         "current_contexts": current_contexts,
         "units": units,
+        "taxonomy_namespaces": sorted({str(item["namespace"]) for item in facts if item.get("namespace")}),
         "candidate_facts": facts,
     }
 
