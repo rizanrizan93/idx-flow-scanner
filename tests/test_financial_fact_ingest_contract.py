@@ -78,6 +78,7 @@ def test_audit_separates_revision_duplicates_from_key_corruption() -> None:
 def test_manifest_completion_fix_does_not_invent_manifest_level_shard_hash_columns() -> None:
     sql = _read(FINALIZER_FIX)
     assert "FINANCIAL_FACT_MANIFEST_FINALIZER_PATCH_ASSERTION_FAILED" in sql
+    assert "update public.flow_financial_fact_manifest_v5" in sql
     assert "completed_at = now()" in sql
     assert "alter table public.flow_financial_fact_manifest_v5" not in sql.lower()
     assert "add column" not in sql.lower()
