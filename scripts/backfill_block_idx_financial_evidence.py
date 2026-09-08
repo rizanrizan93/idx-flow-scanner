@@ -40,6 +40,71 @@ def month_ranges(start: date, end: date):
         cursor = next_month
 
 
+def dedupe_profile_replies(replies: list[dict]) -> tuple[list[dict], dict[str, int]]:
+    """Deduplicate paged profile replies by official announcement Id2.
+
+    Duplicate pages are merged rather than blindly dropped: attachment identities from every
+    duplicate occurrence are unioned into the retained reply. Replies without an Id2 are kept
+    unchanged and remain subject to downstream fail-closed validation.
+    """
+    deduped: list[dict] = []
+    positions: dict[str, int] = {}
+    duplicate_replies = 0
+    merged_attachment_rows = 0
+
+    for reply in replies:
+        if not isinstance(reply, dict):
+            continue
+        announcement = reply.get("pengumuman")
+        announcement_id = ""
+        if isinstance(announcement, dict):
+            announcement_id = str(announcement.get("Id2") or "").strip()
+        if not announcement_id:
+            deduped.append(reply)
+            continue
+
+        position = positions.get(announcement_id)
+        if position is None:
+            cloned = dict(reply)
+            cloned["attachments"] = [dict(item) for item in (reply.get("attachments") or []) if isinstance(item, dict)]
+            positions[announcement_id] = len(deduped)
+            deduped.append(cloned)
+            continue
+
+        duplicate_replies += 1
+        target = deduped[position]
+        target_attachments = [item for item in (target.get("attachments") or []) if isinstance(item, dict)]
+        seen = {
+            (
+                str(item.get("FullSavePath") or "").strip(),
+                str(item.get("OriginalFilename") or "").strip(),
+                str(item.get("PDFFilename") or "").strip(),
+            )
+            for item in target_attachments
+        }
+        for item in (reply.get("attachments") or []):
+            if not isinstance(item, dict):
+                continue
+            identity = (
+                str(item.get("FullSavePath") or "").strip(),
+                str(item.get("OriginalFilename") or "").strip(),
+                str(item.get("PDFFilename") or "").strip(),
+            )
+            if identity in seen:
+                continue
+            target_attachments.append(dict(item))
+            seen.add(identity)
+            merged_attachment_rows += 1
+        target["attachments"] = target_attachments
+
+    return deduped, {
+        "input_profile_replies": len(replies),
+        "deduped_profile_replies": len(deduped),
+        "duplicate_profile_replies_merged": duplicate_replies,
+        "duplicate_attachment_rows_merged": merged_attachment_rows,
+    }
+
+
 def main() -> int:
     now = datetime.now(WIB)
     today = now.date()
@@ -76,7 +141,9 @@ def main() -> int:
         )
         print(json.dumps(month_telemetry[-1], sort_keys=True))
 
-    announcements = parse_profile_announcement_replies(raw_announcements)
+    deduped_raw_announcements, reply_dedupe_telemetry = dedupe_profile_replies(raw_announcements)
+
+    announcements = parse_profile_announcement_replies(deduped_raw_announcements)
     announcement_ids: set[str] = set()
     deduped_announcements: list[dict[str, object]] = []
     for row in announcements:
@@ -104,7 +171,7 @@ def main() -> int:
             print(json.dumps(financial_query_telemetry[-1], sort_keys=True))
 
     revision_filings, revision_telemetry = financial_revision_filings_from_profile_replies(
-        raw_announcements,
+        deduped_raw_announcements,
         report_groups=report_groups,
         now=now,
     )
@@ -153,6 +220,7 @@ def main() -> int:
         "announcement_months": month_telemetry,
         "financial_queries": financial_query_telemetry,
         "raw_announcement_replies": len(raw_announcements),
+        "profile_reply_dedupe": reply_dedupe_telemetry,
         "financial_announcement_rows": len(deduped_announcements),
         "report_groups": len(report_groups),
         "revision_backfill": revision_telemetry,
@@ -171,6 +239,7 @@ def main() -> int:
         "revision_filing_rows": len(filings),
         "revision_inferred_announcements": revision_telemetry["inferred_announcements"],
         "revision_unresolved_period_announcements": revision_telemetry["unresolved_period_announcements"],
+        "duplicate_profile_replies_merged": reply_dedupe_telemetry["duplicate_profile_replies_merged"],
         "latest_matched_report_groups": match_telemetry["matched_report_groups"],
         "download_smoke_verified": len(download_telemetry),
         "production_scoring_changed": False,
