@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
+from scripts.backfill_block_idx_financial_evidence import dedupe_profile_replies
 from idx_flow_scanner.providers.block_idx_financial_revisions import (
     financial_revision_filings_from_profile_replies,
     infer_profile_financial_period,
@@ -60,9 +61,6 @@ def test_tidak_diaudit_does_not_override_standard_idx_period() -> None:
 
 
 def test_supporting_prior_year_pdf_does_not_create_structured_period_conflict() -> None:
-    # Official MEDS/GPSO announcements can attach an older comparative FinancialStatement PDF
-    # together with the current structured XLSX. Only structured attachments define the
-    # period of structured evidence.
     assert infer_profile_financial_period(
         "Penyampaian Laporan Keuangan Interim Yang Tidak Diaudit",
         [
@@ -83,6 +81,29 @@ def test_supporting_prior_year_pdf_does_not_create_structured_period_conflict() 
             "instance.zip",
         ],
     ) == (2026, "TW2")
+
+
+def test_profile_reply_dedupe_merges_unique_attachments() -> None:
+    first = _reply()
+    second = _reply()
+    second["attachments"] = [
+        dict(first["attachments"][1]),
+        {
+            "PDFFilename": "instance.zip",
+            "OriginalFilename": "instance.zip",
+            "FullSavePath": "\\\\StaticData\\\\NewsAndAnnouncement\\\\202609\\\\instance.zip",
+        },
+    ]
+    deduped, telemetry = dedupe_profile_replies([first, second])
+    assert len(deduped) == 1
+    assert telemetry["duplicate_profile_replies_merged"] == 1
+    assert telemetry["duplicate_attachment_rows_merged"] == 1
+    assert {row["OriginalFilename"] for row in deduped[0]["attachments"]} == {
+        "FinancialStatement-2026-I-DOOH.pdf",
+        "FinancialStatement-2026-I-DOOH.xlsx",
+        "inlineXBRL.zip",
+        "instance.zip",
+    }
 
 
 def test_revision_rows_preserve_announcement_identity_and_structured_files() -> None:
