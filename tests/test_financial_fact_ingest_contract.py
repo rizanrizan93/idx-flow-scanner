@@ -68,11 +68,11 @@ def test_publisher_reverifies_artifact_before_artifact_branch_push() -> None:
     workflow = _read(PUBLISHER)
     assert "actions: read" in workflow
     assert "contents: write" in workflow
-    assert "gh run download" in workflow
-    assert "status=$STATUS conclusion=$CONCLUSION" in workflow
+    assert "actions/artifacts/10055637731/zip" in workflow
+    assert "r['conclusion']=='success'" in workflow
     assert "hashlib.sha256(data).hexdigest()" in workflow
-    assert "aggregate filing count mismatch" in workflow
-    assert "aggregate fact count mismatch" in workflow
+    assert "scripts/prove_financial_fact_artifact.py" in workflow
+    assert "--verify-existing" in workflow
     assert "evidence-v5/financial-facts-artifacts" in workflow
     assert "source_head_sha" in workflow
 
