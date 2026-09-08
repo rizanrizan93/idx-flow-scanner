@@ -39,9 +39,21 @@ jobs:
           rows=[r for r in source.get('rows',[]) if str(r.get('filing_id') or '') in ids]
           if len(rows)!=3:
               raise SystemExit(f'identity mismatch: {len(rows)}/3')
+
+          def probe_url(url):
+              try:
+                  data,digest,ctype,attempts=download_official_idx_xbrl_attachment(str(url),timeout=20,retries=1)
+                  return {'status':'OK','bytes':len(data),'sha256':digest,'content_type':ctype,'attempts':[{'transport_url':a.transport_url,'attempt':a.attempt,'status':a.status,'error_kind':a.error_kind} for a in attempts]}
+              except OfficialIDXAttachmentDownloadError as exc:
+                  return {'status':'FAIL','code':exc.code,'all_not_found':exc.all_not_found,'transient':exc.transient,'attempts':[{'transport_url':a.transport_url,'attempt':a.attempt,'status':a.status,'error_kind':a.error_kind} for a in exc.attempts]}
+              except Exception as exc:
+                  return {'status':'FAIL','error':f'{type(exc).__name__}: {exc}'}
+
           out=[]
           for row in rows:
-              entry={'ticker':row.get('ticker'),'filing_id':row.get('filing_id'),'published_at':row.get('published_at'),'announcement_id':row.get('announcement_id'),'original_file_url':row.get('file_url')}
+              original=str(row.get('file_url') or '')
+              bare=original.replace('https://www.idx.co.id/','https://idx.co.id/',1)
+              entry={'ticker':row.get('ticker'),'filing_id':row.get('filing_id'),'published_at':row.get('published_at'),'announcement_id':row.get('announcement_id'),'original_file_url':original,'bare_idx_file_url':bare,'bare_idx_download':probe_url(bare)}
               for name,resolver in [('current_report',resolve_exact_current_report_attachment),('profile',resolve_exact_profile_announcement_attachment)]:
                   try:
                       resolved=resolver(row)
@@ -50,13 +62,7 @@ jobs:
                       continue
                   entry[name]=resolved
                   if isinstance(resolved,dict) and resolved.get('point_in_time_identity_preserved') is True and resolved.get('resolved_file_url'):
-                      try:
-                          data,digest,ctype,attempts=download_official_idx_xbrl_attachment(str(resolved['resolved_file_url']),timeout=20,retries=1)
-                          entry[name+'_download']={'status':'OK','bytes':len(data),'sha256':digest,'content_type':ctype,'attempts':[{'transport_url':a.transport_url,'attempt':a.attempt,'status':a.status,'error_kind':a.error_kind} for a in attempts]}
-                      except OfficialIDXAttachmentDownloadError as exc:
-                          entry[name+'_download']={'status':'FAIL','code':exc.code,'all_not_found':exc.all_not_found,'transient':exc.transient,'attempts':[{'transport_url':a.transport_url,'attempt':a.attempt,'status':a.status,'error_kind':a.error_kind} for a in exc.attempts]}
-                      except Exception as exc:
-                          entry[name+'_download']={'status':'FAIL','error':f'{type(exc).__name__}: {exc}'}
+                      entry[name+'_download']=probe_url(str(resolved['resolved_file_url']))
               out.append(entry)
           out.sort(key=lambda r:r['ticker'])
           Path('gate3_locator_identity_probe.json').write_text(json.dumps(out,ensure_ascii=False,indent=2,sort_keys=True)+'\n')
