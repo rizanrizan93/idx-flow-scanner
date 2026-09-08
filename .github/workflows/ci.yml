@@ -30,8 +30,9 @@ jobs:
           --latest-only --workers 4
           --output financial_facts_proof.json
       - name: Upload temporary financial fact proof
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: financial-facts-proof
           path: financial_facts_proof.json
-          if-no-files-found: error
+          if-no-files-found: warn
