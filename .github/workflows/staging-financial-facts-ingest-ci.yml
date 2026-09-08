@@ -37,13 +37,14 @@ jobs:
           python-version: '3.12'
           cache: pip
       - run: pip install -r requirements.txt
-      - name: Python parser, transport, locator and ingest contracts
+      - name: Python parser, transport, locator, Gate 3 closure and ingest contracts
         run: >-
           PYTHONPATH=src:. pytest -q
           tests/test_block_idx_financial_facts.py
           tests/test_block_idx_financial_locator.py
           tests/test_block_idx_financial_transport.py
           tests/test_block_idx_financial_profile_locator.py
+          tests/test_gate3_financial_facts_closure.py
           tests/test_shard_block_idx_financial_facts.py
           tests/test_financial_fact_ingest_contract.py
       - name: Bootstrap minimal canonical DB contract
