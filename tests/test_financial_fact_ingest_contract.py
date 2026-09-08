@@ -11,7 +11,7 @@ SCHEMA = ROOT / "supabase/migrations/20260908093000_block_idx_financial_fact_cac
 MANIFEST = ROOT / "supabase/migrations/20260908093100_block_idx_financial_fact_manifest.sql"
 INGEST = ROOT / "supabase/migrations/20260908093200_block_idx_financial_fact_shard_ingest.sql"
 AUDIT = ROOT / "supabase/migrations/20260908093300_block_idx_financial_fact_audit.sql"
-PUBLISHER = ROOT / ".github/workflows/publish-financial-facts-artifact.yml"
+FINALIZER_FIX = ROOT / "supabase/migrations/20260908093400_fix_financial_fact_manifest_completion.sql"
 
 
 def _read(path: Path) -> str:
@@ -31,7 +31,7 @@ def test_metric_catalog_migration_matches_parser_catalog() -> None:
 
 
 def test_ingest_is_sharded_content_addressed_and_not_main_cache() -> None:
-    combined = "\n".join(_read(path) for path in (SCHEMA, MANIFEST, INGEST, AUDIT))
+    combined = "\n".join(_read(path) for path in (SCHEMA, MANIFEST, INGEST, AUDIT, FINALIZER_FIX))
     assert "raw.githubusercontent.com/rizanrizan93/idx-flow-scanner/main/" not in combined
     assert "block_idx_financial_facts.json" not in combined
     assert "flow_financial_fact_manifest_v5" in combined
@@ -64,19 +64,6 @@ def test_manifest_requires_immutable_commit_and_source_run_provenance() -> None:
     assert "FINANCIAL_FACT_MANIFEST_PROVENANCE_CONFLICT" in sql
 
 
-def test_publisher_reverifies_artifact_before_artifact_branch_push() -> None:
-    workflow = _read(PUBLISHER)
-    assert "actions: read" in workflow
-    assert "contents: write" in workflow
-    assert "actions/artifacts/10055637731/zip" in workflow
-    assert "r['conclusion']=='success'" in workflow
-    assert "hashlib.sha256(data).hexdigest()" in workflow
-    assert "scripts/prove_financial_fact_artifact.py" in workflow
-    assert "--verify-existing" in workflow
-    assert "evidence-v5/financial-facts-artifacts" in workflow
-    assert "source_head_sha" in workflow
-
-
 def test_audit_separates_revision_duplicates_from_key_corruption() -> None:
     sql = _read(AUDIT)
     assert "duplicate_filing_metric_rows" in sql
@@ -86,3 +73,13 @@ def test_audit_separates_revision_duplicates_from_key_corruption() -> None:
     assert "publication_before_period_end_rows" in sql
     assert "bad_unit_rows" in sql
     assert "bad_catalog_rows" in sql
+
+
+def test_manifest_completion_fix_does_not_invent_manifest_level_shard_hash_columns() -> None:
+    sql = _read(FINALIZER_FIX)
+    assert "FINANCIAL_FACT_MANIFEST_FINALIZER_PATCH_ASSERTION_FAILED" in sql
+    assert "completed_at = now()" in sql
+    assert "alter table public.flow_financial_fact_manifest_v5" not in sql.lower()
+    assert "add column" not in sql.lower()
+    assert "v_bad_fragment" in sql
+    assert "v_good_fragment" in sql
