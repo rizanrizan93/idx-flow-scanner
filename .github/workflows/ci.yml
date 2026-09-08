@@ -14,9 +14,9 @@ jobs:
           python-version: '3.12'
           cache: pip
       - run: pip install -r requirements.txt
-      - run: PYTHONPATH=src pytest -q
+      - run: PYTHONPATH=src:. pytest -q
       - name: Temporary official IDX workbook probe
-        run: PYTHONPATH=src python scripts/probe_idx_financial_workbook.py
+        run: PYTHONPATH=src:. python scripts/probe_idx_financial_workbook.py
       - name: Upload temporary taxonomy report
         uses: actions/upload-artifact@v4
         with:
@@ -25,7 +25,7 @@ jobs:
           if-no-files-found: error
       - name: Temporary bounded financial fact proof
         run: >-
-          PYTHONPATH=src python scripts/backfill_block_idx_financial_facts.py
+          PYTHONPATH=src:. python scripts/backfill_block_idx_financial_facts.py
           --ticker BSSR --ticker ICBP --ticker BBCA --ticker BSDE
           --latest-only --workers 4
           --output financial_facts_proof.json
