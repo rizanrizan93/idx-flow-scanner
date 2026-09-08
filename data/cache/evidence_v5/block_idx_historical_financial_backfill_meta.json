@@ -1,6 +1,181 @@
 {
   "announcement_months": [
     {
+      "date_from": "2023-09-08",
+      "date_to": "2023-09-30",
+      "reply_rows": 4145
+    },
+    {
+      "date_from": "2023-10-01",
+      "date_to": "2023-10-31",
+      "reply_rows": 7810
+    },
+    {
+      "date_from": "2023-11-01",
+      "date_to": "2023-11-30",
+      "reply_rows": 7722
+    },
+    {
+      "date_from": "2023-12-01",
+      "date_to": "2023-12-31",
+      "reply_rows": 7073
+    },
+    {
+      "date_from": "2024-01-01",
+      "date_to": "2024-01-31",
+      "reply_rows": 7243
+    },
+    {
+      "date_from": "2024-02-01",
+      "date_to": "2024-02-29",
+      "reply_rows": 6470
+    },
+    {
+      "date_from": "2024-03-01",
+      "date_to": "2024-03-31",
+      "reply_rows": 7548
+    },
+    {
+      "date_from": "2024-04-01",
+      "date_to": "2024-04-30",
+      "reply_rows": 9820
+    },
+    {
+      "date_from": "2024-05-01",
+      "date_to": "2024-05-31",
+      "reply_rows": 9319
+    },
+    {
+      "date_from": "2024-06-01",
+      "date_to": "2024-06-30",
+      "reply_rows": 8675
+    },
+    {
+      "date_from": "2024-07-01",
+      "date_to": "2024-07-31",
+      "reply_rows": 9738
+    },
+    {
+      "date_from": "2024-08-01",
+      "date_to": "2024-08-31",
+      "reply_rows": 8045
+    },
+    {
+      "date_from": "2024-09-01",
+      "date_to": "2024-09-30",
+      "reply_rows": 7559
+    },
+    {
+      "date_from": "2024-10-01",
+      "date_to": "2024-10-31",
+      "reply_rows": 9861
+    },
+    {
+      "date_from": "2024-11-01",
+      "date_to": "2024-11-30",
+      "reply_rows": 8869
+    },
+    {
+      "date_from": "2024-12-01",
+      "date_to": "2024-12-31",
+      "reply_rows": 6291
+    },
+    {
+      "date_from": "2025-01-01",
+      "date_to": "2025-01-31",
+      "reply_rows": 4512
+    },
+    {
+      "date_from": "2025-02-01",
+      "date_to": "2025-02-28",
+      "reply_rows": 3979
+    },
+    {
+      "date_from": "2025-03-01",
+      "date_to": "2025-03-31",
+      "reply_rows": 5653
+    },
+    {
+      "date_from": "2025-04-01",
+      "date_to": "2025-04-30",
+      "reply_rows": 6637
+    },
+    {
+      "date_from": "2025-05-01",
+      "date_to": "2025-05-31",
+      "reply_rows": 6787
+    },
+    {
+      "date_from": "2025-06-01",
+      "date_to": "2025-06-30",
+      "reply_rows": 6353
+    },
+    {
+      "date_from": "2025-07-01",
+      "date_to": "2025-07-31",
+      "reply_rows": 6337
+    },
+    {
+      "date_from": "2025-08-01",
+      "date_to": "2025-08-31",
+      "reply_rows": 4477
+    },
+    {
+      "date_from": "2025-09-01",
+      "date_to": "2025-09-30",
+      "reply_rows": 4592
+    },
+    {
+      "date_from": "2025-10-01",
+      "date_to": "2025-10-31",
+      "reply_rows": 6074
+    },
+    {
+      "date_from": "2025-11-01",
+      "date_to": "2025-11-30",
+      "reply_rows": 4642
+    },
+    {
+      "date_from": "2025-12-01",
+      "date_to": "2025-12-31",
+      "reply_rows": 4997
+    },
+    {
+      "date_from": "2026-01-01",
+      "date_to": "2026-01-31",
+      "reply_rows": 5118
+    },
+    {
+      "date_from": "2026-02-01",
+      "date_to": "2026-02-28",
+      "reply_rows": 4515
+    },
+    {
+      "date_from": "2026-03-01",
+      "date_to": "2026-03-31",
+      "reply_rows": 5388
+    },
+    {
+      "date_from": "2026-04-01",
+      "date_to": "2026-04-30",
+      "reply_rows": 7796
+    },
+    {
+      "date_from": "2026-05-01",
+      "date_to": "2026-05-31",
+      "reply_rows": 6402
+    },
+    {
+      "date_from": "2026-06-01",
+      "date_to": "2026-06-30",
+      "reply_rows": 6836
+    },
+    {
+      "date_from": "2026-07-01",
+      "date_to": "2026-07-31",
+      "reply_rows": 6545
+    },
+    {
       "date_from": "2026-08-01",
       "date_to": "2026-08-31",
       "reply_rows": 4140
@@ -13,29 +188,125 @@
   ],
   "download_smoke": [
     {
-      "bytes": 512589,
+      "bytes": 169741,
       "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "file_name": "FinancialStatement-2026-I-DOOH.xlsx",
-      "sha256": "8474f59c3bd4b2fabc6a594e6866649744fc65ebeada23176ee3ad9a0e3577ad",
+      "file_name": "FinancialStatement-2023-Tahunan-DOOH.xlsx",
+      "sha256": "b8e3f21bc6f5f350e99a98a7186712022ecc665c8dcc9663fe3ce502000fc879",
       "ticker": "DOOH"
     },
     {
-      "bytes": 512029,
+      "bytes": 1179329,
       "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "file_name": "FinancialStatement-2026-II-FLMC.xlsx",
-      "sha256": "d46ebaa1d0383724148436d5804d34d141c156244de8cef95ba9edf66129885f",
+      "file_name": "FinancialStatement-2022-Tahunan-FLMC.xlsx",
+      "sha256": "4671b7903380635ca660583dc902e8becff1cad87139d8305772bd4f15330ed8",
       "ticker": "FLMC"
     },
     {
-      "bytes": 512124,
+      "bytes": 522848,
       "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "file_name": "FinancialStatement-2026-I-MKNT.xlsx",
-      "sha256": "49d2662a057da88d0e3fffa04610884350a82fdae7ab87bccc4e22f0888e9b81",
+      "file_name": "FinancialStatement-2023-Tahunan-MKNT.xlsx",
+      "sha256": "976459ab6f46a388a4efb6a6ed711cfa7c0431d837bd1cf107b1bb2079a3d70c",
       "ticker": "MKNT"
     }
   ],
-  "financial_announcement_rows": 242,
+  "financial_announcement_rows": 17632,
   "financial_queries": [
+    {
+      "parsed_report_groups": 754,
+      "report_period": "TW1",
+      "report_year": 2022,
+      "result_count": 754
+    },
+    {
+      "parsed_report_groups": 812,
+      "report_period": "TW2",
+      "report_year": 2022,
+      "result_count": 812
+    },
+    {
+      "parsed_report_groups": 771,
+      "report_period": "TW3",
+      "report_year": 2022,
+      "result_count": 771
+    },
+    {
+      "parsed_report_groups": 858,
+      "report_period": "AUDIT",
+      "report_year": 2022,
+      "result_count": 858
+    },
+    {
+      "parsed_report_groups": 796,
+      "report_period": "TW1",
+      "report_year": 2023,
+      "result_count": 796
+    },
+    {
+      "parsed_report_groups": 880,
+      "report_period": "TW2",
+      "report_year": 2023,
+      "result_count": 880
+    },
+    {
+      "parsed_report_groups": 819,
+      "report_period": "TW3",
+      "report_year": 2023,
+      "result_count": 819
+    },
+    {
+      "parsed_report_groups": 903,
+      "report_period": "AUDIT",
+      "report_year": 2023,
+      "result_count": 903
+    },
+    {
+      "parsed_report_groups": 684,
+      "report_period": "TW1",
+      "report_year": 2024,
+      "result_count": 684
+    },
+    {
+      "parsed_report_groups": 923,
+      "report_period": "TW2",
+      "report_year": 2024,
+      "result_count": 923
+    },
+    {
+      "parsed_report_groups": 854,
+      "report_period": "TW3",
+      "report_year": 2024,
+      "result_count": 854
+    },
+    {
+      "parsed_report_groups": 934,
+      "report_period": "AUDIT",
+      "report_year": 2024,
+      "result_count": 934
+    },
+    {
+      "parsed_report_groups": 858,
+      "report_period": "TW1",
+      "report_year": 2025,
+      "result_count": 858
+    },
+    {
+      "parsed_report_groups": 947,
+      "report_period": "TW2",
+      "report_year": 2025,
+      "result_count": 947
+    },
+    {
+      "parsed_report_groups": 875,
+      "report_period": "TW3",
+      "report_year": 2025,
+      "result_count": 875
+    },
+    {
+      "parsed_report_groups": 935,
+      "report_period": "AUDIT",
+      "report_year": 2025,
+      "result_count": 935
+    },
     {
       "parsed_report_groups": 856,
       "report_period": "TW1",
@@ -61,32 +332,32 @@
       "result_count": 1
     }
   ],
-  "generated_at": "2026-09-08T07:06:04.736391+07:00",
-  "latest_report_corroborated_filing_rows": 395,
+  "generated_at": "2026-09-08T07:08:22.262534+07:00",
+  "latest_report_corroborated_filing_rows": 24680,
   "latest_report_corroboration": {
-    "filing_rows": 395,
-    "financial_announcement_rows": 242,
-    "matched_report_groups": 133,
-    "report_groups": 1747,
+    "filing_rows": 24680,
+    "financial_announcement_rows": 17632,
+    "matched_report_groups": 8233,
+    "report_groups": 15350,
     "skipped_attachment_identity": 0,
-    "skipped_non_pit_groups": 0,
-    "unmatched_report_groups": 1614
+    "skipped_non_pit_groups": 1,
+    "unmatched_report_groups": 7117
   },
   "production_scoring_changed": false,
-  "raw_announcement_replies": 5370,
-  "report_groups": 1747,
+  "raw_announcement_replies": 239198,
+  "report_groups": 15350,
   "revision_backfill": {
     "corroborated_period_fallback": 0,
-    "filing_rows": 507,
-    "financial_announcements": 242,
-    "inferred_announcements": 169,
-    "nonstructured_financial_notices": 73,
-    "skipped_non_pit_announcements": 0,
+    "filing_rows": 36868,
+    "financial_announcements": 17681,
+    "inferred_announcements": 12300,
+    "nonstructured_financial_notices": 5330,
+    "skipped_non_pit_announcements": 7,
     "skipped_nonofficial_attachments": 0,
-    "skipped_unstructured_attachments": 647,
-    "structured_financial_announcements": 169,
-    "unresolved_period_announcements": 0,
-    "unresolved_structured_announcements": 0
+    "skipped_unstructured_attachments": 45883,
+    "structured_financial_announcements": 12302,
+    "unresolved_period_announcements": 51,
+    "unresolved_structured_announcements": 2
   },
   "schema_version": "BLOCK_IDX_HISTORICAL_FINANCIAL_BACKFILL_META_V5_2"
 }
