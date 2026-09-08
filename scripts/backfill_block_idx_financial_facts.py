@@ -13,6 +13,9 @@ from idx_flow_scanner.providers.block_idx_financial_facts import (
     METRIC_CATALOG_SHA256,
     extract_financial_facts_from_xbrl_zip,
 )
+from idx_flow_scanner.providers.block_idx_financial_locator import (
+    resolve_exact_current_report_attachment,
+)
 
 WIB = ZoneInfo("Asia/Jakarta")
 DEFAULT_SOURCE = Path("data/cache/evidence_v5/block_idx_historical_financial_filings.json")
@@ -59,10 +62,44 @@ def _latest_per_ticker(rows: list[dict[str, object]]) -> list[dict[str, object]]
     return [latest[ticker] for ticker in sorted(latest)]
 
 
+def _download_with_exact_locator_resolution(
+    filing: dict[str, object],
+) -> tuple[bytes, str, str, dict[str, object]]:
+    original_url = str(filing["file_url"])
+    try:
+        data, digest, content_type = download_official_idx_attachment(
+            original_url, timeout=90.0, retries=2
+        )
+        return data, digest, content_type, {
+            "original_file_url": original_url,
+            "resolved_file_url": original_url,
+            "url_resolution_state": "ORIGINAL_OFFICIAL_URL",
+            "point_in_time_identity_preserved": True,
+        }
+    except Exception as exc:
+        # Only a missing locator is eligible for exact official re-resolution. Network,
+        # throttling, TLS, and server failures remain hard failures and are never masked.
+        if "HTTP 404" not in str(exc):
+            raise
+        resolved = resolve_exact_current_report_attachment(filing)
+        if resolved is None:
+            raise
+        resolved_url = str(resolved["resolved_file_url"])
+        data, digest, content_type = download_official_idx_attachment(
+            resolved_url, timeout=90.0, retries=2
+        )
+        return data, digest, content_type, {
+            "original_file_url": original_url,
+            "resolved_file_url": resolved_url,
+            "url_resolution_state": str(resolved["resolution_state"]),
+            "point_in_time_identity_preserved": bool(resolved["point_in_time_identity_preserved"]),
+            "resolved_published_second": str(resolved["published_second"]),
+            "resolved_report_file_modified_at": str(resolved["report_file_modified_at"]),
+        }
+
+
 def _extract_one(filing: dict[str, object]) -> tuple[list[dict[str, object]], dict[str, object]]:
-    data, digest, content_type = download_official_idx_attachment(
-        str(filing["file_url"]), timeout=90.0, retries=2
-    )
+    data, digest, content_type, locator = _download_with_exact_locator_resolution(filing)
     facts, telemetry = extract_financial_facts_from_xbrl_zip(data, filing)
     if telemetry["content_hash"] != digest:
         raise RuntimeError("download hash and parser hash disagree")
@@ -70,6 +107,7 @@ def _extract_one(filing: dict[str, object]) -> tuple[list[dict[str, object]], di
         raise RuntimeError("parser taxonomy catalog hash disagrees with backfill contract")
     telemetry["content_type"] = content_type
     telemetry["bytes"] = len(data)
+    telemetry.update(locator)
     return facts, telemetry
 
 
@@ -108,7 +146,13 @@ def main() -> int:
                 facts, info = future.result()
                 all_facts.extend(facts)
                 telemetry.append(info)
-                print(json.dumps({"ticker": info["ticker"], "filing_id": info["filing_id"], "fact_rows": info["fact_rows"], "currency": info["reporting_currency"]}, sort_keys=True))
+                print(json.dumps({
+                    "ticker": info["ticker"],
+                    "filing_id": info["filing_id"],
+                    "fact_rows": info["fact_rows"],
+                    "currency": info["reporting_currency"],
+                    "url_resolution_state": info["url_resolution_state"],
+                }, sort_keys=True))
             except Exception as exc:
                 failure = {
                     "filing_id": str(filing.get("filing_id") or ""),
@@ -128,6 +172,10 @@ def main() -> int:
     distinct_metrics = sorted({str(row["metric_key"]) for row in all_facts})
     distinct_tickers = sorted({str(row["ticker"]) for row in all_facts})
     reporting_currencies = sorted({str(row["reporting_currency"]) for row in telemetry if row.get("reporting_currency")})
+    locator_resolution_rows = sum(
+        1 for row in telemetry
+        if row.get("url_resolution_state") == "EXACT_CURRENT_REPORT_TIMESTAMP_FILENAME"
+    )
 
     payload = {
         "schema_version": CACHE_SCHEMA,
@@ -143,6 +191,7 @@ def main() -> int:
         "distinct_tickers": distinct_tickers,
         "distinct_metrics": distinct_metrics,
         "reporting_currencies": reporting_currencies,
+        "exact_locator_resolution_rows": locator_resolution_rows,
         "filing_hashes": filing_hashes,
         "filing_telemetry": telemetry,
         "failures": failures,
@@ -159,6 +208,7 @@ def main() -> int:
         "fact_rows": len(all_facts),
         "distinct_tickers": len(distinct_tickers),
         "distinct_metrics": len(distinct_metrics),
+        "exact_locator_resolution_rows": locator_resolution_rows,
         "production_scoring_changed": False,
     }, sort_keys=True))
     return 0 if not failures else 2
