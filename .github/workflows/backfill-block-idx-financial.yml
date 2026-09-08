@@ -52,6 +52,49 @@ jobs:
           --report-year-start 2022
           --report-year-end 2026
           --download-smoke 3
+      - name: Enforce historical filing evidence gate
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path('data/cache/evidence_v5/block_idx_historical_financial_backfill_meta.json')
+          meta = json.loads(path.read_text(encoding='utf-8'))
+          revision = meta['revision_backfill']
+          dedupe = meta['profile_reply_dedupe']
+          corroboration = meta['latest_report_corroboration']
+          failures = []
+
+          if revision['unresolved_structured_announcements'] != 0:
+              failures.append(f"unresolved_structured={revision['unresolved_structured_announcements']}")
+          if revision['skipped_nonofficial_attachments'] != 0:
+              failures.append(f"nonofficial_attachments={revision['skipped_nonofficial_attachments']}")
+          if revision['structured_financial_announcements'] != revision['inferred_announcements']:
+              failures.append(
+                  f"structured_vs_inferred={revision['structured_financial_announcements']}/{revision['inferred_announcements']}"
+              )
+          anomaly_reasons = {row.get('reason') for row in revision.get('anomaly_samples', [])}
+          unexpected = sorted(reason for reason in anomaly_reasons if reason != 'SOURCE_PERIOD_CONFLICT_REJECTED')
+          if unexpected:
+              failures.append(f"unexpected_anomaly_reasons={unexpected}")
+          if corroboration['skipped_attachment_identity'] != 0:
+              failures.append(f"corroboration_attachment_identity={corroboration['skipped_attachment_identity']}")
+          if dedupe['deduped_profile_replies'] > dedupe['input_profile_replies']:
+              failures.append('profile_reply_dedupe_count_invalid')
+          if meta.get('production_scoring_changed') is not False:
+              failures.append('production_scoring_changed')
+
+          print(json.dumps({
+              'gate': 'PASS' if not failures else 'FAIL',
+              'failures': failures,
+              'revision_filing_rows': revision['filing_rows'],
+              'structured_financial_announcements': revision['structured_financial_announcements'],
+              'source_period_conflict_rejections': revision['skipped_non_pit_announcements'],
+              'duplicate_profile_replies_merged': dedupe['duplicate_profile_replies_merged'],
+          }, sort_keys=True))
+          if failures:
+              raise SystemExit(2)
+          PY
       - name: Publish backfill telemetry
         if: always()
         run: |
