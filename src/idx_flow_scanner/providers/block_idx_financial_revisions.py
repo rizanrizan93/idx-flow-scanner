@@ -119,7 +119,7 @@ def financial_revision_filings_from_profile_replies(
     *,
     report_groups: Iterable[dict[str, object]] | None = None,
     now: datetime | None = None,
-) -> tuple[list[dict[str, object]], dict[str, int]]:
+) -> tuple[list[dict[str, object]], dict[str, object]]:
     current = now.astimezone(IDX_WIB) if now is not None else datetime.now(IDX_WIB)
     corroboration: dict[tuple[str, str], tuple[int, str, str]] = {}
     for report in report_groups or []:
@@ -149,6 +149,7 @@ def financial_revision_filings_from_profile_replies(
     skipped_non_pit = 0
     skipped_nonofficial = 0
     skipped_unstructured = 0
+    anomaly_samples: list[dict[str, object]] = []
 
     for reply in replies:
         if not isinstance(reply, dict):
@@ -193,11 +194,42 @@ def financial_revision_filings_from_profile_replies(
         if year is None or period is None:
             unresolved_period += 1
             unresolved_structured += 1
+            if len(anomaly_samples) < 50:
+                standard_candidates = sorted({
+                    candidate
+                    for name in attachment_names
+                    for candidate in [_infer_from_standard_financial_filename(name)]
+                    if candidate[0] is not None and candidate[1] is not None
+                })
+                anomaly_samples.append({
+                    "reason": "UNRESOLVED_STRUCTURED_PERIOD",
+                    "ticker": ticker,
+                    "published_at": published.isoformat(),
+                    "announcement_id": announcement_id,
+                    "announcement_no": _collapse(announcement.get("NoPengumuman")) or None,
+                    "title": title,
+                    "standard_filename_candidates": standard_candidates,
+                    "attachment_names": attachment_names,
+                })
             continue
         inferred_announcements += 1
         period_end = _period_end(int(year), str(period))
         if published.date() < period_end or published > current:
             skipped_non_pit += 1
+            if len(anomaly_samples) < 50:
+                anomaly_samples.append({
+                    "reason": "NON_PIT_PUBLICATION_TIME",
+                    "ticker": ticker,
+                    "published_at": published.isoformat(),
+                    "announcement_id": announcement_id,
+                    "announcement_no": _collapse(announcement.get("NoPengumuman")) or None,
+                    "title": title,
+                    "inferred_report_year": int(year),
+                    "inferred_report_period": str(period),
+                    "report_period_end": period_end.isoformat(),
+                    "current_time": current.isoformat(),
+                    "attachment_names": attachment_names,
+                })
             continue
 
         for item in attachments:
@@ -262,6 +294,7 @@ def financial_revision_filings_from_profile_replies(
         "skipped_nonofficial_attachments": skipped_nonofficial,
         "skipped_unstructured_attachments": skipped_unstructured,
         "filing_rows": len(filings),
+        "anomaly_samples": anomaly_samples,
     }
 
 
