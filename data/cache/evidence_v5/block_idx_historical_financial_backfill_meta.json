@@ -183,7 +183,7 @@
     {
       "date_from": "2026-09-01",
       "date_to": "2026-09-08",
-      "reply_rows": 1233
+      "reply_rows": 1237
     }
   ],
   "download_smoke": [
@@ -332,7 +332,7 @@
       "result_count": 1
     }
   ],
-  "generated_at": "2026-09-08T08:12:50.253253+07:00",
+  "generated_at": "2026-09-08T08:28:16.015888+07:00",
   "latest_report_corroborated_filing_rows": 24680,
   "latest_report_corroboration": {
     "filing_rows": 24680,
@@ -350,12 +350,12 @@
   ],
   "production_scoring_changed": false,
   "profile_reply_dedupe": {
-    "deduped_profile_replies": 239201,
+    "deduped_profile_replies": 239205,
     "duplicate_attachment_rows_merged": 0,
     "duplicate_profile_replies_merged": 0,
-    "input_profile_replies": 239201
+    "input_profile_replies": 239205
   },
-  "raw_announcement_replies": 239201,
+  "raw_announcement_replies": 239205,
   "report_groups": 15350,
   "revision_backfill": {
     "anomaly_samples": [
@@ -369,7 +369,7 @@
           "FinancialStatement-2024-Tahunan-INPC.xlsx",
           "inlineXBRL.zip"
         ],
-        "current_time": "2026-09-08T08:12:50.253253+07:00",
+        "current_time": "2026-09-08T08:28:16.015888+07:00",
         "inferred_report_period": "AUDIT",
         "inferred_report_year": 2024,
         "published_at": "2024-03-30T12:40:56+07:00",
@@ -390,7 +390,7 @@
           "RTI - Surat Liabilitas.pdf",
           "RTI - Surat Pernyataan Direksi.pdf"
         ],
-        "current_time": "2026-09-08T08:12:50.253253+07:00",
+        "current_time": "2026-09-08T08:28:16.015888+07:00",
         "inferred_report_period": "TW3",
         "inferred_report_year": 2024,
         "published_at": "2024-05-14T17:39:43+07:00",
@@ -413,7 +413,7 @@
           "SPD PUDP.pdf",
           "SURAT UNTUK KE OJK dan BEI.pdf"
         ],
-        "current_time": "2026-09-08T08:12:50.253253+07:00",
+        "current_time": "2026-09-08T08:28:16.015888+07:00",
         "inferred_report_period": "AUDIT",
         "inferred_report_year": 2025,
         "published_at": "2025-03-28T09:36:12+07:00",
@@ -434,7 +434,7 @@
           "Penjelasan Perubahan Liabilitas LK.pdf",
           "SPD 2024.pdf"
         ],
-        "current_time": "2026-09-08T08:12:50.253253+07:00",
+        "current_time": "2026-09-08T08:28:16.015888+07:00",
         "inferred_report_period": "AUDIT",
         "inferred_report_year": 2025,
         "published_at": "2025-03-26T10:31:25+07:00",
@@ -454,7 +454,7 @@
           "instance.zip",
           "SPD 2024.pdf"
         ],
-        "current_time": "2026-09-08T08:12:50.253253+07:00",
+        "current_time": "2026-09-08T08:28:16.015888+07:00",
         "inferred_report_period": "AUDIT",
         "inferred_report_year": 2025,
         "published_at": "2025-03-25T15:02:26+07:00",
@@ -474,7 +474,7 @@
           "Penjelasan Aset-Liabilitas.pdf",
           "SPD 2024.pdf"
         ],
-        "current_time": "2026-09-08T08:12:50.253253+07:00",
+        "current_time": "2026-09-08T08:28:16.015888+07:00",
         "inferred_report_period": "AUDIT",
         "inferred_report_year": 2025,
         "published_at": "2025-03-25T09:02:35+07:00",
@@ -496,7 +496,7 @@
           "SPD LKT Q4 2025 IMFI.pdf",
           "Surat Pengantar LKT IMFI 31 Des 25.pdf"
         ],
-        "current_time": "2026-09-08T08:12:50.253253+07:00",
+        "current_time": "2026-09-08T08:28:16.015888+07:00",
         "inferred_report_period": "AUDIT",
         "inferred_report_year": 2026,
         "published_at": "2026-03-09T08:52:28+07:00",
