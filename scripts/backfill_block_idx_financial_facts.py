@@ -10,14 +10,15 @@ from zoneinfo import ZoneInfo
 from idx_flow_scanner.providers.block_idx_evidence import download_official_idx_attachment
 from idx_flow_scanner.providers.block_idx_financial_facts import (
     METRIC_CATALOG,
+    METRIC_CATALOG_SHA256,
     extract_financial_facts_from_xbrl_zip,
 )
 
 WIB = ZoneInfo("Asia/Jakarta")
 DEFAULT_SOURCE = Path("data/cache/evidence_v5/block_idx_historical_financial_filings.json")
 DEFAULT_OUTPUT = Path("data/cache/evidence_v5/block_idx_financial_facts.json")
-CACHE_SCHEMA = "BLOCK_IDX_FINANCIAL_FACT_CACHE_V5_1"
-PARSER_CONTRACT = "BOUNDED_EXACT_TAXONOMY_CURRENT_UNDIMENSIONED_YTD_OR_INSTANT_V5_1"
+CACHE_SCHEMA = "BLOCK_IDX_FINANCIAL_FACT_CACHE_V5_2"
+PARSER_CONTRACT = "EXACT_IDX_CORE_TAXONOMY_SINGLE_CURRENCY_CURRENT_UNDIMENSIONED_YTD_OR_INSTANT_V5_2"
 
 
 def _load_filings(path: Path) -> list[dict[str, object]]:
@@ -65,13 +66,15 @@ def _extract_one(filing: dict[str, object]) -> tuple[list[dict[str, object]], di
     facts, telemetry = extract_financial_facts_from_xbrl_zip(data, filing)
     if telemetry["content_hash"] != digest:
         raise RuntimeError("download hash and parser hash disagree")
+    if telemetry["metric_catalog_sha256"] != METRIC_CATALOG_SHA256:
+        raise RuntimeError("parser taxonomy catalog hash disagrees with backfill contract")
     telemetry["content_type"] = content_type
     telemetry["bytes"] = len(data)
     return facts, telemetry
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Extract bounded point-in-time facts from official IDX instance.zip filings")
+    parser = argparse.ArgumentParser(description="Extract exact point-in-time facts from official IDX instance.zip filings")
     parser.add_argument("--source", type=Path, default=DEFAULT_SOURCE)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--ticker", action="append", default=[])
@@ -105,15 +108,17 @@ def main() -> int:
                 facts, info = future.result()
                 all_facts.extend(facts)
                 telemetry.append(info)
-                print(json.dumps({"ticker": info["ticker"], "filing_id": info["filing_id"], "fact_rows": info["fact_rows"]}, sort_keys=True))
+                print(json.dumps({"ticker": info["ticker"], "filing_id": info["filing_id"], "fact_rows": info["fact_rows"], "currency": info["reporting_currency"]}, sort_keys=True))
             except Exception as exc:
-                failures.append(
-                    {
-                        "filing_id": str(filing.get("filing_id") or ""),
-                        "ticker": str(filing.get("ticker") or ""),
-                        "error": f"{type(exc).__name__}: {exc}",
-                    }
-                )
+                failure = {
+                    "filing_id": str(filing.get("filing_id") or ""),
+                    "ticker": str(filing.get("ticker") or ""),
+                    "file_url": str(filing.get("file_url") or ""),
+                    "published_at": str(filing.get("published_at") or ""),
+                    "error": f"{type(exc).__name__}: {exc}",
+                }
+                failures.append(failure)
+                print(json.dumps({"status": "FAIL", **failure}, sort_keys=True))
 
     all_facts.sort(key=lambda row: (str(row["ticker"]), str(row["filing_id"]), str(row["metric_key"])))
     telemetry.sort(key=lambda row: (str(row["ticker"]), str(row["filing_id"])))
@@ -122,12 +127,14 @@ def main() -> int:
     filing_hashes = {str(row["filing_id"]): str(row["content_hash"]) for row in telemetry}
     distinct_metrics = sorted({str(row["metric_key"]) for row in all_facts})
     distinct_tickers = sorted({str(row["ticker"]) for row in all_facts})
+    reporting_currencies = sorted({str(row["reporting_currency"]) for row in telemetry if row.get("reporting_currency")})
 
     payload = {
         "schema_version": CACHE_SCHEMA,
         "generated_at": now.isoformat(),
         "source_authority": "INDONESIA_STOCK_EXCHANGE",
         "parser_contract": PARSER_CONTRACT,
+        "metric_catalog_sha256": METRIC_CATALOG_SHA256,
         "metric_catalog": {key: value for key, value in METRIC_CATALOG.items()},
         "selected_filing_rows": len(filings),
         "parsed_filing_rows": len(telemetry),
@@ -135,6 +142,7 @@ def main() -> int:
         "fact_rows": len(all_facts),
         "distinct_tickers": distinct_tickers,
         "distinct_metrics": distinct_metrics,
+        "reporting_currencies": reporting_currencies,
         "filing_hashes": filing_hashes,
         "filing_telemetry": telemetry,
         "failures": failures,
