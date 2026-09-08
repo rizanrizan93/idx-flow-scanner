@@ -26,9 +26,9 @@ def _official_file_url(value: object) -> str | None:
         return None
     if raw.lower().startswith("https://"):
         return raw if is_official_idx_url(raw) else None
-    normalized = raw.replace("\\", "/")
-    if not normalized.startswith("/"):
-        normalized = "/" + normalized
+    normalized = "/" + "/".join(
+        part for part in raw.replace("\\", "/").split("/") if part
+    )
     encoded = quote(normalized, safe="/:._-~()[]")
     url = "https://www.idx.co.id" + encoded
     return url if is_official_idx_url(url) else None
