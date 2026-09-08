@@ -52,14 +52,24 @@ def test_standard_idx_filename_recognizes_roman_period() -> None:
     ) == (2026, "TW3")
 
 
+def test_tidak_diaudit_does_not_override_standard_idx_period() -> None:
+    assert infer_profile_financial_period(
+        "Penyampaian Laporan Keuangan Interim Yang Tidak Diaudit",
+        ["FinancialStatement-2026-II-PPGL.xlsx", "inlineXBRL.zip", "instance.zip"],
+    ) == (2026, "TW2")
+
+
 def test_revision_rows_preserve_announcement_identity_and_structured_files() -> None:
     filings, telemetry = financial_revision_filings_from_profile_replies(
         [_reply()],
         now=datetime(2026, 9, 8, 6, 45, tzinfo=WIB),
     )
     assert telemetry["financial_announcements"] == 1
+    assert telemetry["structured_financial_announcements"] == 1
+    assert telemetry["nonstructured_financial_notices"] == 0
     assert telemetry["inferred_announcements"] == 1
     assert telemetry["unresolved_period_announcements"] == 0
+    assert telemetry["unresolved_structured_announcements"] == 0
     assert len(filings) == 2
     assert {row["file_name"] for row in filings} == {
         "FinancialStatement-2026-I-DOOH.xlsx",
@@ -85,12 +95,35 @@ def test_two_corrections_are_retained_as_distinct_revisions() -> None:
         now=datetime(2026, 9, 8, 6, 45, tzinfo=WIB),
     )
     assert telemetry["financial_announcements"] == 2
+    assert telemetry["structured_financial_announcements"] == 2
+    assert telemetry["unresolved_structured_announcements"] == 0
     assert len(filings) == 4
     assert len({row["filing_id"] for row in filings}) == 4
     assert {str(row["published_at"]) for row in filings} == {
         "2026-08-31T21:38:57+07:00",
         "2026-09-06T14:36:53+07:00",
     }
+
+
+def test_nonstructured_financial_notice_is_not_an_unresolved_filing() -> None:
+    reply = _reply()
+    reply["pengumuman"]["JudulPengumuman"] = "Penyampaian Bukti Iklan Informasi Laporan Keuangan Interim"
+    reply["attachments"] = [
+        {
+            "PDFFilename": "20260907_TEST_Penyampaian Bukti Iklan.pdf",
+            "OriginalFilename": "20260907_TEST_Penyampaian Bukti Iklan.pdf",
+            "FullSavePath": "\\\\StaticData\\\\NewsAndAnnouncement\\\\202609\\\\bukti.pdf",
+        }
+    ]
+    filings, telemetry = financial_revision_filings_from_profile_replies(
+        [reply],
+        now=datetime(2026, 9, 8, 6, 45, tzinfo=WIB),
+    )
+    assert filings == []
+    assert telemetry["financial_announcements"] == 1
+    assert telemetry["structured_financial_announcements"] == 0
+    assert telemetry["nonstructured_financial_notices"] == 1
+    assert telemetry["unresolved_structured_announcements"] == 0
 
 
 def test_impossible_publication_before_period_end_is_rejected() -> None:
