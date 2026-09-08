@@ -57,6 +57,7 @@ from idx_flow_scanner.official_index_context import (
 from idx_flow_scanner.run_metadata_guard import install_truthful_run_metadata
 from idx_flow_scanner.runtime_persistence import install_current_result_persistence
 from idx_flow_scanner.storage import SupabaseStore
+from idx_flow_scanner.ui_truth import load_calibration_truth, summarize_effective_evidence
 from idx_flow_scanner.universe_700 import materialize_universe_700
 from idx_flow_scanner.verified_foreign_store import (
     IDX_OFFICIAL_STOCK_SUMMARY_SOURCE,
@@ -104,6 +105,11 @@ DEDICATED_EVIDENCE_STORE = _dedicated_evidence_store(
     streamlit_app._secret("SUPABASE_URL"),
     streamlit_app._secret("SUPABASE_SECRET_KEY"),
 )
+
+
+@st.cache_data(ttl=30, show_spinner=False)
+def _cached_calibration_truth() -> dict[str, object]:
+    return load_calibration_truth(DEDICATED_EVIDENCE_STORE)
 
 
 def _prepare_prices(
@@ -290,6 +296,123 @@ def _database_first_scan_universe(*args, **kwargs):
     return _original_scan_universe_zapi(*args, **kwargs)
 
 
+# UI truth adapters. The base Streamlit module historically displayed several
+# pre-scan input-frame counts. These adapters replace only presentation semantics:
+# the values now come from the scored rows users actually see and from canonical
+# OOS memory. Production scoring, ranking and authorization are untouched.
+_original_render_health_cards = streamlit_app.render_health_cards
+_original_render_section = streamlit_app.render_section
+_original_st_columns = st.columns
+_original_create_durable_run_record = streamlit_app.create_durable_run_record
+_UI_TRUTH_STATE = {"suppress_legacy_calibration_metrics": False}
+
+
+class _SilentMetricColumn:
+    def metric(self, *_args, **_kwargs):
+        return None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_args):
+        return False
+
+
+def _truthful_health_cards(cards):
+    labels = [str(card[0]) for card in cards or [] if isinstance(card, (list, tuple)) and card]
+    if "Foreign History" not in labels:
+        return _original_render_health_cards(cards)
+
+    results = st.session_state.get("last_results")
+    truth = summarize_effective_evidence(results)
+    total = int(truth.get("total", 0) or 0)
+    if total <= 0:
+        return _original_render_health_cards(cards)
+
+    first = next((card for card in cards if str(card[0]) == "Foreign History"), None)
+    foreign_history = first or ("Foreign History", "0 days", "no freshness date")
+    truthful_cards = [
+        foreign_history,
+        (
+            "Verified Flow",
+            f"{truth['verified_flow']}/{total}",
+            f"official {truth['official_flow']} · fallback {truth['fallback_flow']} · proxy {truth['price_proxy']}",
+        ),
+        (
+            "Stock Structure",
+            f"{truth['stock_structure']}/{total}",
+            "effective scored rows with listed/tradable shares",
+        ),
+        (
+            "Ownership",
+            f"{truth['ownership']}/{total}",
+            f"KSEI+controller {truth['ownership_ksei_controller']} · controller-only {truth['ownership_controller_only']}",
+        ),
+        (
+            "Corp Actions",
+            f"{truth['corporate_action_history']}/{total}",
+            f"history available · recent-event tickers {truth['recent_corporate_actions']}",
+        ),
+    ]
+    return _original_render_health_cards(truthful_cards)
+
+
+def _truthful_render_section(title, description):
+    if title == "Verified Flow Decision — Top 20":
+        description = (
+            "FULL/FRESH/VALID official IDX or verified fallback flow, "
+            "price-data quality ≥70 and distribution risk <70."
+        )
+
+    if title != "Calibration Memory":
+        return _original_render_section(title, description)
+
+    _original_render_section(
+        "Calibration Memory — Canonical Truth",
+        "Actual OOS maturity from canonical flow_signal_outcomes; RPC telemetry is shown separately.",
+    )
+    truth = _cached_calibration_truth()
+    if bool(truth.get("available")):
+        c1, c2, c3, c4, c5 = _original_st_columns(5)
+        c1.metric("Total Signals", int(truth.get("total", 0) or 0))
+        c2.metric("Mature 5D", int(truth.get("mature_5d", 0) or 0))
+        c3.metric("Mature 20D", int(truth.get("mature_20d", 0) or 0))
+        c4.metric("Mature 60D", int(truth.get("mature_60d", 0) or 0))
+        c5.metric("Pending", int(truth.get("pending", 0) or 0))
+        if bool(truth.get("truncated")):
+            st.warning("Calibration truth query reached its safety row limit; counts are partial.")
+    else:
+        st.caption("Canonical calibration memory unavailable; no value is inferred.")
+
+    telemetry = st.session_state.get("last_outcome_stats") or {}
+    st.caption(
+        "Last scan telemetry · "
+        f"seeded {int(telemetry.get('seeded', 0) or 0)} · "
+        f"RPC processed {int(telemetry.get('updated', 0) or 0)} · "
+        f"mode {telemetry.get('mode', 'SKIPPED')}"
+    )
+    _UI_TRUTH_STATE["suppress_legacy_calibration_metrics"] = True
+    return None
+
+
+def _truthful_columns(spec, *args, **kwargs):
+    if _UI_TRUTH_STATE.get("suppress_legacy_calibration_metrics") and spec == 4:
+        _UI_TRUTH_STATE["suppress_legacy_calibration_metrics"] = False
+        return tuple(_SilentMetricColumn() for _ in range(4))
+    return _original_st_columns(spec, *args, **kwargs)
+
+
+def _stale_safe_create_durable_run_record(store, run_id, universe_count, config):
+    # Manual retries previously remained blocked by an orphaned OHLCV_PREP row.
+    # Clean only runs whose heartbeat has been silent for >10 minutes; genuinely
+    # active runs keep their lock.
+    try:
+        streamlit_app.mark_stale_managed_runs(store, max_age_minutes=10)
+    except Exception:
+        pass
+    return _original_create_durable_run_record(store, run_id, universe_count, config)
+
+
 streamlit_app.DEFAULT_UNIVERSE_PATH = Path(
     _resolved_universe_path(streamlit_app._secret("ZAPI_KEY"))
 )
@@ -325,6 +448,10 @@ zapi_pipeline.compute_slow_evidence = _controller_enriched_slow_evidence
 zapi_pipeline.ticker_market_features = _official_index_market_features
 zapi_pipeline.scan_one_zapi = _broker_risk_scored_scan_one
 streamlit_app.scan_universe_zapi = _database_first_scan_universe
+streamlit_app.render_health_cards = _truthful_health_cards
+streamlit_app.render_section = _truthful_render_section
+streamlit_app.st.columns = _truthful_columns
+streamlit_app.create_durable_run_record = _stale_safe_create_durable_run_record
 
 install_current_result_persistence(SupabaseStore, batch_size=20)
 install_truthful_run_metadata(SupabaseStore)
