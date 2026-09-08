@@ -183,7 +183,7 @@
     {
       "date_from": "2026-09-01",
       "date_to": "2026-09-08",
-      "reply_rows": 1230
+      "reply_rows": 1233
     }
   ],
   "download_smoke": [
@@ -332,7 +332,7 @@
       "result_count": 1
     }
   ],
-  "generated_at": "2026-09-08T07:29:30.765907+07:00",
+  "generated_at": "2026-09-08T07:51:51.102614+07:00",
   "latest_report_corroborated_filing_rows": 24680,
   "latest_report_corroboration": {
     "filing_rows": 24680,
@@ -344,7 +344,13 @@
     "unmatched_report_groups": 7117
   },
   "production_scoring_changed": false,
-  "raw_announcement_replies": 239198,
+  "profile_reply_dedupe": {
+    "deduped_profile_replies": 239201,
+    "duplicate_attachment_rows_merged": 0,
+    "duplicate_profile_replies_merged": 0,
+    "input_profile_replies": 239201
+  },
+  "raw_announcement_replies": 239201,
   "report_groups": 15350,
   "revision_backfill": {
     "anomaly_samples": [
@@ -358,42 +364,14 @@
           "FinancialStatement-2024-Tahunan-INPC.xlsx",
           "inlineXBRL.zip"
         ],
-        "current_time": "2026-09-08T07:29:30.765907+07:00",
+        "current_time": "2026-09-08T07:51:51.102614+07:00",
         "inferred_report_period": "AUDIT",
         "inferred_report_year": 2024,
         "published_at": "2024-03-30T12:40:56+07:00",
-        "reason": "NON_PIT_PUBLICATION_TIME",
+        "reason": "SOURCE_PERIOD_CONFLICT_REJECTED",
         "report_period_end": "2024-12-31",
         "ticker": "INPC",
         "title": "Penyampaian Laporan Keuangan Tahunan"
-      },
-      {
-        "announcement_id": "20240425155207-008/SPE/HMI/IV/2024_id-id",
-        "announcement_no": "008/SPE/HMI/IV/2024",
-        "attachment_names": [
-          "FinancialStatement-2024-I-MEDS.pdf",
-          "FinancialStatement-2024-I-MEDS.xlsx",
-          "inlineXBRL.zip",
-          "Penjelasan Perubahan Jumlah Liabilitas.pdf",
-          "FinancialStatement-2023-I-MEDS (1).pdf",
-          "Surat Pengantar CALK TW 1 2024.pdf",
-          "CALK TW 1 2024 (FINAL).pdf",
-          "instance.zip"
-        ],
-        "published_at": "2024-04-25T15:52:07+07:00",
-        "reason": "UNRESOLVED_STRUCTURED_PERIOD",
-        "standard_filename_candidates": [
-          [
-            2023,
-            "TW1"
-          ],
-          [
-            2024,
-            "TW1"
-          ]
-        ],
-        "ticker": "MEDS",
-        "title": "Penyampaian Laporan Keuangan Interim Yang Tidak Diaudit"
       },
       {
         "announcement_id": "20240514173943-063/SPE-IDX/Ext/IV/2024_id-id",
@@ -407,11 +385,11 @@
           "RTI - Surat Liabilitas.pdf",
           "RTI - Surat Pernyataan Direksi.pdf"
         ],
-        "current_time": "2026-09-08T07:29:30.765907+07:00",
+        "current_time": "2026-09-08T07:51:51.102614+07:00",
         "inferred_report_period": "TW3",
         "inferred_report_year": 2024,
         "published_at": "2024-05-14T17:39:43+07:00",
-        "reason": "NON_PIT_PUBLICATION_TIME",
+        "reason": "SOURCE_PERIOD_CONFLICT_REJECTED",
         "report_period_end": "2024-09-30",
         "ticker": "RIGS",
         "title": "Penyampaian Laporan Keuangan Interim Yang Tidak Diaudit"
@@ -430,11 +408,11 @@
           "SPD PUDP.pdf",
           "SURAT UNTUK KE OJK dan BEI.pdf"
         ],
-        "current_time": "2026-09-08T07:29:30.765907+07:00",
+        "current_time": "2026-09-08T07:51:51.102614+07:00",
         "inferred_report_period": "AUDIT",
         "inferred_report_year": 2025,
         "published_at": "2025-03-28T09:36:12+07:00",
-        "reason": "NON_PIT_PUBLICATION_TIME",
+        "reason": "SOURCE_PERIOD_CONFLICT_REJECTED",
         "report_period_end": "2025-12-31",
         "ticker": "PUDP",
         "title": "Penyampaian Laporan Keuangan Tahunan"
@@ -451,11 +429,11 @@
           "Penjelasan Perubahan Liabilitas LK.pdf",
           "SPD 2024.pdf"
         ],
-        "current_time": "2026-09-08T07:29:30.765907+07:00",
+        "current_time": "2026-09-08T07:51:51.102614+07:00",
         "inferred_report_period": "AUDIT",
         "inferred_report_year": 2025,
         "published_at": "2025-03-26T10:31:25+07:00",
-        "reason": "NON_PIT_PUBLICATION_TIME",
+        "reason": "SOURCE_PERIOD_CONFLICT_REJECTED",
         "report_period_end": "2025-12-31",
         "ticker": "LOPI",
         "title": "Penyampaian Laporan Keuangan Tahunan (KOREKSI)"
@@ -471,11 +449,11 @@
           "instance.zip",
           "SPD 2024.pdf"
         ],
-        "current_time": "2026-09-08T07:29:30.765907+07:00",
+        "current_time": "2026-09-08T07:51:51.102614+07:00",
         "inferred_report_period": "AUDIT",
         "inferred_report_year": 2025,
         "published_at": "2025-03-25T15:02:26+07:00",
-        "reason": "NON_PIT_PUBLICATION_TIME",
+        "reason": "SOURCE_PERIOD_CONFLICT_REJECTED",
         "report_period_end": "2025-12-31",
         "ticker": "LOPI",
         "title": "Penyampaian Laporan Keuangan Tahunan (KOREKSI)"
@@ -491,11 +469,11 @@
           "Penjelasan Aset-Liabilitas.pdf",
           "SPD 2024.pdf"
         ],
-        "current_time": "2026-09-08T07:29:30.765907+07:00",
+        "current_time": "2026-09-08T07:51:51.102614+07:00",
         "inferred_report_period": "AUDIT",
         "inferred_report_year": 2025,
         "published_at": "2025-03-25T09:02:35+07:00",
-        "reason": "NON_PIT_PUBLICATION_TIME",
+        "reason": "SOURCE_PERIOD_CONFLICT_REJECTED",
         "report_period_end": "2025-12-31",
         "ticker": "LOPI",
         "title": "Penyampaian Laporan Keuangan Tahunan"
@@ -513,55 +491,27 @@
           "SPD LKT Q4 2025 IMFI.pdf",
           "Surat Pengantar LKT IMFI 31 Des 25.pdf"
         ],
-        "current_time": "2026-09-08T07:29:30.765907+07:00",
+        "current_time": "2026-09-08T07:51:51.102614+07:00",
         "inferred_report_period": "AUDIT",
         "inferred_report_year": 2026,
         "published_at": "2026-03-09T08:52:28+07:00",
-        "reason": "NON_PIT_PUBLICATION_TIME",
+        "reason": "SOURCE_PERIOD_CONFLICT_REJECTED",
         "report_period_end": "2026-12-31",
         "ticker": "IMFI",
         "title": "Penyampaian Laporan Keuangan Tahunan"
-      },
-      {
-        "announcement_id": "20260729104801-0180/CORP/GPSO-JKT/VII/26_id-id",
-        "announcement_no": "0180/CORP/GPSO-JKT/VII/26",
-        "attachment_names": [
-          "FinancialStatement-2026-II-GPSO.pdf",
-          "Final LAI PT Geoprima Solusi Tbk Q2 2026.pdf",
-          "FinancialStatement-2025-II-GPSO.pdf",
-          "FinancialStatement-2026-II-GPSO.xlsx",
-          "inlineXBRL.zip",
-          "instance.zip",
-          "SPD GPSO 30 Juni 2026.pdf",
-          "Surat Pengantar GPSO 30 Juni 2026.pdf"
-        ],
-        "published_at": "2026-07-29T10:48:01+07:00",
-        "reason": "UNRESOLVED_STRUCTURED_PERIOD",
-        "standard_filename_candidates": [
-          [
-            2025,
-            "TW2"
-          ],
-          [
-            2026,
-            "TW2"
-          ]
-        ],
-        "ticker": "GPSO",
-        "title": "Penyampaian Laporan Keuangan Interim Yang Tidak Diaudit"
       }
     ],
     "corroborated_period_fallback": 0,
-    "filing_rows": 36868,
+    "filing_rows": 36874,
     "financial_announcements": 17681,
-    "inferred_announcements": 12300,
+    "inferred_announcements": 12302,
     "nonstructured_financial_notices": 5330,
     "skipped_non_pit_announcements": 7,
     "skipped_nonofficial_attachments": 0,
-    "skipped_unstructured_attachments": 45883,
+    "skipped_unstructured_attachments": 45893,
     "structured_financial_announcements": 12302,
-    "unresolved_period_announcements": 51,
-    "unresolved_structured_announcements": 2
+    "unresolved_period_announcements": 49,
+    "unresolved_structured_announcements": 0
   },
   "schema_version": "BLOCK_IDX_HISTORICAL_FINANCIAL_BACKFILL_META_V5_2"
 }
