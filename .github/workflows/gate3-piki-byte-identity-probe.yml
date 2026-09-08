@@ -1,0 +1,56 @@
+name: Gate 3 PIKI Byte Identity Probe
+
+on:
+  push:
+    branches:
+      - evidence-v5/financial-facts-ingest-staging
+    paths:
+      - '.github/workflows/gate3-piki-byte-identity-probe.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Prove announcement body is prefix of official portal archive
+        run: |
+          PYTHONPATH=src:. python - <<'PY'
+          import hashlib,json
+          from io import BytesIO
+          from zipfile import is_zipfile
+          from curl_cffi import requests
+
+          announcement='https://block.idx.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202607/20260711084222-62809-0/instance.zip'
+          portal='https://www.idx.id/Portals/0/StaticData/ListedCompanies/Corporate_Actions/New_Info_JSX/Jenis_Informasi/01_Laporan_Keuangan/02_Soft_Copy_Laporan_Keuangan/Laporan%20Keuangan%20Tahun%202026/TW2/PIKI/instance.zip'
+          headers={'Accept':'application/zip,application/octet-stream,*/*','User-Agent':'Mozilla/5.0'}
+          s=requests.Session(impersonate='chrome')
+          a=s.get(announcement,headers=headers,timeout=30,allow_redirects=True)
+          p=s.get(portal,headers=headers,timeout=30,allow_redirects=True)
+          ab=bytes(a.content or b''); pb=bytes(p.content or b'')
+          result={
+            'announcement_status':int(a.status_code),'announcement_bytes':len(ab),'announcement_sha256':hashlib.sha256(ab).hexdigest(),'announcement_is_zip':bool(is_zipfile(BytesIO(ab))) if ab else False,
+            'portal_status':int(p.status_code),'portal_bytes':len(pb),'portal_sha256':hashlib.sha256(pb).hexdigest(),'portal_is_zip':bool(is_zipfile(BytesIO(pb))) if pb else False,
+            'prefix_identity': bool(ab and len(pb)>len(ab) and pb[:len(ab)]==ab),
+            'same_local_header_prefix': ab[:64].hex()==pb[:64].hex() if len(ab)>=64 and len(pb)>=64 else False,
+            'production_scoring_changed':False,
+          }
+          print(json.dumps(result,sort_keys=True))
+          open('gate3_piki_byte_identity.json','w').write(json.dumps(result,indent=2,sort_keys=True)+'\n')
+          if not (result['announcement_status']==200 and result['portal_status']==200 and not result['announcement_is_zip'] and result['portal_is_zip'] and result['prefix_identity']):
+            raise SystemExit('PIKI_BYTE_IDENTITY_NOT_PROVEN')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gate3-piki-byte-identity
+          path: gate3_piki_byte_identity.json
+          retention-days: 7
