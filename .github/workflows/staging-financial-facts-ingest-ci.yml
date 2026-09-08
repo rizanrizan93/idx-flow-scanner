@@ -1,0 +1,166 @@
+name: Staging Financial Facts Ingest CI
+
+on:
+  push:
+    branches:
+      - evidence-v5/financial-facts-ingest-staging
+
+permissions:
+  contents: read
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGPASSWORD: postgres
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGDATABASE: postgres
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Python parser and ingest contracts
+        run: >-
+          PYTHONPATH=src:. pytest -q
+          tests/test_block_idx_financial_facts.py
+          tests/test_block_idx_financial_locator.py
+          tests/test_shard_block_idx_financial_facts.py
+          tests/test_financial_fact_ingest_contract.py
+      - name: Bootstrap minimal canonical DB contract
+        run: |
+          set -euo pipefail
+          psql -v ON_ERROR_STOP=1 <<'SQL'
+          create role anon nologin;
+          create role authenticated nologin;
+          create role service_role nologin bypassrls;
+          create schema extensions;
+          create type extensions.http_response as (
+            status integer,
+            content_type varchar,
+            headers text[],
+            content varchar
+          );
+          create function extensions.http_get(uri varchar)
+          returns extensions.http_response
+          language sql
+          as $$ select row(200,'application/json',array[]::text[],'{}')::extensions.http_response $$;
+          create function extensions.digest(data bytea, algorithm text)
+          returns bytea
+          language sql immutable
+          as $$ select decode(repeat('00',32),'hex') $$;
+
+          create table public.flow_evidence_source_registry_v5 (
+            source_key text primary key,
+            source_verified boolean not null default true
+          );
+          insert into public.flow_evidence_source_registry_v5(source_key) values ('IDX_XBRL_FINANCIAL_REPORT');
+
+          create table public.flow_financial_filing_evidence_v5 (
+            filing_id text primary key,
+            ticker text not null,
+            report_year integer not null,
+            report_period text not null,
+            report_period_end date,
+            published_at timestamptz not null,
+            file_modified_at timestamptz,
+            file_url text not null,
+            file_name text not null,
+            file_type text,
+            report_type text,
+            source_key text not null references public.flow_evidence_source_registry_v5(source_key),
+            content_hash text,
+            publication_time_verified boolean not null,
+            source_verified boolean not null,
+            point_in_time_eligible boolean not null,
+            extraction_state text not null,
+            provenance_state text not null,
+            ingested_at timestamptz not null default now()
+          );
+          create table public.flow_financial_fact_evidence_v5 (
+            fact_id text primary key,
+            filing_id text not null references public.flow_financial_filing_evidence_v5(filing_id) on delete cascade,
+            ticker text not null,
+            metric_key text not null,
+            metric_label text,
+            taxonomy_concept text,
+            statement_type text,
+            metric_value numeric,
+            unit text,
+            currency text,
+            period_start date,
+            period_end date,
+            instant_date date,
+            fact_state text not null,
+            source_verified boolean not null,
+            point_in_time_eligible boolean not null,
+            provenance_state text not null,
+            ingested_at timestamptz not null default now()
+          );
+          create table public.flow_disclosure_evidence_v5 (
+            id bigint generated always as identity primary key,
+            source_verified boolean not null default true,
+            publication_time_verified boolean not null default true,
+            point_in_time_eligible boolean not null default true
+          );
+          create table public.flow_major_holder_ownership_evidence_v5 (
+            id bigint generated always as identity primary key,
+            source_verified boolean not null default true,
+            point_in_time_eligible boolean not null default true
+          );
+          SQL
+      - name: Compile sharded ingest migrations on PostgreSQL 17
+        run: |
+          set -euo pipefail
+          for migration in \
+            supabase/migrations/20260908093000_block_idx_financial_fact_cache.sql \
+            supabase/migrations/20260908093100_block_idx_financial_fact_manifest.sql \
+            supabase/migrations/20260908093200_block_idx_financial_fact_shard_ingest.sql \
+            supabase/migrations/20260908093300_block_idx_financial_fact_audit.sql
+          do
+            echo "compiling $migration"
+            psql -v ON_ERROR_STOP=1 -f "$migration"
+          done
+      - name: Verify migration surface
+        run: |
+          set -euo pipefail
+          psql -v ON_ERROR_STOP=1 -At <<'SQL'
+          select case when count(*) = 19 then 'CATALOG_OK' else 'CATALOG_BAD:'||count(*) end
+          from public.flow_financial_metric_catalog_v5;
+          select proname || ':' || prosecdef
+          from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+          where n.nspname='public'
+            and proname in (
+              'flow_register_block_idx_financial_fact_manifest_v5',
+              'flow_ingest_block_idx_financial_fact_shard_v5',
+              'flow_audit_block_idx_financial_fact_manifest_v5'
+            )
+          order by proname;
+          select relname || ':' || relrowsecurity
+          from pg_class
+          where relnamespace='public'::regnamespace
+            and relname in (
+              'flow_financial_metric_catalog_v5',
+              'flow_financial_fact_manifest_v5',
+              'flow_financial_fact_shard_ingest_v5',
+              'flow_financial_fact_manifest_filing_v5'
+            )
+          order by relname;
+          SQL
