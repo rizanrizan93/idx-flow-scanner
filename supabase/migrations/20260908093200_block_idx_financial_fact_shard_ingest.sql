@@ -21,6 +21,8 @@ declare
   v_inserted integer := 0;
   v_filing_count integer := 0;
   v_fact_count integer := 0;
+  v_expected_relational text;
+  v_actual_relational text;
 begin
   if p_manifest_sha256 is null or p_manifest_sha256 !~ '^[0-9a-f]{64}$'
      or p_shard_index is null or p_shard_index <= 0 then
@@ -48,24 +50,6 @@ begin
     raise exception 'FINANCIAL_FACT_MANIFEST_CATALOG_DRIFT';
   end if;
 
-  if v_ledger.ingest_state = 'COMPLETE' then
-    return jsonb_build_object(
-      'status','ALREADY_COMPLETE',
-      'manifest_sha256',p_manifest_sha256,
-      'shard_index',p_shard_index,
-      'expected_fact_rows',v_ledger.expected_fact_rows,
-      'production_scoring_changed',false
-    );
-  end if;
-
-  update public.flow_financial_fact_shard_ingest_v5
-  set ingest_state = 'INGESTING'
-  where manifest_sha256 = p_manifest_sha256 and shard_index = p_shard_index;
-
-  update public.flow_financial_fact_manifest_v5
-  set ingest_state = 'INGESTING'
-  where manifest_sha256 = p_manifest_sha256 and ingest_state = 'REGISTERED';
-
   select status, content into v_status, v_content
   from extensions.http_get(v_ledger.shard_url::varchar);
   if v_status <> 200 or v_content is null then
@@ -87,19 +71,19 @@ begin
     raise exception 'FINANCIAL_FACT_SHARD_INVALID_JSON';
   end;
 
-  if v_payload->>'schema_version' <> 'BLOCK_IDX_FINANCIAL_FACT_SHARD_V5_2'
-     or v_payload->>'source_schema_version' <> 'BLOCK_IDX_FINANCIAL_FACT_CACHE_V5_2'
-     or v_payload->>'source_authority' <> 'INDONESIA_STOCK_EXCHANGE'
-     or v_payload->>'parser_contract' <> 'EXACT_IDX_CORE_TAXONOMY_SINGLE_CURRENCY_CURRENT_UNDIMENSIONED_YTD_OR_INSTANT_V5_2'
-     or v_payload->>'metric_catalog_sha256' <> v_expected_catalog_hash
+  if v_payload->>'schema_version' is distinct from 'BLOCK_IDX_FINANCIAL_FACT_SHARD_V5_2'
+     or v_payload->>'source_schema_version' is distinct from 'BLOCK_IDX_FINANCIAL_FACT_CACHE_V5_2'
+     or v_payload->>'source_authority' is distinct from 'INDONESIA_STOCK_EXCHANGE'
+     or v_payload->>'parser_contract' is distinct from 'EXACT_IDX_CORE_TAXONOMY_SINGLE_CURRENCY_CURRENT_UNDIMENSIONED_YTD_OR_INSTANT_V5_2'
+     or v_payload->>'metric_catalog_sha256' is distinct from v_expected_catalog_hash
      or coalesce((v_payload->>'production_scoring_changed')::boolean,true) is not false
      or coalesce((v_payload->>'shard_index')::integer,-1) <> p_shard_index
      or coalesce((v_payload->>'filing_rows')::integer,-1) <> v_ledger.expected_filing_rows
      or coalesce((v_payload->>'fact_rows')::integer,-1) <> v_ledger.expected_fact_rows
-     or jsonb_typeof(v_payload->'filing_ids') <> 'array'
-     or jsonb_typeof(v_payload->'filing_hashes') <> 'object'
-     or jsonb_typeof(v_payload->'filing_telemetry') <> 'array'
-     or jsonb_typeof(v_payload->'rows') <> 'array'
+     or jsonb_typeof(v_payload->'filing_ids') is distinct from 'array'
+     or jsonb_typeof(v_payload->'filing_hashes') is distinct from 'object'
+     or jsonb_typeof(v_payload->'filing_telemetry') is distinct from 'array'
+     or jsonb_typeof(v_payload->'rows') is distinct from 'array'
      or jsonb_array_length(v_payload->'filing_ids') <> v_ledger.expected_filing_rows
      or jsonb_array_length(v_payload->'filing_telemetry') <> v_ledger.expected_filing_rows
      or jsonb_array_length(v_payload->'rows') <> v_ledger.expected_fact_rows then
@@ -217,6 +201,7 @@ begin
      or r.point_in_time_eligible is not true
      or r.provenance_state is distinct from 'OFFICIAL_IDX_XBRL_INSTANCE_POINT_IN_TIME_VERIFIED_V5'
      or r.metric_value is null
+     or r.metric_value::text in ('NaN','Infinity','-Infinity')
      or coalesce(r.currency,'') !~ '^[A-Z]{3}$'
      or r.unit is distinct from ('iso4217:' || r.currency)
      or r.filing_id not in (select value from jsonb_array_elements_text(v_payload->'filing_ids'))
@@ -276,6 +261,29 @@ begin
   where e.filing_id is distinct from r.filing_id or e.metric_key is distinct from r.metric_key;
   if v_bad <> 0 then
     raise exception 'FINANCIAL_FACT_SHARD_FACT_ID_COLLISION:%', v_bad;
+  end if;
+
+  if exists (
+    select 1 from jsonb_array_elements_text(v_payload->'filing_ids') x
+    join public.flow_financial_fact_manifest_exclusion_v5 e on e.filing_id=x.value
+    where e.manifest_sha256=p_manifest_sha256
+  ) then raise exception 'FINANCIAL_FACT_PARSED_EXCLUSION_OVERLAP'; end if;
+
+  select encode(extensions.digest(convert_to(string_agg(public.flow_financial_fact_row_digest_v5(x.value), E'\n' order by x.value->>'fact_id'),'UTF8'),'sha256'),'hex')
+  into v_expected_relational from jsonb_array_elements(v_payload->'rows') x;
+
+  if v_ledger.ingest_state = 'COMPLETE' then
+    select encode(extensions.digest(convert_to(string_agg(public.flow_financial_fact_row_digest_v5(to_jsonb(e)-'ingested_at'), E'\n' order by e.fact_id),'UTF8'),'sha256'),'hex'),count(*)
+    into v_actual_relational,v_fact_count
+    from public.flow_financial_fact_evidence_v5 e join public.flow_financial_fact_manifest_filing_v5 m on m.filing_id=e.filing_id
+    where m.manifest_sha256=p_manifest_sha256 and m.shard_index=p_shard_index;
+    if v_actual_relational is distinct from v_expected_relational or v_fact_count <> v_ledger.expected_fact_rows
+       or (select count(*) from public.flow_financial_fact_manifest_filing_v5 where manifest_sha256=p_manifest_sha256 and shard_index=p_shard_index) <> v_ledger.expected_filing_rows then
+      raise exception 'FINANCIAL_FACT_COMPLETED_SHARD_READBACK_CONFLICT';
+    end if;
+    return jsonb_build_object('status','ALREADY_COMPLETE','manifest_sha256',p_manifest_sha256,'shard_index',p_shard_index,
+      'inserted_fact_rows',0,'fact_rows',v_fact_count,'expected_relational_sha256',v_expected_relational,
+      'actual_relational_sha256',v_actual_relational,'production_scoring_changed',false);
   end if;
 
   insert into public.flow_financial_fact_manifest_filing_v5(
@@ -349,8 +357,18 @@ begin
     raise exception 'FINANCIAL_FACT_SHARD_POSTWRITE_COUNT_MISMATCH:filings=% facts=%', v_filing_count, v_fact_count;
   end if;
 
+  select encode(extensions.digest(convert_to(string_agg(public.flow_financial_fact_row_digest_v5(to_jsonb(e)-'ingested_at'), E'\n' order by e.fact_id),'UTF8'),'sha256'),'hex')
+  into v_actual_relational from public.flow_financial_fact_evidence_v5 e
+  join public.flow_financial_fact_manifest_filing_v5 m on m.filing_id=e.filing_id
+  where m.manifest_sha256=p_manifest_sha256 and m.shard_index=p_shard_index;
+  if v_actual_relational is distinct from v_expected_relational then
+    raise exception 'FINANCIAL_FACT_SHARD_POSTWRITE_HASH_MISMATCH';
+  end if;
+
   update public.flow_financial_fact_shard_ingest_v5
   set ingest_state = 'COMPLETE',
+      expected_relational_sha256 = v_expected_relational,
+      actual_relational_sha256 = v_actual_relational,
       inserted_fact_rows = v_inserted,
       verified_at = now(),
       ingested_at = now()
@@ -361,7 +379,9 @@ begin
     where manifest_sha256 = p_manifest_sha256 and ingest_state <> 'COMPLETE'
   ) then
     update public.flow_financial_fact_manifest_v5
-    set ingest_state = 'COMPLETE', completed_at = now()
+    set ingest_state = 'COMPLETE',
+      expected_relational_sha256 = v_expected_relational,
+      actual_relational_sha256 = v_actual_relational, completed_at = now()
     where manifest_sha256 = p_manifest_sha256;
   end if;
 
@@ -372,6 +392,8 @@ begin
     'filing_rows',v_filing_count,
     'fact_rows',v_fact_count,
     'inserted_fact_rows',v_inserted,
+    'expected_relational_sha256',v_expected_relational,
+    'actual_relational_sha256',v_actual_relational,
     'production_scoring_changed',false
   );
 end;
