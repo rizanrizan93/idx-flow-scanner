@@ -1,0 +1,198 @@
+name: Publish Financial Facts Artifact
+
+on:
+  push:
+    branches:
+      - evidence-v5/financial-facts-ingest-staging
+    paths:
+      - 'data/evidence_artifacts/publish_financial_facts_run.txt'
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: publish-financial-facts-artifact
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Resolve validated source run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          SOURCE_RUN_ID="$(tr -d '[:space:]' < data/evidence_artifacts/publish_financial_facts_run.txt)"
+          case "$SOURCE_RUN_ID" in
+            ''|*[!0-9]*) echo "invalid source run id" >&2; exit 1 ;;
+          esac
+          STATUS="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${SOURCE_RUN_ID}" --jq '.status')"
+          CONCLUSION="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${SOURCE_RUN_ID}" --jq '.conclusion')"
+          HEAD_SHA="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${SOURCE_RUN_ID}" --jq '.head_sha')"
+          if [ "$STATUS" != completed ] || [ "$CONCLUSION" != success ]; then
+            echo "source run is not a completed success: status=$STATUS conclusion=$CONCLUSION" >&2
+            exit 1
+          fi
+          if ! printf '%s' "$HEAD_SHA" | grep -Eq '^[0-9a-f]{40}$'; then
+            echo "invalid source head sha" >&2
+            exit 1
+          fi
+          printf 'SOURCE_RUN_ID=%s\nSOURCE_HEAD_SHA=%s\n' "$SOURCE_RUN_ID" "$HEAD_SHA" >> "$GITHUB_ENV"
+
+      - name: Download validated shards
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/financial-facts-artifact
+          gh run download "$SOURCE_RUN_ID" \
+            --repo "$GITHUB_REPOSITORY" \
+            --name full-financial-facts-shards \
+            --dir /tmp/financial-facts-artifact
+          MANIFEST_PATH="$(find /tmp/financial-facts-artifact -type f -name manifest.json -print -quit)"
+          if [ -z "$MANIFEST_PATH" ]; then
+            echo "manifest.json missing from source artifact" >&2
+            exit 1
+          fi
+          printf 'ARTIFACT_DIR=%s\n' "$(dirname "$MANIFEST_PATH")" >> "$GITHUB_ENV"
+
+      - name: Verify manifest and every shard
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib
+          import json
+          import os
+          import re
+          from pathlib import Path
+
+          root = Path(os.environ['ARTIFACT_DIR'])
+          manifest_path = root / 'manifest.json'
+          raw = manifest_path.read_bytes()
+          manifest = json.loads(raw)
+
+          expected = {
+              'schema_version': 'BLOCK_IDX_FINANCIAL_FACT_MANIFEST_V5_2',
+              'source_schema_version': 'BLOCK_IDX_FINANCIAL_FACT_CACHE_V5_2',
+              'source_authority': 'INDONESIA_STOCK_EXCHANGE',
+              'parser_contract': 'EXACT_IDX_CORE_TAXONOMY_SINGLE_CURRENCY_CURRENT_UNDIMENSIONED_YTD_OR_INSTANT_V5_2',
+              'metric_catalog_sha256': 'fdb22a134597d5161632aedef260fdaf9342f997aa55c4d11e670043a372b930',
+              'production_scoring_changed': False,
+              'failed_filing_rows': 0,
+          }
+          for key, value in expected.items():
+              if manifest.get(key) != value:
+                  raise SystemExit(f'manifest contract mismatch: {key}')
+          if manifest.get('selected_filing_rows') != manifest.get('parsed_filing_rows'):
+              raise SystemExit('selected/parsed filing mismatch')
+          shards = manifest.get('shards')
+          if not isinstance(shards, list) or len(shards) != manifest.get('shard_count'):
+              raise SystemExit('manifest shard count mismatch')
+
+          total_filings = 0
+          total_facts = 0
+          seen_indices = set()
+          for item in shards:
+              idx = item.get('shard_index')
+              name = item.get('file_name')
+              if not isinstance(idx, int) or idx < 1 or idx in seen_indices:
+                  raise SystemExit('invalid or duplicate shard index')
+              if not isinstance(name, str) or not re.fullmatch(r'shard-[0-9]{4}\.json', name):
+                  raise SystemExit('invalid shard file name')
+              if int(name[6:10]) != idx:
+                  raise SystemExit('shard index/file name mismatch')
+              path = root / name
+              if not path.is_file():
+                  raise SystemExit(f'missing shard: {name}')
+              data = path.read_bytes()
+              digest = hashlib.sha256(data).hexdigest()
+              if digest != item.get('sha256'):
+                  raise SystemExit(f'shard sha mismatch: {name}')
+              if len(data) != item.get('bytes'):
+                  raise SystemExit(f'shard byte count mismatch: {name}')
+              shard = json.loads(data)
+              if shard.get('schema_version') != 'BLOCK_IDX_FINANCIAL_FACT_SHARD_V5_2':
+                  raise SystemExit(f'shard schema mismatch: {name}')
+              if shard.get('shard_index') != idx:
+                  raise SystemExit(f'shard payload index mismatch: {name}')
+              if shard.get('metric_catalog_sha256') != expected['metric_catalog_sha256']:
+                  raise SystemExit(f'shard catalog mismatch: {name}')
+              if shard.get('production_scoring_changed') is not False:
+                  raise SystemExit(f'scoring contract changed: {name}')
+              if shard.get('filing_rows') != item.get('filing_rows') or shard.get('fact_rows') != item.get('fact_rows'):
+                  raise SystemExit(f'shard count mismatch: {name}')
+              total_filings += item['filing_rows']
+              total_facts += item['fact_rows']
+              seen_indices.add(idx)
+
+          if seen_indices != set(range(1, len(shards) + 1)):
+              raise SystemExit('non-contiguous shard indices')
+          if total_filings != manifest.get('parsed_filing_rows'):
+              raise SystemExit('aggregate filing count mismatch')
+          if total_facts != manifest.get('fact_rows'):
+              raise SystemExit('aggregate fact count mismatch')
+
+          print(json.dumps({
+              'status': 'VERIFIED',
+              'manifest_sha256': hashlib.sha256(raw).hexdigest(),
+              'shard_count': len(shards),
+              'filing_rows': total_filings,
+              'fact_rows': total_facts,
+              'production_scoring_changed': False,
+          }, sort_keys=True))
+          PY
+
+      - name: Publish to artifact-only branch
+        run: |
+          set -euo pipefail
+          TARGET_BRANCH="evidence-v5/financial-facts-artifacts"
+          TARGET_DIR="evidence_artifacts/financial_facts_v5/run-${SOURCE_RUN_ID}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if git ls-remote --exit-code --heads origin "$TARGET_BRANCH" >/dev/null 2>&1; then
+            git fetch origin "$TARGET_BRANCH"
+            git checkout -B artifact-publish FETCH_HEAD
+          else
+            git checkout --orphan artifact-publish
+            git rm -rf . >/dev/null 2>&1 || true
+          fi
+
+          rm -rf "$TARGET_DIR"
+          mkdir -p "$TARGET_DIR"
+          cp -a "$ARTIFACT_DIR"/. "$TARGET_DIR"/
+          python - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+
+          target = Path(f"evidence_artifacts/financial_facts_v5/run-{os.environ['SOURCE_RUN_ID']}")
+          manifest = target / 'manifest.json'
+          meta = {
+              'schema_version': 'BLOCK_IDX_FINANCIAL_FACT_ARTIFACT_META_V5_2',
+              'source_run_id': int(os.environ['SOURCE_RUN_ID']),
+              'source_head_sha': os.environ['SOURCE_HEAD_SHA'],
+              'manifest_sha256': hashlib.sha256(manifest.read_bytes()).hexdigest(),
+              'production_scoring_changed': False,
+          }
+          (target / 'artifact_meta.json').write_text(
+              json.dumps(meta, sort_keys=True, separators=(',', ':')) + '\n', encoding='utf-8'
+          )
+          PY
+
+          git add "$TARGET_DIR"
+          if git diff --cached --quiet; then
+            echo "artifact already published"
+          else
+            git commit -m "Publish verified financial facts artifact run ${SOURCE_RUN_ID}"
+          fi
+          git push origin HEAD:"$TARGET_BRANCH"
+          echo "artifact_commit_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
