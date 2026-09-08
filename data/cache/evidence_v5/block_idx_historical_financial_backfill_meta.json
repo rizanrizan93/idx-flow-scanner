@@ -61,8 +61,9 @@
       "result_count": 1
     }
   ],
-  "generated_at": "2026-09-08T06:55:52.113477+07:00",
-  "match": {
+  "generated_at": "2026-09-08T07:01:07.620585+07:00",
+  "latest_report_corroborated_filing_rows": 395,
+  "latest_report_corroboration": {
     "filing_rows": 395,
     "financial_announcement_rows": 242,
     "matched_report_groups": 133,
@@ -74,5 +75,15 @@
   "production_scoring_changed": false,
   "raw_announcement_replies": 5370,
   "report_groups": 1747,
-  "schema_version": "BLOCK_IDX_HISTORICAL_FINANCIAL_BACKFILL_META_V5_1"
+  "revision_backfill": {
+    "corroborated_period_fallback": 43,
+    "filing_rows": 468,
+    "financial_announcements": 242,
+    "inferred_announcements": 167,
+    "skipped_non_pit_announcements": 9,
+    "skipped_nonofficial_attachments": 0,
+    "skipped_unstructured_attachments": 605,
+    "unresolved_period_announcements": 75
+  },
+  "schema_version": "BLOCK_IDX_HISTORICAL_FINANCIAL_BACKFILL_META_V5_2"
 }
