@@ -10,6 +10,8 @@ on:
       - 'scripts/backfill_block_idx_financial_evidence.py'
       - 'tests/test_block_idx_financial_history.py'
       - 'tests/test_block_idx_financial_revisions.py'
+      - 'tests/test_block_idx_historical_financial_ingest_contract.py'
+      - 'supabase/migrations/20260908070500_block_idx_historical_financial_cache.sql'
       - '.github/workflows/backfill-block-idx-financial.yml'
   workflow_dispatch:
 
@@ -26,6 +28,8 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
@@ -36,6 +40,7 @@ jobs:
           PYTHONPATH=src pytest -q
           tests/test_block_idx_financial_history.py
           tests/test_block_idx_financial_revisions.py
+          tests/test_block_idx_historical_financial_ingest_contract.py
           tests/test_block_idx_evidence.py
       - name: Build bounded revision-complete PIT financial cache
         env:
@@ -62,5 +67,6 @@ jobs:
             echo "Historical financial evidence unchanged"
           else
             git commit -m "Backfill revision-complete Block IDX PIT financial evidence proof"
+            git pull --rebase origin "$GITHUB_REF_NAME"
             git push origin HEAD:"$GITHUB_REF_NAME"
           fi
