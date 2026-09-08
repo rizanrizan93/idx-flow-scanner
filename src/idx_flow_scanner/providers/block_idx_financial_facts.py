@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 from io import BytesIO
@@ -14,8 +15,21 @@ XBRLI = "http://www.xbrl.org/2003/instance"
 XBRLDI = "http://xbrl.org/2006/xbrldi"
 XSI = "http://www.w3.org/2001/XMLSchema-instance"
 
-# Exact aliases observed in official IDX XBRL instance files across mining,
-# consumer, banking, and property issuers. The catalog is intentionally bounded.
+# Real 2026 IDX instance files currently bind the core taxonomy with http while
+# IDX's published 2020 taxonomy documentation lists https. Treat these two URIs
+# as the exact canonical namespace variants; extension namespaces are rejected.
+IDX_CORE_NAMESPACES = frozenset(
+    {
+        "http://www.idx.co.id/xbrl/taxonomy/2020-01-01/cor",
+        "https://www.idx.co.id/xbrl/taxonomy/2020-01-01/cor",
+    }
+)
+MAX_XBRL_INSTANCE_BYTES = 64 * 1024 * 1024
+
+# Exact core concepts observed in official IDX 2020-taxonomy instance files.
+# The catalog deliberately maps only semantically equivalent concepts. Sector-
+# specific top lines stay separate (e.g. bank interest/sharia income is never
+# aliased to SalesAndRevenue). Missing evidence is preferable to false mapping.
 METRIC_CATALOG: dict[str, dict[str, object]] = {
     "total_assets": {
         "label": "Total assets",
@@ -23,11 +37,35 @@ METRIC_CATALOG: dict[str, dict[str, object]] = {
         "period_kind": "instant",
         "concepts": ("Assets",),
     },
+    "current_assets": {
+        "label": "Current assets",
+        "statement_type": "BALANCE_SHEET",
+        "period_kind": "instant",
+        "concepts": ("CurrentAssets",),
+    },
+    "non_current_assets": {
+        "label": "Non-current assets",
+        "statement_type": "BALANCE_SHEET",
+        "period_kind": "instant",
+        "concepts": ("NonCurrentAssets",),
+    },
     "total_liabilities": {
         "label": "Total liabilities",
         "statement_type": "BALANCE_SHEET",
         "period_kind": "instant",
         "concepts": ("Liabilities",),
+    },
+    "current_liabilities": {
+        "label": "Current liabilities",
+        "statement_type": "BALANCE_SHEET",
+        "period_kind": "instant",
+        "concepts": ("CurrentLiabilities",),
+    },
+    "non_current_liabilities": {
+        "label": "Non-current liabilities",
+        "statement_type": "BALANCE_SHEET",
+        "period_kind": "instant",
+        "concepts": ("NonCurrentLiabilities",),
     },
     "total_equity": {
         "label": "Total equity",
@@ -58,6 +96,12 @@ METRIC_CATALOG: dict[str, dict[str, object]] = {
         "statement_type": "INCOME_STATEMENT",
         "period_kind": "duration",
         "concepts": ("TotalInterestAndShariaIncome", "InterestIncome"),
+    },
+    "cost_of_sales_and_revenue": {
+        "label": "Cost of sales and revenue",
+        "statement_type": "INCOME_STATEMENT",
+        "period_kind": "duration",
+        "concepts": ("CostOfSalesAndRevenue",),
     },
     "gross_profit": {
         "label": "Gross profit",
@@ -104,8 +148,21 @@ METRIC_CATALOG: dict[str, dict[str, object]] = {
 }
 
 
+def _catalog_json() -> str:
+    return json.dumps(METRIC_CATALOG, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+
+
+METRIC_CATALOG_SHA256 = hashlib.sha256(_catalog_json().encode("utf-8")).hexdigest()
+
+
 def _local_name(tag: str) -> str:
     return tag.rsplit("}", 1)[-1] if "}" in tag else tag
+
+
+def _namespace_uri(tag: str) -> str | None:
+    if tag.startswith("{") and "}" in tag:
+        return tag[1:].split("}", 1)[0]
+    return None
 
 
 def _parse_date(value: object) -> date:
@@ -132,10 +189,24 @@ def _instance_root(data: bytes) -> tuple[ET.Element, str]:
             ]
             if not candidates:
                 raise ValueError("NO_XBRL_INSTANCE")
-            member = min(candidates, key=lambda value: (len(value), value))
+            preferred = [
+                name for name in candidates
+                if name.rsplit("/", 1)[-1].lower() in {"instance.xbrl", "instance.xml"}
+            ]
+            if len(preferred) == 1:
+                member = preferred[0]
+            elif len(candidates) == 1:
+                member = candidates[0]
+            else:
+                raise ValueError("AMBIGUOUS_XBRL_INSTANCE")
+            info = archive.getinfo(member)
+            if info.file_size <= 0 or info.file_size > MAX_XBRL_INSTANCE_BYTES:
+                raise ValueError("XBRL_INSTANCE_SIZE_OUT_OF_BOUNDS")
             return ET.fromstring(archive.read(member)), member
     except BadZipFile as exc:
         raise ValueError("INVALID_XBRL_ZIP") from exc
+    except ET.ParseError as exc:
+        raise ValueError("INVALID_XBRL_XML") from exc
 
 
 def _contexts(root: ET.Element) -> dict[str, dict[str, object]]:
@@ -143,6 +214,10 @@ def _contexts(root: ET.Element) -> dict[str, dict[str, object]]:
     for ctx in root.findall(f"{{{XBRLI}}}context"):
         context_id = str(ctx.attrib.get("id") or "").strip()
         if not context_id:
+            continue
+        identifier = ctx.find(f"./{{{XBRLI}}}entity/{{{XBRLI}}}identifier")
+        entity_identifier = str(identifier.text or "").strip() if identifier is not None else ""
+        if not entity_identifier:
             continue
         dimensions = list(ctx.findall(f".//{{{XBRLDI}}}explicitMember")) + list(
             ctx.findall(f".//{{{XBRLDI}}}typedMember")
@@ -155,10 +230,15 @@ def _contexts(root: ET.Element) -> dict[str, dict[str, object]]:
         instant = period.findtext(f"{{{XBRLI}}}instant")
         start = period.findtext(f"{{{XBRLI}}}startDate")
         end = period.findtext(f"{{{XBRLI}}}endDate")
+        base: dict[str, object] = {
+            "entity_identifier": entity_identifier,
+            "entity_scheme": str(identifier.attrib.get("scheme") or "").strip() if identifier is not None else "",
+        }
         if instant:
-            out[context_id] = {"kind": "instant", "instant": _parse_date(instant)}
+            out[context_id] = {**base, "kind": "instant", "instant": _parse_date(instant)}
         elif start and end:
             out[context_id] = {
+                **base,
                 "kind": "duration",
                 "start": _parse_date(start),
                 "end": _parse_date(end),
@@ -225,6 +305,8 @@ def _validate_filing(filing: dict[str, object]) -> tuple[str, str, int, date]:
     file_url = str(filing.get("file_url") or "").strip()
     if not is_official_idx_url(file_url):
         raise ValueError("filing URL is not an official IDX URL")
+    if str(filing.get("file_name") or "").strip().lower() != "instance.zip":
+        raise ValueError("filing is not an instance.zip attachment")
     report_year = int(filing.get("report_year"))
     period_end = _parse_date(filing.get("report_period_end"))
     if period_end.year != report_year:
@@ -245,10 +327,12 @@ def extract_financial_facts_from_xbrl_zip(
     units = _units(root)
     expected_start = date(report_year, 1, 1)
 
-    concept_index: dict[str, list[tuple[ET.Element, str, dict[str, object], str, str]]] = {}
+    # row tuple: node, context_ref, context, value, currency, namespace
+    concept_index: dict[str, list[tuple[ET.Element, str, dict[str, object], str, str, str]]] = {}
     accepted_nodes = 0
     rejected_nonmonetary = 0
     rejected_wrong_period = 0
+    rejected_wrong_namespace = 0
     rejected_invalid_value = 0
 
     wanted = {
@@ -259,6 +343,10 @@ def extract_financial_facts_from_xbrl_zip(
     for node in root.iter():
         concept = _local_name(node.tag)
         if concept not in wanted:
+            continue
+        namespace = _namespace_uri(node.tag)
+        if namespace not in IDX_CORE_NAMESPACES:
+            rejected_wrong_namespace += 1
             continue
         context_ref = str(node.attrib.get("contextRef") or "").strip()
         context = contexts.get(context_ref)
@@ -284,16 +372,18 @@ def extract_financial_facts_from_xbrl_zip(
             rejected_invalid_value += 1
             continue
         accepted_nodes += 1
-        concept_index.setdefault(concept, []).append((node, context_ref, context, value, currency))
+        concept_index.setdefault(concept, []).append(
+            (node, context_ref, context, value, currency, str(namespace))
+        )
 
-    facts: list[dict[str, object]] = []
+    pending: list[dict[str, object]] = []
     ambiguous_metrics: list[str] = []
     missing_metrics: list[str] = []
-    content_hash = hashlib.sha256(data).hexdigest()
+    equivalent_duplicate_nodes = 0
 
     for metric_key, config in METRIC_CATALOG.items():
         selected_concept: str | None = None
-        selected: list[tuple[ET.Element, str, dict[str, object], str, str]] = []
+        selected: list[tuple[ET.Element, str, dict[str, object], str, str, str]] = []
         for concept in config["concepts"]:
             rows = concept_index.get(str(concept), [])
             kind_rows = [row for row in rows if row[2].get("kind") == config["period_kind"]]
@@ -309,6 +399,8 @@ def extract_financial_facts_from_xbrl_zip(
             (
                 row[3],
                 row[4],
+                row[5],
+                row[2].get("entity_identifier"),
                 row[2].get("instant"),
                 row[2].get("start"),
                 row[2].get("end"),
@@ -318,14 +410,47 @@ def extract_financial_facts_from_xbrl_zip(
         if len(signatures) != 1:
             ambiguous_metrics.append(metric_key)
             continue
-        _node, context_ref, context, value, currency = selected[0]
+        if len(selected) > 1:
+            equivalent_duplicate_nodes += len(selected) - 1
+        _node, context_ref, context, value, currency, namespace = selected[0]
+        pending.append(
+            {
+                "metric_key": metric_key,
+                "config": config,
+                "taxonomy_concept": selected_concept,
+                "taxonomy_namespace": namespace,
+                "context_ref": context_ref,
+                "context": context,
+                "metric_value": value,
+                "currency": currency,
+            }
+        )
+
+    currencies = sorted({str(row["currency"]) for row in pending})
+    if len(currencies) > 1:
+        raise ValueError(f"MIXED_REPORTING_CURRENCY:{','.join(currencies)}")
+    entities = sorted({str(row["context"].get("entity_identifier") or "") for row in pending})
+    if len(entities) > 1:
+        raise ValueError("MIXED_CONTEXT_ENTITY")
+
+    facts: list[dict[str, object]] = []
+    content_hash = hashlib.sha256(data).hexdigest()
+    for row in pending:
+        metric_key = str(row["metric_key"])
+        config = row["config"]
+        context = row["context"]
+        selected_concept = str(row["taxonomy_concept"])
+        namespace = str(row["taxonomy_namespace"])
+        currency = str(row["currency"])
         material = "|".join(
             (
                 filing_id,
                 metric_key,
+                namespace,
                 selected_concept,
-                context_ref,
+                str(row["context_ref"]),
                 currency,
+                str(context.get("entity_identifier") or ""),
                 str(context.get("instant") or ""),
                 str(context.get("start") or ""),
                 str(context.get("end") or ""),
@@ -339,8 +464,9 @@ def extract_financial_facts_from_xbrl_zip(
                 "metric_key": metric_key,
                 "metric_label": config["label"],
                 "taxonomy_concept": selected_concept,
+                "taxonomy_namespace": namespace,
                 "statement_type": config["statement_type"],
-                "metric_value": value,
+                "metric_value": str(row["metric_value"]),
                 "unit": f"iso4217:{currency}",
                 "currency": currency,
                 "period_start": context.get("start").isoformat() if context.get("start") else None,
@@ -353,18 +479,23 @@ def extract_financial_facts_from_xbrl_zip(
             }
         )
 
-    facts.sort(key=lambda row: str(row["metric_key"]))
+    facts.sort(key=lambda item: str(item["metric_key"]))
     telemetry: dict[str, object] = {
         "filing_id": filing_id,
         "ticker": ticker,
         "instance_member": member,
         "content_hash": content_hash,
+        "metric_catalog_sha256": METRIC_CATALOG_SHA256,
         "catalog_metrics": len(METRIC_CATALOG),
         "fact_rows": len(facts),
+        "reporting_currency": currencies[0] if len(currencies) == 1 else None,
+        "context_entity_identifier": entities[0] if len(entities) == 1 else None,
         "missing_metrics": missing_metrics,
         "ambiguous_metrics": ambiguous_metrics,
+        "equivalent_duplicate_nodes": equivalent_duplicate_nodes,
         "accepted_candidate_nodes": accepted_nodes,
         "rejected_wrong_period": rejected_wrong_period,
+        "rejected_wrong_namespace": rejected_wrong_namespace,
         "rejected_nonmonetary": rejected_nonmonetary,
         "rejected_invalid_value": rejected_invalid_value,
         "production_scoring_changed": False,
@@ -372,4 +503,9 @@ def extract_financial_facts_from_xbrl_zip(
     return facts, telemetry
 
 
-__all__ = ["METRIC_CATALOG", "extract_financial_facts_from_xbrl_zip"]
+__all__ = [
+    "IDX_CORE_NAMESPACES",
+    "METRIC_CATALOG",
+    "METRIC_CATALOG_SHA256",
+    "extract_financial_facts_from_xbrl_zip",
+]
