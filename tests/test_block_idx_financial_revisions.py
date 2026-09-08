@@ -1,0 +1,183 @@
+from __future__ import annotations
+
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
+from idx_flow_scanner.providers.block_idx_financial_revisions import (
+    dedupe_profile_replies,
+    financial_revision_filings_from_profile_replies,
+    infer_profile_financial_period,
+)
+
+WIB = ZoneInfo("Asia/Jakarta")
+
+
+def _reply(timestamp: str = "2026-09-06T14:36:53") -> dict:
+    return {
+        "pengumuman": {
+            "Id2": "20260906143653-063/SK/CORP/DOOH-BEI/IX/2026_id-id",
+            "NoPengumuman": "063/SK/CORP/DOOH-BEI/IX/2026",
+            "TglPengumuman": timestamp,
+            "JudulPengumuman": "Penyampaian Laporan Keuangan Interim (KOREKSI)",
+            "Kode_Emiten": "DOOH   ",
+            "JMSXGroupID": "idxnet-xbrl-20260906145112-64368-0",
+        },
+        "attachments": [
+            {
+                "PDFFilename": "FinancialStatement-2026-I-DOOH.pdf",
+                "OriginalFilename": "FinancialStatement-2026-I-DOOH.pdf",
+                "FullSavePath": "\\\\StaticData\\\\NewsAndAnnouncement\\\\202609\\\\FinancialStatement-2026-I-DOOH.pdf",
+            },
+            {
+                "PDFFilename": "FinancialStatement-2026-I-DOOH.xlsx",
+                "OriginalFilename": "FinancialStatement-2026-I-DOOH.xlsx",
+                "FullSavePath": "\\\\StaticData\\\\NewsAndAnnouncement\\\\202609\\\\FinancialStatement-2026-I-DOOH.xlsx",
+            },
+            {
+                "PDFFilename": "inlineXBRL.zip",
+                "OriginalFilename": "inlineXBRL.zip",
+                "FullSavePath": "\\\\StaticData\\\\NewsAndAnnouncement\\\\202609\\\\inlineXBRL.zip",
+            },
+        ],
+    }
+
+
+def test_standard_idx_filename_recognizes_roman_period() -> None:
+    assert infer_profile_financial_period(
+        "Penyampaian Laporan Keuangan Interim",
+        ["FinancialStatement-2026-II-AADI.xlsx", "inlineXBRL.zip"],
+    ) == (2026, "TW2")
+    assert infer_profile_financial_period(
+        "Penyampaian Laporan Keuangan Interim",
+        ["FinancialStatement-2026-III-TEST.xlsx"],
+    ) == (2026, "TW3")
+
+
+def test_tidak_diaudit_does_not_override_standard_idx_period() -> None:
+    assert infer_profile_financial_period(
+        "Penyampaian Laporan Keuangan Interim Yang Tidak Diaudit",
+        ["FinancialStatement-2026-II-PPGL.xlsx", "inlineXBRL.zip", "instance.zip"],
+    ) == (2026, "TW2")
+
+
+def test_supporting_prior_year_pdf_does_not_create_structured_period_conflict() -> None:
+    assert infer_profile_financial_period(
+        "Penyampaian Laporan Keuangan Interim Yang Tidak Diaudit",
+        [
+            "FinancialStatement-2024-I-MEDS.pdf",
+            "FinancialStatement-2024-I-MEDS.xlsx",
+            "FinancialStatement-2023-I-MEDS (1).pdf",
+            "inlineXBRL.zip",
+            "instance.zip",
+        ],
+    ) == (2024, "TW1")
+    assert infer_profile_financial_period(
+        "Penyampaian Laporan Keuangan Interim Yang Tidak Diaudit",
+        [
+            "FinancialStatement-2026-II-GPSO.pdf",
+            "FinancialStatement-2025-II-GPSO.pdf",
+            "FinancialStatement-2026-II-GPSO.xlsx",
+            "inlineXBRL.zip",
+            "instance.zip",
+        ],
+    ) == (2026, "TW2")
+
+
+def test_profile_reply_dedupe_merges_unique_attachments() -> None:
+    first = _reply()
+    second = _reply()
+    second["attachments"] = [
+        dict(first["attachments"][1]),
+        {
+            "PDFFilename": "instance.zip",
+            "OriginalFilename": "instance.zip",
+            "FullSavePath": "\\\\StaticData\\\\NewsAndAnnouncement\\\\202609\\\\instance.zip",
+        },
+    ]
+    deduped, telemetry = dedupe_profile_replies([first, second])
+    assert len(deduped) == 1
+    assert telemetry["duplicate_profile_replies_merged"] == 1
+    assert telemetry["duplicate_attachment_rows_merged"] == 1
+    assert {row["OriginalFilename"] for row in deduped[0]["attachments"]} == {
+        "FinancialStatement-2026-I-DOOH.pdf",
+        "FinancialStatement-2026-I-DOOH.xlsx",
+        "inlineXBRL.zip",
+        "instance.zip",
+    }
+
+
+def test_revision_rows_preserve_announcement_identity_and_structured_files() -> None:
+    filings, telemetry = financial_revision_filings_from_profile_replies(
+        [_reply()],
+        now=datetime(2026, 9, 8, 6, 45, tzinfo=WIB),
+    )
+    assert telemetry["financial_announcements"] == 1
+    assert telemetry["structured_financial_announcements"] == 1
+    assert telemetry["nonstructured_financial_notices"] == 0
+    assert telemetry["inferred_announcements"] == 1
+    assert telemetry["unresolved_period_announcements"] == 0
+    assert telemetry["unresolved_structured_announcements"] == 0
+    assert len(filings) == 2
+    assert {row["file_name"] for row in filings} == {
+        "FinancialStatement-2026-I-DOOH.xlsx",
+        "inlineXBRL.zip",
+    }
+    assert all(row["report_period"] == "TW1" for row in filings)
+    assert all(row["report_period_end"] == "2026-03-31" for row in filings)
+    assert all(row["published_at"] == "2026-09-06T14:36:53+07:00" for row in filings)
+    assert all(row["announcement_no"] == "063/SK/CORP/DOOH-BEI/IX/2026" for row in filings)
+    assert all(row["point_in_time_eligible"] is True for row in filings)
+    assert all(str(row["file_url"]).startswith("https://www.idx.co.id/StaticData/") for row in filings)
+
+
+def test_two_corrections_are_retained_as_distinct_revisions() -> None:
+    first = _reply("2026-08-31T21:38:57")
+    first["pengumuman"]["Id2"] = "20260831213857-first_id-id"
+    first["pengumuman"]["NoPengumuman"] = "062/SK/CORP/DOOH-BEI/VIII/2026"
+    first["attachments"][1]["FullSavePath"] = "\\\\StaticData\\\\NewsAndAnnouncement\\\\202608\\\\FinancialStatement-2026-I-DOOH.xlsx"
+    first["attachments"][2]["FullSavePath"] = "\\\\StaticData\\\\NewsAndAnnouncement\\\\202608\\\\inlineXBRL.zip"
+    second = _reply()
+    filings, telemetry = financial_revision_filings_from_profile_replies(
+        [first, second],
+        now=datetime(2026, 9, 8, 6, 45, tzinfo=WIB),
+    )
+    assert telemetry["financial_announcements"] == 2
+    assert telemetry["structured_financial_announcements"] == 2
+    assert telemetry["unresolved_structured_announcements"] == 0
+    assert len(filings) == 4
+    assert len({row["filing_id"] for row in filings}) == 4
+    assert {str(row["published_at"]) for row in filings} == {
+        "2026-08-31T21:38:57+07:00",
+        "2026-09-06T14:36:53+07:00",
+    }
+
+
+def test_nonstructured_financial_notice_is_not_an_unresolved_filing() -> None:
+    reply = _reply()
+    reply["pengumuman"]["JudulPengumuman"] = "Penyampaian Bukti Iklan Informasi Laporan Keuangan Interim"
+    reply["attachments"] = [
+        {
+            "PDFFilename": "20260907_TEST_Penyampaian Bukti Iklan.pdf",
+            "OriginalFilename": "20260907_TEST_Penyampaian Bukti Iklan.pdf",
+            "FullSavePath": "\\\\StaticData\\\\NewsAndAnnouncement\\\\202609\\\\bukti.pdf",
+        }
+    ]
+    filings, telemetry = financial_revision_filings_from_profile_replies(
+        [reply],
+        now=datetime(2026, 9, 8, 6, 45, tzinfo=WIB),
+    )
+    assert filings == []
+    assert telemetry["financial_announcements"] == 1
+    assert telemetry["structured_financial_announcements"] == 0
+    assert telemetry["nonstructured_financial_notices"] == 1
+    assert telemetry["unresolved_structured_announcements"] == 0
+
+
+def test_impossible_publication_before_period_end_is_rejected() -> None:
+    filings, telemetry = financial_revision_filings_from_profile_replies(
+        [_reply("2026-03-01T10:00:00")],
+        now=datetime(2026, 9, 8, 6, 45, tzinfo=WIB),
+    )
+    assert filings == []
+    assert telemetry["skipped_non_pit_announcements"] == 1
+    assert telemetry["anomaly_samples"][0]["reason"] == "SOURCE_PERIOD_CONFLICT_REJECTED"

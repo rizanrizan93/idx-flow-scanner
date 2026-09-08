@@ -1,0 +1,517 @@
+{
+  "announcement_months": [
+    {
+      "date_from": "2023-09-08",
+      "date_to": "2023-09-30",
+      "reply_rows": 4145
+    },
+    {
+      "date_from": "2023-10-01",
+      "date_to": "2023-10-31",
+      "reply_rows": 7810
+    },
+    {
+      "date_from": "2023-11-01",
+      "date_to": "2023-11-30",
+      "reply_rows": 7722
+    },
+    {
+      "date_from": "2023-12-01",
+      "date_to": "2023-12-31",
+      "reply_rows": 7073
+    },
+    {
+      "date_from": "2024-01-01",
+      "date_to": "2024-01-31",
+      "reply_rows": 7243
+    },
+    {
+      "date_from": "2024-02-01",
+      "date_to": "2024-02-29",
+      "reply_rows": 6470
+    },
+    {
+      "date_from": "2024-03-01",
+      "date_to": "2024-03-31",
+      "reply_rows": 7548
+    },
+    {
+      "date_from": "2024-04-01",
+      "date_to": "2024-04-30",
+      "reply_rows": 9820
+    },
+    {
+      "date_from": "2024-05-01",
+      "date_to": "2024-05-31",
+      "reply_rows": 9319
+    },
+    {
+      "date_from": "2024-06-01",
+      "date_to": "2024-06-30",
+      "reply_rows": 8675
+    },
+    {
+      "date_from": "2024-07-01",
+      "date_to": "2024-07-31",
+      "reply_rows": 9738
+    },
+    {
+      "date_from": "2024-08-01",
+      "date_to": "2024-08-31",
+      "reply_rows": 8045
+    },
+    {
+      "date_from": "2024-09-01",
+      "date_to": "2024-09-30",
+      "reply_rows": 7559
+    },
+    {
+      "date_from": "2024-10-01",
+      "date_to": "2024-10-31",
+      "reply_rows": 9861
+    },
+    {
+      "date_from": "2024-11-01",
+      "date_to": "2024-11-30",
+      "reply_rows": 8869
+    },
+    {
+      "date_from": "2024-12-01",
+      "date_to": "2024-12-31",
+      "reply_rows": 6291
+    },
+    {
+      "date_from": "2025-01-01",
+      "date_to": "2025-01-31",
+      "reply_rows": 4512
+    },
+    {
+      "date_from": "2025-02-01",
+      "date_to": "2025-02-28",
+      "reply_rows": 3979
+    },
+    {
+      "date_from": "2025-03-01",
+      "date_to": "2025-03-31",
+      "reply_rows": 5653
+    },
+    {
+      "date_from": "2025-04-01",
+      "date_to": "2025-04-30",
+      "reply_rows": 6637
+    },
+    {
+      "date_from": "2025-05-01",
+      "date_to": "2025-05-31",
+      "reply_rows": 6787
+    },
+    {
+      "date_from": "2025-06-01",
+      "date_to": "2025-06-30",
+      "reply_rows": 6353
+    },
+    {
+      "date_from": "2025-07-01",
+      "date_to": "2025-07-31",
+      "reply_rows": 6337
+    },
+    {
+      "date_from": "2025-08-01",
+      "date_to": "2025-08-31",
+      "reply_rows": 4477
+    },
+    {
+      "date_from": "2025-09-01",
+      "date_to": "2025-09-30",
+      "reply_rows": 4592
+    },
+    {
+      "date_from": "2025-10-01",
+      "date_to": "2025-10-31",
+      "reply_rows": 6074
+    },
+    {
+      "date_from": "2025-11-01",
+      "date_to": "2025-11-30",
+      "reply_rows": 4642
+    },
+    {
+      "date_from": "2025-12-01",
+      "date_to": "2025-12-31",
+      "reply_rows": 4997
+    },
+    {
+      "date_from": "2026-01-01",
+      "date_to": "2026-01-31",
+      "reply_rows": 5118
+    },
+    {
+      "date_from": "2026-02-01",
+      "date_to": "2026-02-28",
+      "reply_rows": 4515
+    },
+    {
+      "date_from": "2026-03-01",
+      "date_to": "2026-03-31",
+      "reply_rows": 5388
+    },
+    {
+      "date_from": "2026-04-01",
+      "date_to": "2026-04-30",
+      "reply_rows": 7796
+    },
+    {
+      "date_from": "2026-05-01",
+      "date_to": "2026-05-31",
+      "reply_rows": 6402
+    },
+    {
+      "date_from": "2026-06-01",
+      "date_to": "2026-06-30",
+      "reply_rows": 6836
+    },
+    {
+      "date_from": "2026-07-01",
+      "date_to": "2026-07-31",
+      "reply_rows": 6545
+    },
+    {
+      "date_from": "2026-08-01",
+      "date_to": "2026-08-31",
+      "reply_rows": 4140
+    },
+    {
+      "date_from": "2026-09-01",
+      "date_to": "2026-09-08",
+      "reply_rows": 1233
+    }
+  ],
+  "download_smoke": [
+    {
+      "bytes": 169741,
+      "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "file_name": "FinancialStatement-2023-Tahunan-DOOH.xlsx",
+      "sha256": "b8e3f21bc6f5f350e99a98a7186712022ecc665c8dcc9663fe3ce502000fc879",
+      "ticker": "DOOH"
+    },
+    {
+      "bytes": 1179329,
+      "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "file_name": "FinancialStatement-2022-Tahunan-FLMC.xlsx",
+      "sha256": "4671b7903380635ca660583dc902e8becff1cad87139d8305772bd4f15330ed8",
+      "ticker": "FLMC"
+    },
+    {
+      "bytes": 522848,
+      "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "file_name": "FinancialStatement-2023-Tahunan-MKNT.xlsx",
+      "sha256": "976459ab6f46a388a4efb6a6ed711cfa7c0431d837bd1cf107b1bb2079a3d70c",
+      "ticker": "MKNT"
+    }
+  ],
+  "financial_announcement_rows": 17632,
+  "financial_queries": [
+    {
+      "parsed_report_groups": 754,
+      "report_period": "TW1",
+      "report_year": 2022,
+      "result_count": 754
+    },
+    {
+      "parsed_report_groups": 812,
+      "report_period": "TW2",
+      "report_year": 2022,
+      "result_count": 812
+    },
+    {
+      "parsed_report_groups": 771,
+      "report_period": "TW3",
+      "report_year": 2022,
+      "result_count": 771
+    },
+    {
+      "parsed_report_groups": 858,
+      "report_period": "AUDIT",
+      "report_year": 2022,
+      "result_count": 858
+    },
+    {
+      "parsed_report_groups": 796,
+      "report_period": "TW1",
+      "report_year": 2023,
+      "result_count": 796
+    },
+    {
+      "parsed_report_groups": 880,
+      "report_period": "TW2",
+      "report_year": 2023,
+      "result_count": 880
+    },
+    {
+      "parsed_report_groups": 819,
+      "report_period": "TW3",
+      "report_year": 2023,
+      "result_count": 819
+    },
+    {
+      "parsed_report_groups": 903,
+      "report_period": "AUDIT",
+      "report_year": 2023,
+      "result_count": 903
+    },
+    {
+      "parsed_report_groups": 684,
+      "report_period": "TW1",
+      "report_year": 2024,
+      "result_count": 684
+    },
+    {
+      "parsed_report_groups": 923,
+      "report_period": "TW2",
+      "report_year": 2024,
+      "result_count": 923
+    },
+    {
+      "parsed_report_groups": 854,
+      "report_period": "TW3",
+      "report_year": 2024,
+      "result_count": 854
+    },
+    {
+      "parsed_report_groups": 934,
+      "report_period": "AUDIT",
+      "report_year": 2024,
+      "result_count": 934
+    },
+    {
+      "parsed_report_groups": 858,
+      "report_period": "TW1",
+      "report_year": 2025,
+      "result_count": 858
+    },
+    {
+      "parsed_report_groups": 947,
+      "report_period": "TW2",
+      "report_year": 2025,
+      "result_count": 947
+    },
+    {
+      "parsed_report_groups": 875,
+      "report_period": "TW3",
+      "report_year": 2025,
+      "result_count": 875
+    },
+    {
+      "parsed_report_groups": 935,
+      "report_period": "AUDIT",
+      "report_year": 2025,
+      "result_count": 935
+    },
+    {
+      "parsed_report_groups": 856,
+      "report_period": "TW1",
+      "report_year": 2026,
+      "result_count": 856
+    },
+    {
+      "parsed_report_groups": 890,
+      "report_period": "TW2",
+      "report_year": 2026,
+      "result_count": 890
+    },
+    {
+      "parsed_report_groups": 0,
+      "report_period": "TW3",
+      "report_year": 2026,
+      "result_count": 0
+    },
+    {
+      "parsed_report_groups": 1,
+      "report_period": "AUDIT",
+      "report_year": 2026,
+      "result_count": 1
+    }
+  ],
+  "generated_at": "2026-09-08T07:51:51.102614+07:00",
+  "latest_report_corroborated_filing_rows": 24680,
+  "latest_report_corroboration": {
+    "filing_rows": 24680,
+    "financial_announcement_rows": 17632,
+    "matched_report_groups": 8233,
+    "report_groups": 15350,
+    "skipped_attachment_identity": 0,
+    "skipped_non_pit_groups": 1,
+    "unmatched_report_groups": 7117
+  },
+  "production_scoring_changed": false,
+  "profile_reply_dedupe": {
+    "deduped_profile_replies": 239201,
+    "duplicate_attachment_rows_merged": 0,
+    "duplicate_profile_replies_merged": 0,
+    "input_profile_replies": 239201
+  },
+  "raw_announcement_replies": 239201,
+  "report_groups": 15350,
+  "revision_backfill": {
+    "anomaly_samples": [
+      {
+        "announcement_id": "20240330124056-SK/0041/DIRUT/III/2024_id-id",
+        "announcement_no": "SK/0041/DIRUT/III/2024",
+        "attachment_names": [
+          "FinancialStatement-2024-Tahunan-INPC.pdf",
+          "Audit Report PT BAGI Tbk 31 Desember 2023.pdf",
+          "instance.zip",
+          "FinancialStatement-2024-Tahunan-INPC.xlsx",
+          "inlineXBRL.zip"
+        ],
+        "current_time": "2026-09-08T07:51:51.102614+07:00",
+        "inferred_report_period": "AUDIT",
+        "inferred_report_year": 2024,
+        "published_at": "2024-03-30T12:40:56+07:00",
+        "reason": "SOURCE_PERIOD_CONFLICT_REJECTED",
+        "report_period_end": "2024-12-31",
+        "ticker": "INPC",
+        "title": "Penyampaian Laporan Keuangan Tahunan"
+      },
+      {
+        "announcement_id": "20240514173943-063/SPE-IDX/Ext/IV/2024_id-id",
+        "announcement_no": "063/SPE-IDX/Ext/IV/2024",
+        "attachment_names": [
+          "FinancialStatement-2024-III-RIGS.pdf",
+          "FinancialStatement-2024-III-RIGS.xlsx",
+          "inlineXBRL.zip",
+          "instance.zip",
+          "RIGS- Laporan Keuangan 31 Mar 2024.pdf",
+          "RTI - Surat Liabilitas.pdf",
+          "RTI - Surat Pernyataan Direksi.pdf"
+        ],
+        "current_time": "2026-09-08T07:51:51.102614+07:00",
+        "inferred_report_period": "TW3",
+        "inferred_report_year": 2024,
+        "published_at": "2024-05-14T17:39:43+07:00",
+        "reason": "SOURCE_PERIOD_CONFLICT_REJECTED",
+        "report_period_end": "2024-09-30",
+        "ticker": "RIGS",
+        "title": "Penyampaian Laporan Keuangan Interim Yang Tidak Diaudit"
+      },
+      {
+        "announcement_id": "20250328093612-607/PP-DIR/III/2025_id-id",
+        "announcement_no": "607/PP-DIR/III/2025",
+        "attachment_names": [
+          "FinancialStatement-2025-Tahunan-PUDP.pdf",
+          "FinancialStatement-2025-Tahunan-PUDP.xlsx",
+          "inlineXBRL.zip",
+          "instance.zip",
+          "LK PT PUDJIADI PRESTIGE TBK (KONSOL) 2024.pdf",
+          "Perubahan Aset 2024.pdf",
+          "Perubahan Liabilitas 2024.pdf",
+          "SPD PUDP.pdf",
+          "SURAT UNTUK KE OJK dan BEI.pdf"
+        ],
+        "current_time": "2026-09-08T07:51:51.102614+07:00",
+        "inferred_report_period": "AUDIT",
+        "inferred_report_year": 2025,
+        "published_at": "2025-03-28T09:36:12+07:00",
+        "reason": "SOURCE_PERIOD_CONFLICT_REJECTED",
+        "report_period_end": "2025-12-31",
+        "ticker": "PUDP",
+        "title": "Penyampaian Laporan Keuangan Tahunan"
+      },
+      {
+        "announcement_id": "20250326103125-022/SK-DIR/LPI/III/2025_id-id",
+        "announcement_no": "022/SK-DIR/LPI/III/2025",
+        "attachment_names": [
+          "FinancialStatement-2025-Tahunan-LOPI.pdf",
+          "Audit Financial Report 2024 PT LOPI-2.pdf",
+          "FinancialStatement-2025-Tahunan-LOPI.xlsx",
+          "inlineXBRL.zip",
+          "instance.zip",
+          "Penjelasan Perubahan Liabilitas LK.pdf",
+          "SPD 2024.pdf"
+        ],
+        "current_time": "2026-09-08T07:51:51.102614+07:00",
+        "inferred_report_period": "AUDIT",
+        "inferred_report_year": 2025,
+        "published_at": "2025-03-26T10:31:25+07:00",
+        "reason": "SOURCE_PERIOD_CONFLICT_REJECTED",
+        "report_period_end": "2025-12-31",
+        "ticker": "LOPI",
+        "title": "Penyampaian Laporan Keuangan Tahunan (KOREKSI)"
+      },
+      {
+        "announcement_id": "20250325150226-0021/SK-DIR/LPI/III/2025(RVS-0020)_id-id",
+        "announcement_no": "0021/SK-DIR/LPI/III/2025(RVS-0020)",
+        "attachment_names": [
+          "FinancialStatement-2025-Tahunan-LOPI.pdf",
+          "Audit Financial Report 2024 PT LOPI-2.pdf",
+          "FinancialStatement-2025-Tahunan-LOPI.xlsx",
+          "inlineXBRL.zip",
+          "instance.zip",
+          "SPD 2024.pdf"
+        ],
+        "current_time": "2026-09-08T07:51:51.102614+07:00",
+        "inferred_report_period": "AUDIT",
+        "inferred_report_year": 2025,
+        "published_at": "2025-03-25T15:02:26+07:00",
+        "reason": "SOURCE_PERIOD_CONFLICT_REJECTED",
+        "report_period_end": "2025-12-31",
+        "ticker": "LOPI",
+        "title": "Penyampaian Laporan Keuangan Tahunan (KOREKSI)"
+      },
+      {
+        "announcement_id": "20250325090235-0019/SK-DIR/LPI/III/2025_id-id",
+        "announcement_no": "0019/SK-DIR/LPI/III/2025",
+        "attachment_names": [
+          "FinancialStatement-2025-Tahunan-LOPI.pdf",
+          "FinancialStatement-2025-Tahunan-LOPI.xlsx",
+          "inlineXBRL.zip",
+          "instance.zip",
+          "Penjelasan Aset-Liabilitas.pdf",
+          "SPD 2024.pdf"
+        ],
+        "current_time": "2026-09-08T07:51:51.102614+07:00",
+        "inferred_report_period": "AUDIT",
+        "inferred_report_year": 2025,
+        "published_at": "2025-03-25T09:02:35+07:00",
+        "reason": "SOURCE_PERIOD_CONFLICT_REJECTED",
+        "report_period_end": "2025-12-31",
+        "ticker": "LOPI",
+        "title": "Penyampaian Laporan Keuangan Tahunan"
+      },
+      {
+        "announcement_id": "20260309085228-LGL/065/IMFI/III/2026_id-id",
+        "announcement_no": "LGL/065/IMFI/III/2026",
+        "attachment_names": [
+          "FinancialStatement-2026-Tahunan-IMFI.pdf",
+          "Checklist Pengungkapan LKT IMFI Des 25.pdf",
+          "FinancialStatement-2026-Tahunan-IMFI.xlsx",
+          "inlineXBRL.zip",
+          "instance.zip",
+          "LKT PT Indomobil Finance Indonesia 31 Des 2025.pdf",
+          "SPD LKT Q4 2025 IMFI.pdf",
+          "Surat Pengantar LKT IMFI 31 Des 25.pdf"
+        ],
+        "current_time": "2026-09-08T07:51:51.102614+07:00",
+        "inferred_report_period": "AUDIT",
+        "inferred_report_year": 2026,
+        "published_at": "2026-03-09T08:52:28+07:00",
+        "reason": "SOURCE_PERIOD_CONFLICT_REJECTED",
+        "report_period_end": "2026-12-31",
+        "ticker": "IMFI",
+        "title": "Penyampaian Laporan Keuangan Tahunan"
+      }
+    ],
+    "corroborated_period_fallback": 0,
+    "filing_rows": 36874,
+    "financial_announcements": 17681,
+    "inferred_announcements": 12302,
+    "nonstructured_financial_notices": 5330,
+    "skipped_non_pit_announcements": 7,
+    "skipped_nonofficial_attachments": 0,
+    "skipped_unstructured_attachments": 45893,
+    "structured_financial_announcements": 12302,
+    "unresolved_period_announcements": 49,
+    "unresolved_structured_announcements": 0
+  },
+  "schema_version": "BLOCK_IDX_HISTORICAL_FINANCIAL_BACKFILL_META_V5_2"
+}
