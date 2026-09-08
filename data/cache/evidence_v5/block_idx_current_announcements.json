@@ -1,6 +1,138 @@
 {
   "rows": [
     {
+      "announcement_id": "BLOCKIDX-0f9ff0aa557dda087fc2b56f99bef805",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "43a93994e6_6d28e7341e.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/43a93994e6_6d28e7341e.pdf"
+        },
+        {
+          "file_name": "20260907_GMTD_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32145359_lamp4.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/0298498b7a_af0e763d0a.pdf"
+        },
+        {
+          "file_name": "20260907_GMTD_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32145359_lamp5.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/4d48bd1340_26f19ae5ac.pdf"
+        },
+        {
+          "file_name": "20260907_GMTD_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32145359_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/7691d3b46f_15fe64c562.pdf"
+        },
+        {
+          "file_name": "20260907_GMTD_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32145359_lamp3.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/b570855c37_e52fa47a73.pdf"
+        },
+        {
+          "file_name": "20260907_GMTD_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32145359_lamp2.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/cce4dcc851_9d08d84152.pdf"
+        }
+      ],
+      "content_hash": "7d35253e2b3f91c05e1427d867f07030b25b459a6b64c6cf6b47b118eabca193",
+      "disclosure_type": "OWNERSHIP",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/43a93994e6_6d28e7341e.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-09-08T07:51:30+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "GMTD",
+      "title": "Laporan Bulanan Registrasi Pemegang Efek [ GMTD ]"
+    },
+    {
+      "announcement_id": "BLOCKIDX-972916594929cbb23a73eab2383d19cc",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "4524d2be0f_cefe90f393.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/4524d2be0f_cefe90f393.pdf"
+        },
+        {
+          "file_name": "20260907_HAIS_Laporan Informasi dan Fakta Material_32145747_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/df8a8f11e0_33a48dc252.pdf"
+        }
+      ],
+      "content_hash": "c06190dee1ef6b3078ba883c9eb9c2461ec823d373e8783192eb925ac6e7a560",
+      "disclosure_type": "OTHER_DISCLOSURE",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/4524d2be0f_cefe90f393.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-09-08T07:51:19+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "HAIS",
+      "title": "HIS Raih Corporate Secretary Champion 2026 Predikat Very Good dari SWA [ HAIS ]"
+    },
+    {
+      "announcement_id": "BLOCKIDX-ff8f6bd9ee8a063ae0313e941289662a",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "32807bc7f9_5dc1c483ed.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/32807bc7f9_5dc1c483ed.pdf"
+        },
+        {
+          "file_name": "20260908_POST_Penyampaian Bukti Iklan_32145922_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/38c8311160_37d0244801.pdf"
+        }
+      ],
+      "content_hash": "ef05393736337e66359f2088cddca59e24becb4fe20a38351377f597ea36deed",
+      "disclosure_type": "OTHER_DISCLOSURE",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/32807bc7f9_5dc1c483ed.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-09-08T07:46:03+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "POST",
+      "title": "Penyampaian Bukti Iklan PEMANGGILAN RAPAT UMUM PEMEGANG OBLIGASI & SUKUK IJARAH (RUPO & RUPSI) OBLIGASI I POS INDONESIA TAHUN 2022 SUKUK IJARAH BERKELANJUTAN I POS INDONESIA TAHAP I TAHUN 2024 [ POST ]"
+    },
+    {
+      "announcement_id": "BLOCKIDX-33101c0bd9589be26f97688a1d474ad6",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "718c86af78_37f870f12e.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/718c86af78_37f870f12e.pdf"
+        },
+        {
+          "file_name": "20260907_KETR_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32145537_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/3f074ab7da_8a41245511.pdf"
+        }
+      ],
+      "content_hash": "1a75ecf9fa7d734568a8292fea7ec328e5d5589dce81ad36c1666b97355f2432",
+      "disclosure_type": "OWNERSHIP",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/718c86af78_37f870f12e.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-09-08T06:36:35+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "KETR",
+      "title": "Laporan Bulanan Registrasi Pemegang Efek [ KETR ]"
+    },
+    {
       "announcement_id": "BLOCKIDX-b10829b21bd99cd4a9a5727442beeb81",
       "announcement_no": null,
       "attachment_urls": [
@@ -187,118 +319,6 @@
       "source_verified": true,
       "ticker": "ANTM",
       "title": "Penyampaian Materi Public Expose - Tahunan [ ANTM ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-28c1f9dc818242b4b8295262514e45d7",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "50ce2f03ab_41a10d89db.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/50ce2f03ab_41a10d89db.pdf"
-        },
-        {
-          "file_name": "20260907_XDIF_Laporan Harian atas Nilai Aktiva Bersih dan Komposisi Portofolio_32145913_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/0babfd8226_aa9a1b95b9.pdf"
-        },
-        {
-          "file_name": "20260907_XDIF_Laporan Harian atas Nilai Aktiva Bersih dan Komposisi Portofolio_32145913_lamp2.xlsx",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_INAV/202609/5f759e9e38_8fa31206b8.xlsx"
-        }
-      ],
-      "content_hash": "c77a60a1be20250b5b990b0fce282975410e2e0bf7b021eec412c31707a667cf",
-      "disclosure_type": "OTHER_DISCLOSURE",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/50ce2f03ab_41a10d89db.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-07T22:44:37+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "XDIF",
-      "title": "Laporan Harian atas Nilai Aktiva Bersih dan Komposisi Portofolio [ XDIF ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-6ec0077c586d21f0ed381353ed9b12f8",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "c9e8e59d01_abf48de182.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/c9e8e59d01_abf48de182.pdf"
-        }
-      ],
-      "content_hash": "5314f4aa48323f8e0f4c2f1519887892fd35424043bfe6c854302505d96ea427",
-      "disclosure_type": "OWNERSHIP",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/c9e8e59d01_abf48de182.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-07T22:44:19+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "DEWI",
-      "title": "Laporan Bulanan Registrasi Pemegang Efek [ DEWI ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-72e490872a0ad022487b462ef7814a07",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "60365d3d0c_c9660ac9c9.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/60365d3d0c_c9660ac9c9.pdf"
-        },
-        {
-          "file_name": "20260907_MINE_Tanggapan atas Permintaan Penjelasan Bursa_32145900_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/059b9c53e0_7022a4141e.pdf"
-        }
-      ],
-      "content_hash": "c3e68bbfeaa7c63d7250b028c1952694183d8a814a521da157dae8cd3696809e",
-      "disclosure_type": "VOLATILITY_EXPLANATION",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/60365d3d0c_c9660ac9c9.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-07T22:38:33+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "MINE",
-      "title": "Penjelasan atas Volatilitas Transaksi [ MINE ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-52db33120f117aadb30c00c0be10b624",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "411696feac_3f70960306.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/411696feac_3f70960306.pdf"
-        },
-        {
-          "file_name": "20260907_TAYS_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32145911_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/da2cc18cec_dc637a0fd8.pdf"
-        }
-      ],
-      "content_hash": "d40e0f82cc5bb079dc9874134c6b5e5ee6804955fb3155efc402c034ce3883f2",
-      "disclosure_type": "OWNERSHIP",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/411696feac_3f70960306.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-07T22:21:10+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "TAYS",
-      "title": "Laporan Bulanan Registrasi Pemegang Efek [ TAYS ]"
     }
   ],
   "schema_version": "BLOCK_IDX_DISCLOSURE_CACHE_V5_1",
