@@ -42,22 +42,22 @@ jobs:
           tests/test_block_idx_financial_revisions.py
           tests/test_block_idx_historical_financial_ingest_contract.py
           tests/test_block_idx_evidence.py
-      - name: Build bounded revision-complete PIT financial cache
+      - name: Build full retained revision-complete PIT financial cache
         env:
           PYTHONPATH: src
         run: >-
           python scripts/backfill_block_idx_financial_evidence.py
-          --start 2026-08-01
+          --start 2023-09-08
           --end 2026-09-08
-          --report-year-start 2026
+          --report-year-start 2022
           --report-year-end 2026
           --download-smoke 3
-      - name: Publish proof telemetry
+      - name: Publish backfill telemetry
         if: always()
         run: |
-          echo '## Block IDX historical financial backfill proof' >> "$GITHUB_STEP_SUMMARY"
+          echo '## Block IDX full historical financial backfill' >> "$GITHUB_STEP_SUMMARY"
           cat data/cache/evidence_v5/block_idx_historical_financial_backfill_meta.json 2>/dev/null >> "$GITHUB_STEP_SUMMARY" || true
-      - name: Commit proof cache
+      - name: Commit historical cache
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
@@ -66,7 +66,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "Historical financial evidence unchanged"
           else
-            git commit -m "Backfill revision-complete Block IDX PIT financial evidence proof"
+            git commit -m "Backfill full retained Block IDX PIT financial evidence"
             git pull --rebase origin "$GITHUB_REF_NAME"
             git push origin HEAD:"$GITHUB_REF_NAME"
           fi
