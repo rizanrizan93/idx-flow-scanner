@@ -37,7 +37,7 @@ jobs:
       - run: pip install -r requirements.txt
       - name: Run Block IDX financial history contract tests
         run: >-
-          PYTHONPATH=src pytest -q
+          PYTHONPATH=src:. pytest -q
           tests/test_block_idx_financial_history.py
           tests/test_block_idx_financial_revisions.py
           tests/test_block_idx_historical_financial_ingest_contract.py
