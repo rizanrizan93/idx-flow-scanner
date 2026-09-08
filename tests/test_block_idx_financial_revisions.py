@@ -59,6 +59,32 @@ def test_tidak_diaudit_does_not_override_standard_idx_period() -> None:
     ) == (2026, "TW2")
 
 
+def test_supporting_prior_year_pdf_does_not_create_structured_period_conflict() -> None:
+    # Official MEDS/GPSO announcements can attach an older comparative FinancialStatement PDF
+    # together with the current structured XLSX. Only structured attachments define the
+    # period of structured evidence.
+    assert infer_profile_financial_period(
+        "Penyampaian Laporan Keuangan Interim Yang Tidak Diaudit",
+        [
+            "FinancialStatement-2024-I-MEDS.pdf",
+            "FinancialStatement-2024-I-MEDS.xlsx",
+            "FinancialStatement-2023-I-MEDS (1).pdf",
+            "inlineXBRL.zip",
+            "instance.zip",
+        ],
+    ) == (2024, "TW1")
+    assert infer_profile_financial_period(
+        "Penyampaian Laporan Keuangan Interim Yang Tidak Diaudit",
+        [
+            "FinancialStatement-2026-II-GPSO.pdf",
+            "FinancialStatement-2025-II-GPSO.pdf",
+            "FinancialStatement-2026-II-GPSO.xlsx",
+            "inlineXBRL.zip",
+            "instance.zip",
+        ],
+    ) == (2026, "TW2")
+
+
 def test_revision_rows_preserve_announcement_identity_and_structured_files() -> None:
     filings, telemetry = financial_revision_filings_from_profile_replies(
         [_reply()],
@@ -133,3 +159,4 @@ def test_impossible_publication_before_period_end_is_rejected() -> None:
     )
     assert filings == []
     assert telemetry["skipped_non_pit_announcements"] == 1
+    assert telemetry["anomaly_samples"][0]["reason"] == "SOURCE_PERIOD_CONFLICT_REJECTED"
