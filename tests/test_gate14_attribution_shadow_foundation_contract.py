@@ -68,7 +68,7 @@ def test_gate14_forward_registry_tracks_fin_balance_and_exact_bounded_interactio
     )
     for interaction in interactions:
         assert text.count(f"'{interaction}'") >= 1
-    assert text.count("'INTERACTION'") == 12
+    assert text.count(",'INTERACTION',array[") == 12
     assert "no post-hoc promotion" in text
 
 
