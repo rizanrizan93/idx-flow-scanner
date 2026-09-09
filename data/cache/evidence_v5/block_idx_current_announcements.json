@@ -1,325 +1,335 @@
 {
   "rows": [
     {
-      "announcement_id": "BLOCKIDX-3529f48f5166742885a117f9f0783b56",
+      "announcement_id": "BLOCKIDX-8fddbe98593e7210e4cd709596753c21",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "FinancialStatement-2026-II-PPGL.pdf",
+          "file_name": "df89c41c70_212bc26cc5.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260909074451-64380-0/FinancialStatement-2026-II-PPGL.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/df89c41c70_212bc26cc5.pdf"
         },
         {
-          "file_name": "Checklist 30Jun26.pdf",
+          "file_name": "20260909_MANG_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32146512_lamp1.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260909074451-64380-0/Checklist 30Jun26.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/0ff316db1f_db7955dd94.pdf"
         },
         {
-          "file_name": "FinancialStatement-2026-II-PPGL.xlsx",
+          "file_name": "20260909_MANG_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32146512_lamp2.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260909074451-64380-0/FinancialStatement-2026-II-PPGL.xlsx"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/2c6d44f300_22bec9e4ad.pdf"
         },
         {
-          "file_name": "FS_30Juni2026.pdf",
+          "file_name": "20260909_MANG_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32146512_lamp3.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260909074451-64380-0/FS_30Juni2026.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/437f95f3ee_d421ba60e5.pdf"
         },
         {
-          "file_name": "inlineXBRL.zip",
+          "file_name": "20260909_MANG_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32146512_lamp4.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260909074451-64380-0/inlineXBRL.zip"
-        },
-        {
-          "file_name": "instance.zip",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260909074451-64380-0/instance.zip"
-        },
-        {
-          "file_name": "PenjelasanTotalAsetLiabilitas_30Jun26.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260909074451-64380-0/PenjelasanTotalAsetLiabilitas_30Jun26.pdf"
-        },
-        {
-          "file_name": "SPD_30Jun26.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260909074451-64380-0/SPD_30Jun26.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/e1cee5c38b_276ede3664.pdf"
         }
       ],
-      "content_hash": "9b4c887f0aed8c02fef7a7fd8194e7326a07e601819314ce31cb0f1079a45486",
-      "disclosure_type": "FINANCIAL_REPORT",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260909074451-64380-0/FinancialStatement-2026-II-PPGL.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-09T07:28:31+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "PPGL",
-      "title": "Penyampaian Laporan Keuangan Interim (KOREKSI) [ PPGL ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-8d05a3294af3a3c03c573a1376f6183b",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "2a1fe68b96_7529a4f197.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/2a1fe68b96_7529a4f197.pdf"
-        },
-        {
-          "file_name": "20260907_PART_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32145453_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/2d5ab750cb_3fba9f0c2d.pdf"
-        }
-      ],
-      "content_hash": "cda8a8305e2596f1ab1ff72bd900f02745455196c21183f95e702a7268d5611d",
+      "content_hash": "43bb331b4a579eeaddf8ab26128706fd445823bd17f2b55cf3b0ea09b7a4370e",
       "disclosure_type": "OWNERSHIP",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/2a1fe68b96_7529a4f197.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/df89c41c70_212bc26cc5.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-09-09T07:22:44+07:00",
+      "published_at": "2026-09-10T02:06:49+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "PART",
-      "title": "Laporan Bulanan Registrasi Pemegang Efek [ PART ]"
+      "ticker": "MANG",
+      "title": "Laporan Bulanan Registrasi Pemegang Efek [ MANG ]"
     },
     {
-      "announcement_id": "BLOCKIDX-cf6e16a097606ce40d0fc79a60b9a12f",
+      "announcement_id": "BLOCKIDX-be00e99880a72b90a629e274cb5164c6",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "944d29ef34_2e8aae41c3.pdf",
+          "file_name": "fec1b04115_65cb82c664.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/944d29ef34_2e8aae41c3.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/fec1b04115_65cb82c664.pdf"
         },
         {
-          "file_name": "20260908_CPRI_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32146138_lamp1.pdf",
+          "file_name": "20260909_IBST_Laporan Informasi dan Fakta Material_32146730_lamp2.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/a132b56511_5a1cdcea1f.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/6c8481b26d_bfa2847d18.pdf"
+        },
+        {
+          "file_name": "20260909_IBST_Laporan Informasi dan Fakta Material_32146730_lamp3.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/775e621d1e_21d47af59f.pdf"
+        },
+        {
+          "file_name": "20260909_IBST_Laporan Informasi dan Fakta Material_32146730_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/d060cdd6b9_db68e30b9e.pdf"
         }
       ],
-      "content_hash": "805808d645baa59e3ed116266c21acf051e32df177957f49f7b90beebfe22492",
+      "content_hash": "d18b71de71ba2148a9b67fb1ffe0da617b4dde74e1dec005f67eddb753dcf48e",
+      "disclosure_type": "OTHER_DISCLOSURE",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/fec1b04115_65cb82c664.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-09-10T00:41:15+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "IBST",
+      "title": "Perubahan Anggaran Dasar Perseroan [ IBST ]"
+    },
+    {
+      "announcement_id": "BLOCKIDX-46ee34fe30dae5b81ea0159c565c674d",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "Peng-00073_BEI.ANG_09-2026---Pengumuman-Pelelangan-Saham-PT-Bursa-Efek-Indonesia-Bulan-Oktober-2026.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/Exchange/pabPush20260909165238/Peng-00073_BEI.ANG_09-2026---Pengumuman-Pelelangan-Saham-PT-Bursa-Efek-Indonesia-Bulan-Oktober-2026.pdf"
+        }
+      ],
+      "content_hash": "43c348d2e75d41df38abc27c7e575b91c4461bb062131d71a13e39a8d8a24657",
+      "disclosure_type": "OTHER_DISCLOSURE",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/Exchange/pabPush20260909165238/Peng-00073_BEI.ANG_09-2026---Pengumuman-Pelelangan-Saham-PT-Bursa-Efek-Indonesia-Bulan-Oktober-2026.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-09-09T23:52:38+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "BEI",
+      "title": "Pengumuman Pelelangan Saham PT Bursa Efek Indonesia Bulan Oktober 2026 (BEI) [ BEI ]"
+    },
+    {
+      "announcement_id": "BLOCKIDX-d0aec9a2916f392585ef15f07f66389d",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "d7c8ae1ab9_e75b61f994.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/d7c8ae1ab9_e75b61f994.pdf"
+        },
+        {
+          "file_name": "20260907_BLUE_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32145690_lamp3.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/1705b1bea7_887f00fb51.pdf"
+        },
+        {
+          "file_name": "20260907_BLUE_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32145690_lamp4.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/bfc2ed7368_cd7b219b1f.pdf"
+        },
+        {
+          "file_name": "20260907_BLUE_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32145690_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/cd4d776b18_42e82fb694.pdf"
+        },
+        {
+          "file_name": "20260907_BLUE_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32145690_lamp5.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/d9f8fcda5a_2a7bfbb521.pdf"
+        },
+        {
+          "file_name": "20260907_BLUE_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32145690_lamp2.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/ed08bc56b7_c7b19106a0.pdf"
+        }
+      ],
+      "content_hash": "aaac394c516836b61f7cef1d8bbbac6ec86cd50fc650585cffa59f6d65c63240",
       "disclosure_type": "OWNERSHIP",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/944d29ef34_2e8aae41c3.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/d7c8ae1ab9_e75b61f994.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-09-09T07:20:13+07:00",
+      "published_at": "2026-09-09T22:14:41+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "CPRI",
-      "title": "Laporan Bulanan Registrasi Pemegang Efek [ CPRI ]"
+      "ticker": "BLUE",
+      "title": "Laporan Bulanan Registrasi Pemegang Efek [ BLUE ]"
     },
     {
-      "announcement_id": "BLOCKIDX-88874ce1a6c540cd21fb33e76c096055",
+      "announcement_id": "BLOCKIDX-9d076395826bbd2d7ba4db5aca915fba",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "7c1feac6a2_266e2607d6.pdf",
+          "file_name": "5a30f363a2_3001512692.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/7c1feac6a2_266e2607d6.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/5a30f363a2_3001512692.pdf"
         },
         {
-          "file_name": "20260908_XRDN_Pencatatan Awal/Tambahan ETF_32146162_lamp1.pdf",
+          "file_name": "20260909_MGLV_Laporan Informasi dan Fakta Material_32146938_lamp1.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/85c80b6c3e_be1722dd55.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/7ccd18f9d9_4c10a11073.pdf"
         }
       ],
-      "content_hash": "872786c95bf74ee9ec6d076baf047e2d04ddf65dc2bfdc1cfbe9852adbcbef04",
+      "content_hash": "026f392af0da9175be928155c4f21e2a8352f50d760b9cdea8304ab1457f7a0c",
       "disclosure_type": "OTHER_DISCLOSURE",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/7c1feac6a2_266e2607d6.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/5a30f363a2_3001512692.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-09-09T00:09:27+07:00",
+      "published_at": "2026-09-09T22:09:37+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "XRDN",
-      "title": "Pengumuman Bursa Pencatatan Tambahan ETF [ XRDN ]"
+      "ticker": "MGLV",
+      "title": "Perubahan situs web, nomor telepon, dan nomor faksimile Perseroan [ MGLV ]"
     },
     {
-      "announcement_id": "BLOCKIDX-b8a43db8731d10997a3e8a96a0eaf863",
+      "announcement_id": "BLOCKIDX-a2c680d0086a6bf8163968b8ad9a0d3d",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "5afcb911b5_21d88965f7.pdf",
+          "file_name": "7dae31cdb1_bba24e124f.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/5afcb911b5_21d88965f7.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/7dae31cdb1_bba24e124f.pdf"
         },
         {
-          "file_name": "20260908_PPGD_Pengumuman Pencatatan Awal Obligasi dan Sukuk_32146219_lamp2.pdf",
+          "file_name": "20260909_BELI_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32146508_lamp1.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/2d40ade33b_bea29b13c1.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/01286004fa_28dfa6b47b.pdf"
         },
         {
-          "file_name": "20260908_PPGD_Pengumuman Pencatatan Awal Obligasi dan Sukuk_32146219_lamp1.pdf",
+          "file_name": "20260909_BELI_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32146508_lamp2.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/ce6dd3bae5_fa695aed2d.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/6c1359ec53_a4f049b490.pdf"
         }
       ],
-      "content_hash": "aeba4852455b24fd5a3cb5d22e6961cd9db088e9a121e5f91fa315826f477902",
-      "disclosure_type": "OTHER_DISCLOSURE",
+      "content_hash": "d379ba9b05a7390d6f01c0a7fc02daf7652576e276940eeac789f96dec405100",
+      "disclosure_type": "OWNERSHIP",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/5afcb911b5_21d88965f7.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/7dae31cdb1_bba24e124f.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-09-09T00:08:39+07:00",
+      "published_at": "2026-09-09T22:07:42+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "PPGD",
-      "title": "Pengumuman Bursa Pencatatan Awal Obligasi dan Sukuk [ PPGD ]"
+      "ticker": "BELI",
+      "title": "Laporan Bulanan Registrasi Pemegang Efek [ BELI ]"
     },
     {
-      "announcement_id": "BLOCKIDX-7341a0394a3210a956b43b6a99004463",
+      "announcement_id": "BLOCKIDX-2a73d203fafc40da345c2bfe483531e1",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "9242217b4b_946d3ae4f4.pdf",
+          "file_name": "5896ac508e_a0a5885871.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/9242217b4b_946d3ae4f4.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/5896ac508e_a0a5885871.pdf"
         },
         {
-          "file_name": "20260908_PGEO_Pencatatan Saham Tambahan dari Konversi_32146137_lamp1.pdf",
+          "file_name": "20260909_XDIF_Laporan Harian atas Nilai Aktiva Bersih dan Komposisi Portofolio_32146931_lamp1.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/ee1dc3c1dc_b0e00ab1cc.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/3821e6f8d4_7c89348aac.pdf"
+        },
+        {
+          "file_name": "20260909_XDIF_Laporan Harian atas Nilai Aktiva Bersih dan Komposisi Portofolio_32146931_lamp2.xlsx",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_INAV/202609/f1c6cf5abb_f374cf1dfe.xlsx"
         }
       ],
-      "content_hash": "9f15a6a32dcba36bedf5ae43381696dc4e9bb6753b2d6efad722b6905e134739",
+      "content_hash": "852647b89e468216d7d1e3232eb0e667e740f50dec72fdc4caf96005260b1f05",
       "disclosure_type": "OTHER_DISCLOSURE",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/9242217b4b_946d3ae4f4.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/5896ac508e_a0a5885871.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-09-09T00:08:03+07:00",
+      "published_at": "2026-09-09T21:45:23+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "PGEO",
-      "title": "Pencatatan Saham [ PGEO ]"
+      "ticker": "XDIF",
+      "title": "Laporan Harian atas Nilai Aktiva Bersih dan Komposisi Portofolio [ XDIF ]"
     },
     {
-      "announcement_id": "BLOCKIDX-5499bbbe8664b786da219af2817cfbbe",
+      "announcement_id": "BLOCKIDX-8b33ef60248b7dc826f0c48ce59e85f1",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "981547e7ce_e9fd450e4f.pdf",
+          "file_name": "1df1c487ea_409583227d.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/981547e7ce_e9fd450e4f.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/1df1c487ea_409583227d.pdf"
         },
         {
-          "file_name": "20260907_XIPI_Pencatatan Awal/Tambahan ETF_32145572_lamp1.pdf",
+          "file_name": "20260909_XDES_Laporan Harian atas Nilai Aktiva Bersih dan Komposisi Portofolio_32146930_lamp2.xlsx",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/fc89c4f300_edaffb8724.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_INAV/202609/3c876eb782_3cb43e831c.xlsx"
+        },
+        {
+          "file_name": "20260909_XDES_Laporan Harian atas Nilai Aktiva Bersih dan Komposisi Portofolio_32146930_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/4f7d1b1f03_3c6504323f.pdf"
         }
       ],
-      "content_hash": "7c1c2988e38d0e510ef46d6684b1ed65226677229bb401e49cfdd3836336877f",
+      "content_hash": "22be882e9394964f446faa904a54bd7dccfc86438feaceb9844686bc705c10de",
       "disclosure_type": "OTHER_DISCLOSURE",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/981547e7ce_e9fd450e4f.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/1df1c487ea_409583227d.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-09-09T00:06:53+07:00",
+      "published_at": "2026-09-09T21:44:19+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "XIPI",
-      "title": "Pengumuman Bursa Pencatatan Tambahan ETF [ XIPI ]"
+      "ticker": "XDES",
+      "title": "Laporan Harian atas Nilai Aktiva Bersih dan Komposisi Portofolio [ XDES ]"
     },
     {
-      "announcement_id": "BLOCKIDX-0bf263c7215d68fb5f091e80c9c27fc2",
+      "announcement_id": "BLOCKIDX-2abe17871db95aaeb32265366c52a652",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "b9541aa8da_0ff1013a6e.pdf",
+          "file_name": "c4194b8c86_ca2b6ff351.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/b9541aa8da_0ff1013a6e.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/c4194b8c86_ca2b6ff351.pdf"
         },
         {
-          "file_name": "20260908_XKIV_Pencatatan Awal/Tambahan ETF_32146128_lamp1.pdf",
+          "file_name": "20260909_CSIS_Pencatatan Saham Tambahan dari Konversi_32146647_lamp1.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/58da53b35b_36e79c41ea.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/7fa3ac96b0_dd6d6cd836.pdf"
         }
       ],
-      "content_hash": "6c29713fd037046cf5bc1dabe28927a337dcafe61c96b75eb0335bcf6fb15eb2",
+      "content_hash": "dc9cfd334267c95ef9d03c3a875192316b8b65a6b57b6f2c2a4398f49bea04d2",
       "disclosure_type": "OTHER_DISCLOSURE",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/b9541aa8da_0ff1013a6e.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/c4194b8c86_ca2b6ff351.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-09-09T00:06:35+07:00",
+      "published_at": "2026-09-09T20:58:50+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "XKIV",
-      "title": "Pengumuman Bursa Pencatatan Tambahan ETF [ XKIV ]"
+      "ticker": "CSIS",
+      "title": "Pencatatan Saham [ CSIS ]"
     },
     {
-      "announcement_id": "BLOCKIDX-ffdcb6d34e778a747a881a039079d9d6",
+      "announcement_id": "BLOCKIDX-3bbd45ad9c87717b2722fe9859084661",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "ffdbf592cf_81e8c3e73c.pdf",
+          "file_name": "6d4ad6c2b7_61ad29badd.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/ffdbf592cf_81e8c3e73c.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/6d4ad6c2b7_61ad29badd.pdf"
         },
         {
-          "file_name": "20260907_DJPU_Pengumuman Pencatatan Awal Obligasi dan Sukuk_32145823_lamp1.pdf",
+          "file_name": "20260908_PYFA_Pencatatan Saham Tambahan dari Konversi_32146216_lamp1.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/68a210bbec_73d7111ba5.pdf"
-        },
-        {
-          "file_name": "20260907_DJPU_Pengumuman Pencatatan Awal Obligasi dan Sukuk_32145823_lamp2.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/991a290113_5209d7dc01.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/ece0f9bc40_7b3002086e.pdf"
         }
       ],
-      "content_hash": "982d81d4f718099ff2038087236aab21eded62804bf0aa47685d550b6410b410",
+      "content_hash": "99c79750a8aea253ca6d9a1f8558447f4ccb21191c1b97107974c124ddb1522a",
       "disclosure_type": "OTHER_DISCLOSURE",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/ffdbf592cf_81e8c3e73c.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/6d4ad6c2b7_61ad29badd.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-09-09T00:06:13+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "DJPU",
-      "title": "Pengumuman Bursa Pencatatan Surat Berharga Negara [ DJPU ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-a9f11e6082fa96301da558802a80a367",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "6b3274ed4f_2513d67eb4.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/6b3274ed4f_2513d67eb4.pdf"
-        },
-        {
-          "file_name": "20260907_PYFA_Pencatatan Saham Tambahan dari Konversi_32145677_lamp2.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/24dc3b8bc9_9df4097c69.pdf"
-        },
-        {
-          "file_name": "20260907_PYFA_Pencatatan Saham Tambahan dari Konversi_32145677_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/c3d8af6fe2_861e7d9a72.pdf"
-        }
-      ],
-      "content_hash": "16c2a28152a4715daac7d4f1075f6d09a1d3b260b7eb5a36eef97084928bc88f",
-      "disclosure_type": "OTHER_DISCLOSURE",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/6b3274ed4f_2513d67eb4.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-09T00:05:39+07:00",
+      "published_at": "2026-09-09T20:56:26+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
       "ticker": "PYFA",
