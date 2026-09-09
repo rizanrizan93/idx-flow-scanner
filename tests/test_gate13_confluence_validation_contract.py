@@ -40,16 +40,21 @@ def test_gate13_uses_only_frozen_bounded_registry_and_parent_oos_contract():
 
 
 def test_gate13_confluence_formula_and_incremental_lift_are_deterministic():
-    text = final_runner_sql()
+    runner = final_runner_sql()
+    schema_and_runner = sql()
     for token in (
         "raw_value*direction_hypothesis",
         "percent_rank() over(partition by signal_date,driver_id,driver_state order by transformed_value)",
         "bool_and(driver_state='AVAILABLE' and normalized_value>=0.80)",
-        "strongest_component_top_alpha_pct",
-        "incremental_alpha_lift_pct",
+        "sc.top_mean_alpha_vs_ihsg_pct",
         "a.mean_alpha-sc.top_mean_alpha_vs_ihsg_pct",
     ):
-        assert token in text
+        assert token in runner
+    for token in (
+        "strongest_component_top_alpha_pct",
+        "incremental_alpha_lift_pct",
+    ):
+        assert token in schema_and_runner
 
 
 def test_gate13_reuses_purged_folds_and_has_required_horizons_slices_and_excursions():
