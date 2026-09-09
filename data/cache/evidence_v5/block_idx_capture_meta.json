@@ -1,29 +1,29 @@
 {
   "announcement_rows": 10,
-  "captured_at": "2026-09-09T02:29:59.367163+07:00",
+  "captured_at": "2026-09-09T08:22:04.727878+07:00",
   "download_smoke": [
     {
-      "announcement_id": "BLOCKIDX-88874ce1a6c540cd21fb33e76c096055",
+      "announcement_id": "BLOCKIDX-3529f48f5166742885a117f9f0783b56",
       "binary_persisted": false,
-      "bytes": 5992,
+      "bytes": 844209,
       "content_type": "application/pdf",
-      "sha256": "9128a4014aed8f5810a325cf97ca4a549aebcfab877c0ac8403cd6cff616ff5a",
-      "ticker": "XRDN",
-      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/7c1feac6a2_266e2607d6.pdf"
+      "sha256": "1c90b6fff85d4a5c2c3d4beed36144465560e5ced9c92af1a17947f567e625ff",
+      "ticker": "PPGL",
+      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260909074451-64380-0/FinancialStatement-2026-II-PPGL.pdf"
     },
     {
-      "announcement_id": "BLOCKIDX-88874ce1a6c540cd21fb33e76c096055",
+      "announcement_id": "BLOCKIDX-3529f48f5166742885a117f9f0783b56",
       "binary_persisted": false,
-      "bytes": 5215,
+      "bytes": 2073106,
       "content_type": "application/pdf",
-      "sha256": "18e035267f88263f4f2f71da61e01366d4c1fbb4193b4b3acb0e1e34793ef673",
-      "ticker": "XRDN",
-      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/85c80b6c3e_be1722dd55.pdf"
+      "sha256": "a60b6e1e098c069e662ba80007be6491f937c9342c26f82605546b99b1403bcf",
+      "ticker": "PPGL",
+      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260909074451-64380-0/Checklist 30Jun26.pdf"
     }
   ],
   "financial_filing_rows": 0,
   "no_fabricated_evidence": true,
-  "ownership_rows_on_current_page": 0,
+  "ownership_rows_on_current_page": 2,
   "point_in_time_eligible_rows": 10,
   "production_scoring_changed": false,
   "source_page": "https://block.idx.id/id/berita/pengumuman"
