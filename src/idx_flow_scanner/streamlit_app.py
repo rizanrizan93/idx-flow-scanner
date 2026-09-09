@@ -308,6 +308,8 @@ def run() -> None:
                         "MARKET_30__SECTOR_30__SECTOR_RS_25__MARKET_RS_15"
                     ),
                     "calibration_policy": "SHADOW_OOS_NO_AUTO_WEIGHT_MUTATION",
+                    "operational_universe_contract": "IDX_OPERATIONAL_TOP900_V1",
+                    "predictive_attribution_production_influence_enabled": False,
                 },
             )
 
@@ -562,11 +564,14 @@ def run() -> None:
         )
 
         base_cols = [
+            "scanner_rank",
             "ticker",
             "final_score",
             "phase",
             "action",
             "real_money_state",
+            "universe_current_tradeable",
+            "universe_production_actionable",
             "evidence_tier",
             "sector",
             "sector_regime_score",

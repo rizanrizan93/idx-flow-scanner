@@ -64,7 +64,7 @@ def test_large_universe_rpc_failure_goes_directly_to_seed(monkeypatch):
     load, stats = lup.prepare_large_universe_prices(names, store, min_rows=80)
 
     assert store.client.calls == 1
-    assert stats["db_read_errors"] == 1
+    assert stats["db_read_errors"] == 2
     assert stats["seed_hits"] == 100
     assert stats["unavailable"] == 0
     assert stats["bulk_cache_transport"] == "DB_RPC_FAILED_FAST_TO_SEED"
@@ -121,3 +121,44 @@ def test_yahoo_fallback_keeps_ohlcv_heartbeat_alive(monkeypatch):
     assert stats["unavailable"] == 100
     assert any("Yahoo fallback active" in message for message in messages)
     assert any("bounded provider retries still running" in message for message in messages)
+
+
+def test_operational_top900_price_rpc_is_primary_and_batched(monkeypatch):
+    monkeypatch.setattr(lup, "_frame_recent_enough", lambda frame, **kwargs: True)
+    names = [f"T{i:03d}" for i in range(100)]
+
+    class Response:
+        def __init__(self, tickers):
+            self.data = [
+                {
+                    "ticker": ticker,
+                    "payload": _frame(ticker).rename(columns={"date": "trade_date"}).to_dict("records"),
+                }
+                for ticker in tickers
+            ]
+
+    class Call:
+        def __init__(self, tickers):
+            self.tickers = tickers
+
+        def execute(self):
+            return Response(self.tickers)
+
+    class Client:
+        def __init__(self):
+            self.calls = []
+
+        def rpc(self, name, payload):
+            assert name == lup.OPERATIONAL_PRICE_RPC
+            assert len(payload["p_tickers"]) <= lup.OPERATIONAL_DB_CHUNK_SIZE
+            self.calls.append((name, payload))
+            return Call(payload["p_tickers"])
+
+    store = type("Store", (), {"client": Client()})()
+    load, stats = lup.prepare_large_universe_prices(names, store, min_rows=80)
+
+    assert len(store.client.calls) == 4
+    assert stats["cache_hits"] == 100
+    assert stats["unavailable"] == 0
+    assert stats["bulk_cache_transport"] == "OFFICIAL_TOP900_JSON_RPC_BOUNDED"
+    assert len(load("T099")) == 80
