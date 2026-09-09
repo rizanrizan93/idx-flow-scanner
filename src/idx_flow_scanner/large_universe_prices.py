@@ -14,6 +14,9 @@ from .storage import SupabaseStore
 LARGE_UNIVERSE_THRESHOLD = 100
 DB_CHUNK_SIZE = 8
 DB_ROW_LIMIT = 120
+OPERATIONAL_DB_CHUNK_SIZE = 30
+OPERATIONAL_PRICE_RPC = "flow_load_operational_prices_v1"
+LEGACY_PRICE_RPC = "flow_load_price_cache_by_ticker"
 MAX_CONSECUTIVE_EMPTY_DB_CHUNKS = 2
 MAX_CACHE_CALENDAR_AGE_DAYS = 7
 YAHOO_HEARTBEAT_SECONDS = 20.0
@@ -37,6 +40,8 @@ def _bounded_db_prices(
     *,
     min_rows: int,
     status: Callable[[str], None] | None = None,
+    rpc_name: str = LEGACY_PRICE_RPC,
+    chunk_size: int = DB_CHUNK_SIZE,
 ) -> tuple[dict[str, pd.DataFrame], int, str]:
     """Read the preferred per-ticker RPC with a hard failure/empty-response budget.
 
@@ -47,13 +52,17 @@ def _bounded_db_prices(
     out: dict[str, pd.DataFrame] = {}
     errors = 0
     consecutive_empty = 0
-    state = "PER_TICKER_JSON_RPC_BOUNDED"
+    state = (
+        "OFFICIAL_TOP900_JSON_RPC_BOUNDED"
+        if rpc_name == OPERATIONAL_PRICE_RPC
+        else "PER_TICKER_JSON_RPC_BOUNDED"
+    )
 
-    for start in range(0, len(names), DB_CHUNK_SIZE):
-        chunk = names[start:start + DB_CHUNK_SIZE]
+    for start in range(0, len(names), chunk_size):
+        chunk = names[start:start + chunk_size]
         try:
             response = store.client.rpc(
-                "flow_load_price_cache_by_ticker",
+                rpc_name,
                 {"p_tickers": chunk, "p_limit": DB_ROW_LIMIT},
             ).execute()
         except Exception:
@@ -90,7 +99,7 @@ def _bounded_db_prices(
 
         if status:
             status(
-                f"Checking bounded Supabase OHLCV • {min(start + len(chunk), len(names))}/{len(names)} • hits {len(out)}"
+                f"Checking bounded canonical OHLCV • {min(start + len(chunk), len(names))}/{len(names)} • hits {len(out)}"
             )
 
         if consecutive_empty >= MAX_CONSECUTIVE_EMPTY_DB_CHUNKS:
@@ -169,7 +178,19 @@ def prepare_large_universe_prices(
             names,
             min_rows=min_rows,
             status=status,
+            rpc_name=OPERATIONAL_PRICE_RPC,
+            chunk_size=OPERATIONAL_DB_CHUNK_SIZE,
         )
+        if not frames and transport in {"DB_RPC_FAILED_FAST_TO_SEED", "DB_EMPTY_FAST_TO_SEED"}:
+            frames, legacy_errors, transport = _bounded_db_prices(
+                store,
+                names,
+                min_rows=min_rows,
+                status=status,
+                rpc_name=LEGACY_PRICE_RPC,
+                chunk_size=DB_CHUNK_SIZE,
+            )
+            db_errors += legacy_errors
 
     cache_hits = len(frames)
     missing_after_db = [ticker for ticker in names if ticker not in frames]

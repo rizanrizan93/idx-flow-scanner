@@ -3,6 +3,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+import pandas as pd
 import streamlit as st
 
 ROOT = Path(__file__).resolve().parent
@@ -58,15 +59,18 @@ from idx_flow_scanner.run_metadata_guard import install_truthful_run_metadata
 from idx_flow_scanner.runtime_persistence import install_current_result_persistence
 from idx_flow_scanner.storage import SupabaseStore
 from idx_flow_scanner.ui_truth import load_calibration_truth, summarize_effective_evidence
-from idx_flow_scanner.universe_700 import materialize_universe_700
+from idx_flow_scanner.operational_top900 import (
+    apply_operational_membership_guards,
+    materialize_runtime_top900,
+)
 from idx_flow_scanner.verified_foreign_store import (
     IDX_OFFICIAL_STOCK_SUMMARY_SOURCE,
     load_verified_daily_foreign_flows,
 )
 
-BASE_UNIVERSE_PATH = ROOT / "data" / "universe" / "idx_400_syariah.csv"
-BUNDLED_UNIVERSE_700_PATH = ROOT / "data" / "universe" / "idx_700_all.csv"
-RUNTIME_UNIVERSE_PATH = Path("/tmp/idx_flow_runtime_universe_700.csv")
+BUNDLED_UNIVERSE_900_PATH = ROOT / "data" / "universe" / "idx_900_all.csv"
+RUNTIME_UNIVERSE_PATH = Path("/tmp/idx_flow_runtime_universe_900.csv")
+SEED_900_PATH = ROOT / "data" / "cache" / "idx_900_ohlcv_1y.csv.gz"
 SEED_700_PATH = ROOT / "data" / "cache" / "idx_700_ohlcv_1y.csv.gz"
 SEED_400_PATH = ROOT / "data" / "cache" / "idx_400_ohlcv_1y.csv.gz"
 # Canonical Supabase project for IDX Flow Scanner. Project separation remains
@@ -75,15 +79,11 @@ EXPECTED_SUPABASE_PROJECT_REF = "djqvhbeonmicztxfisav"
 
 
 @st.cache_data(ttl=1800, show_spinner=False)
-def _resolved_universe_path(api_key: str | None) -> str:
-    if BUNDLED_UNIVERSE_700_PATH.exists():
-        return str(BUNDLED_UNIVERSE_700_PATH)
-    path = materialize_universe_700(
-        BASE_UNIVERSE_PATH,
-        api_key=api_key,
-        output_path=RUNTIME_UNIVERSE_PATH,
-        target_size=700,
-        strict=False,
+def _resolved_universe_path(_store=None) -> str:
+    path = materialize_runtime_top900(
+        _store,
+        bundled_path=BUNDLED_UNIVERSE_900_PATH,
+        runtime_path=RUNTIME_UNIVERSE_PATH,
     )
     return str(path)
 
@@ -121,7 +121,11 @@ def _prepare_prices(
     status=None,
     seed_path=None,
 ):
-    preferred_seed = seed_path or (SEED_700_PATH if SEED_700_PATH.exists() else SEED_400_PATH)
+    preferred_seed = seed_path or (
+        SEED_900_PATH
+        if SEED_900_PATH.exists()
+        else (SEED_700_PATH if SEED_700_PATH.exists() else SEED_400_PATH)
+    )
     return prepare_large_universe_prices(
         universe,
         store or DEDICATED_EVIDENCE_STORE,
@@ -293,7 +297,15 @@ def _database_first_scan_universe(*args, **kwargs):
         lookback_calendar_days=90,
     )
     set_official_controller_context(controller_profiles)
-    return _original_scan_universe_zapi(*args, **kwargs)
+    run_id, results, errors = _original_scan_universe_zapi(*args, **kwargs)
+    if results is None or results.empty:
+        return run_id, results, errors
+
+    guarded = apply_operational_membership_guards(
+        results,
+        pd.read_csv(streamlit_app.DEFAULT_UNIVERSE_PATH),
+    )
+    return run_id, guarded, errors
 
 
 # UI truth adapters. The base Streamlit module historically displayed several
@@ -414,7 +426,7 @@ def _stale_safe_create_durable_run_record(store, run_id, universe_count, config)
 
 
 streamlit_app.DEFAULT_UNIVERSE_PATH = Path(
-    _resolved_universe_path(streamlit_app._secret("ZAPI_KEY"))
+    _resolved_universe_path(DEDICATED_EVIDENCE_STORE)
 )
 streamlit_app.prepare_database_first_prices = _prepare_prices
 streamlit_app.connect_store = _locked_connect_store

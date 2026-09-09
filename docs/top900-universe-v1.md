@@ -18,11 +18,13 @@ does not retain inactive identities for historical research. Its exact 700
 tickers are therefore frozen only as an overlap baseline, never presented as a
 historical universe.
 
-TOP_900_UNIVERSE_V1 is database-native and shadow-only. It deliberately does
-not switch the Streamlit runtime or its 700-name cache until Top-900 source,
-runtime, and storage telemetry are proven acceptable. Current-tradeability is
-an OHLCV/activity proxy because a reliable PIT FCA/special-monitoring status
-feed is not presently available; this limitation remains explicit.
+TOP_900_UNIVERSE_V1 began database-native and shadow-only. On 2026-09-09 the
+separate `IDX_OPERATIONAL_TOP900_V1` contract switched Streamlit membership to
+the latest fully captured 900-row snapshot. This changes universe routing only:
+Gate-14 attribution and Gate-15 predictive scoring remain shadow with zero
+production influence. Current-tradeability is an OHLCV/activity proxy because
+a reliable PIT FCA/special-monitoring status feed is not presently available;
+this limitation remains explicit.
 
 ## Selection
 
@@ -64,3 +66,19 @@ names below the Top-900 rank boundary. The exact prior 700-member bundle is
 stored as a frozen overlap baseline. All new objects are service-role-only,
 RLS-enabled, SECURITY INVOKER, empty-search-path, and hard-locked to
 production_influence_enabled=false.
+
+## Operational routing
+
+The service-only runtime RPC returns exactly ranks 1 through 900 from the latest
+manifest whose state is `CAPTURED` and whose selected count is exactly 900. A
+partial response fails closed to an exact repository snapshot of the same dated
+contract; it never falls back silently to 700.
+
+The scanner attempts all 900 members and assigns `scanner_rank` across every
+valid scored row. The canonical official-price RPC is queried in bounded
+30-ticker batches with at most 120 observations per ticker. As of activation,
+900/900 have official price history and 894/900 meet the unchanged 80-bar scan
+minimum. The six shorter histories remain `INSUFFICIENT_HISTORY` until they
+mature; they are not neutral-filled. Members with
+`production_actionable=false` can remain visible in research ranking, but the
+runtime forces `production_authorized=false` and `action=RESEARCH_ONLY`.

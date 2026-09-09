@@ -1,6 +1,6 @@
 # IDX Flow Scanner
 
-Current production contract: **v0.4.0**.
+Current production contract: **v0.4.8**.
 
 IDX Flow Scanner is the flow / accumulation / execution layer in the IDX research stack. Version 0.4 removes broker-direct acquisition and broker-dependent authorization from the active production pipeline.
 
@@ -34,7 +34,10 @@ The scanner does **not** claim to identify a beneficial owner or proprietary "ba
 
 ### 1. OHLCV
 
-The managed 400-ticker universe uses database/cache-first daily OHLCV with integrity gates for:
+The managed scanner attempts the exact canonical `IDX_OPERATIONAL_TOP900_V1`
+membership. Daily OHLCV is official-database-first and batch-bounded, with the
+repository seed and Yahoo used only as fallbacks. Numeric ranking still requires
+the existing minimum-history and integrity gates:
 
 - minimum bar history;
 - OHLC geometry;
@@ -94,7 +97,7 @@ Upcoming events are included in the acquisition horizon.
 
 Market context is now sector-aware.
 
-When sector membership is available for the 400-ticker universe:
+When sector membership is available for the Top-900 universe:
 
 - market regime: **30%**
 - sector regime: **30%**
@@ -124,7 +127,11 @@ Correlated OHLCV observations are treated as one latent evidence family. Data qu
 
 ### Raw Research Priority
 
-All valid managed-universe results. PRICE_PROXY rows remain visible for research.
+All valid managed-universe results receive a `scanner_rank`. Every canonical
+Top-900 member is attempted; an issuer with insufficient history remains visibly
+unavailable rather than receiving a fabricated neutral score. Current tradeability
+and production actionability are separate. Non-actionable members can remain in
+research ranking but cannot be execution-authorized.
 
 ### ZAPI Flow Decision — Top 20
 
