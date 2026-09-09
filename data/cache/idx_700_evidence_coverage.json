@@ -23,12 +23,12 @@
       "tickers": 398
     },
     "ohlcv": {
-      "pct": 98.0,
-      "tickers": 686
+      "pct": 98.29,
+      "tickers": 688
     },
     "ownership": {
-      "pct": 99.0,
-      "tickers": 693
+      "pct": 98.71,
+      "tickers": 691
     },
     "sector": {
       "pct": 100.0,
@@ -39,7 +39,7 @@
       "tickers": 400
     }
   },
-  "generated_at": "2026-09-08T16:52:15.081389+00:00",
+  "generated_at": "2026-09-09T16:55:51.348042+00:00",
   "missing_core_sample": [
     "AADI",
     "AALI",
@@ -74,7 +74,6 @@
     "BAJA",
     "BANK",
     "BAPA",
-    "BAYU",
     "BBCA",
     "BBHI",
     "BBKP",
@@ -90,13 +89,16 @@
     "BFIN",
     "BGTG",
     "BHIT",
+    "BIKE",
     "BINA",
     "BIPI",
     "BIRD",
     "BJBR",
     "BJTM",
+    "BMBL",
     "BMRI",
     "BMTR",
+    "BNBA",
     "BNBR",
     "BNGA",
     "BREN",
@@ -118,9 +120,7 @@
     "CENT",
     "CFIN",
     "CMNT",
-    "CMRY",
-    "CNMA",
-    "COCO"
+    "CMRY"
   ],
   "missing_full_sample": [
     "AADI",
@@ -156,7 +156,6 @@
     "BAJA",
     "BANK",
     "BAPA",
-    "BAYU",
     "BBCA",
     "BBHI",
     "BBKP",
@@ -172,13 +171,16 @@
     "BFIN",
     "BGTG",
     "BHIT",
+    "BIKE",
     "BINA",
     "BIPI",
     "BIRD",
     "BJBR",
     "BJTM",
+    "BMBL",
     "BMRI",
     "BMTR",
+    "BNBA",
     "BNBR",
     "BNGA",
     "BREN",
@@ -200,9 +202,7 @@
     "CENT",
     "CFIN",
     "CMNT",
-    "CMRY",
-    "CNMA",
-    "COCO"
+    "CMRY"
   ],
   "provider_status": {
     "capital_actions": "QUOTA_EXHAUSTED: Zapi rate/monthly quota exhausted",
