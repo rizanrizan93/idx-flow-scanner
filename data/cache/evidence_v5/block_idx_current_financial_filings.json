@@ -1,5 +1,26 @@
 {
-  "rows": [],
+  "rows": [
+    {
+      "content_hash": null,
+      "extraction_state": "FILE_INDEXED_NOT_PARSED",
+      "file_modified_at": null,
+      "file_name": "FinancialStatement-2025-Tahunan-TRUE.xlsx",
+      "file_type": ".xlsx",
+      "file_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202509/20260910045728-64387-0/FinancialStatement-2025-Tahunan-TRUE.xlsx",
+      "filing_id": "BLOCKIDX-FILING-5e78f149d196f26eba8a8daa67273c2f",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_FINANCIAL_FILING_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-09-10T04:47:25+07:00",
+      "report_period": "AUDIT",
+      "report_period_end": "2025-12-31",
+      "report_type": "BLOCK_IDX_ANNOUNCEMENT_ATTACHMENT",
+      "report_year": 2025,
+      "source_key": "IDX_XBRL_FINANCIAL_REPORT",
+      "source_verified": true,
+      "ticker": "TRUE"
+    }
+  ],
   "schema_version": "BLOCK_IDX_FINANCIAL_FILING_CACHE_V5_1",
   "source_page": "https://block.idx.id/id/berita/pengumuman"
 }

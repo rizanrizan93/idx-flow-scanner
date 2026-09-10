@@ -1,27 +1,27 @@
 {
   "announcement_rows": 10,
-  "captured_at": "2026-09-10T02:22:04.396573+07:00",
+  "captured_at": "2026-09-10T08:17:57.650185+07:00",
   "download_smoke": [
     {
-      "announcement_id": "BLOCKIDX-8fddbe98593e7210e4cd709596753c21",
+      "announcement_id": "BLOCKIDX-e2257a1789ab30a1da6c9063b8df2c10",
       "binary_persisted": false,
-      "bytes": 40183,
+      "bytes": 5420,
       "content_type": "application/pdf",
-      "sha256": "1473504db2de4c6909f04d5eaad74995b6b5d46576d3b1fa7fd008bff6fd38b4",
-      "ticker": "MANG",
-      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/df89c41c70_212bc26cc5.pdf"
+      "sha256": "cf46b9ccc8f6dbc128a2fdfa4ecbb2b66a5b58ea9540a3697514c30fc5a7a18b",
+      "ticker": "ISSP",
+      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/d4c1716467_a8f6a3bee4.pdf"
     },
     {
-      "announcement_id": "BLOCKIDX-8fddbe98593e7210e4cd709596753c21",
+      "announcement_id": "BLOCKIDX-e2257a1789ab30a1da6c9063b8df2c10",
       "binary_persisted": false,
-      "bytes": 95598,
+      "bytes": 106375,
       "content_type": "application/pdf",
-      "sha256": "4f10836d535900a837bbf204285b484c37b6b8a817930fa725aef4f7fc235891",
-      "ticker": "MANG",
-      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/0ff316db1f_db7955dd94.pdf"
+      "sha256": "0ec454be32062080eda1b608967ecbe70b16f2292c64c1e188baab0b669814e2",
+      "ticker": "ISSP",
+      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/0e9448421c_38535d9dba.pdf"
     }
   ],
-  "financial_filing_rows": 0,
+  "financial_filing_rows": 1,
   "no_fabricated_evidence": true,
   "ownership_rows_on_current_page": 3,
   "point_in_time_eligible_rows": 10,
