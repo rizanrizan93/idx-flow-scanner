@@ -90,7 +90,10 @@ def test_operational_membership_guard_is_idempotent_with_existing_scanner_rank()
 def test_app_captures_pristine_patch_targets_once_across_streamlit_reruns() -> None:
     source = (ROOT / "app.py").read_text(encoding="utf-8")
 
+    assert "import importlib" in source
+    assert "_LEGACY_RUNTIME_WRAPPER_NAMES" in source
     assert "def _capture_original(" in source
+    assert "importlib.reload(module)" in source
     for sentinel in (
         "_idx_flow_original_connect_store",
         "_idx_flow_original_zapi_foreign",
