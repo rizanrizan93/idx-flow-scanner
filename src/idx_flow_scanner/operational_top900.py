@@ -173,17 +173,16 @@ def apply_operational_membership_guards(
         )
         return diagnostics
 
+    def attach_guardrail_reason(row: pd.Series) -> str:
+        marker = "Top-900 member is not currently production-actionable"
+        existing = str(row.get("guardrail_reason") or "").strip()
+        if marker in existing:
+            return existing
+        return "; ".join(filter(None, [existing, marker]))
+
     guarded["diagnostics"] = guarded.apply(attach_guard, axis=1)
     guarded.loc[blocked, "guardrail_reason"] = guarded.loc[blocked].apply(
-        lambda row: "; ".join(
-            filter(
-                None,
-                [
-                    str(row.get("guardrail_reason") or "").strip(),
-                    "Top-900 member is not currently production-actionable",
-                ],
-            )
-        ),
+        attach_guardrail_reason,
         axis=1,
     )
     raw_rank = guarded.sort_values(
