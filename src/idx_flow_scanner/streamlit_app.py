@@ -155,7 +155,7 @@ def run() -> None:
         page_title="IDX Flow Terminal",
         page_icon="◈",
         layout="wide",
-        initial_sidebar_state="expanded",
+        initial_sidebar_state="auto",
     )
     inject_terminal_theme()
 
