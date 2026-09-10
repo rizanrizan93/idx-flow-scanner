@@ -128,7 +128,12 @@ def apply_operational_membership_guards(
     results: pd.DataFrame,
     membership: pd.DataFrame,
 ) -> pd.DataFrame:
-    """Keep all valid rows rankable while preventing non-actionable execution."""
+    """Keep all valid rows rankable while preventing non-actionable execution.
+
+    The guard is intentionally idempotent because Streamlit can rerun the entrypoint
+    in a long-lived interpreter. Reapplying it must refresh guard metadata/rank rather
+    than failing when a previously guarded frame already contains ``scanner_rank``.
+    """
     if results is None or results.empty:
         return results
     canonical = validate_operational_top900(membership)
@@ -187,7 +192,10 @@ def apply_operational_membership_guards(
         kind="stable",
     ).index
     rank_by_index = {index: rank for rank, index in enumerate(raw_rank, 1)}
-    guarded.insert(0, "scanner_rank", guarded.index.map(rank_by_index))
+    guarded["scanner_rank"] = guarded.index.map(rank_by_index)
+    guarded = guarded.loc[
+        :, ["scanner_rank"] + [column for column in guarded.columns if column != "scanner_rank"]
+    ]
     guarded = guarded.sort_values(
         ["production_authorized", "final_score", "ticker"],
         ascending=[False, False, True],
