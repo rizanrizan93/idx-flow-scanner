@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib
 import sys
 from pathlib import Path
 
@@ -77,17 +78,39 @@ SEED_400_PATH = ROOT / "data" / "cache" / "idx_400_ohlcv_1y.csv.gz"
 # enforced at table level: IDX Flow reads/writes only the flow_* namespace.
 EXPECTED_SUPABASE_PROJECT_REF = "djqvhbeonmicztxfisav"
 
+_LEGACY_RUNTIME_WRAPPER_NAMES = frozenset(
+    {
+        "_locked_connect_store",
+        "_database_first_zapi_foreign",
+        "_database_first_scan_universe",
+        "_official_index_market_features",
+        "_broker_risk_scored_scan_one",
+        "_truthful_health_cards",
+        "_truthful_render_section",
+        "_stale_safe_create_durable_run_record",
+    }
+)
+
 
 def _capture_original(module, attr: str, cache_attr: str):
     """Capture a monkey-patch target exactly once across Streamlit reruns.
 
-    Community Cloud reruns ``app.py`` in a long-lived interpreter while imported
-    package modules can remain patched in ``sys.modules``. Persisting the pristine
-    callable on that module prevents wrappers from wrapping prior wrappers.
+    Community Cloud can hot-rerun a changed ``app.py`` while retaining imported
+    package modules. If this revision is deployed into a process that still holds
+    one of the legacy entrypoint wrappers, reload that package module once before
+    capturing the target. Afterwards the cached pristine callable makes normal
+    reruns idempotent and prevents wrapper chains from growing.
     """
-    if not hasattr(module, cache_attr):
-        setattr(module, cache_attr, getattr(module, attr))
-    return getattr(module, cache_attr)
+    if hasattr(module, cache_attr):
+        return getattr(module, cache_attr)
+
+    current = getattr(module, attr)
+    if callable(current) and getattr(current, "__name__", "") in _LEGACY_RUNTIME_WRAPPER_NAMES:
+        importlib.reload(module)
+        current = getattr(module, attr)
+
+    setattr(module, cache_attr, current)
+    return current
 
 
 @st.cache_data(ttl=1800, show_spinner=False)
