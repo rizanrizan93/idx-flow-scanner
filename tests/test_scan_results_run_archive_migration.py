@@ -43,6 +43,8 @@ def test_archive_is_whole_run_lossless_and_hash_verified() -> None:
     assert "SELECT x.*\n    FROM public.flow_scan_results_archive_v1 a" in sql
     assert "SELECT a.run_id,x.*" not in sql
     assert "LEFT JOIN hashes h ON h.run_id=a.run_id" in sql
+    assert sql.count("string_agg(row_sha,'' ORDER BY row_sha)") >= 2
+    assert "string_agg(row_sha,'' ORDER BY ticker)" not in sql
 
 
 def test_hot_table_preserves_physical_upsert_contract_and_trigger() -> None:
