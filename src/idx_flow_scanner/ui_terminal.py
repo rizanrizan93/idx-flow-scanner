@@ -590,30 +590,94 @@ hr { border-color: rgba(132, 164, 205, 0.13); }
 }
 
 @media (max-width: 680px) {
+    [data-testid="stHeader"] {
+        height: 2.75rem !important;
+        min-height: 2.75rem !important;
+        background: rgba(6, 16, 29, 0.94) !important;
+        border-bottom: 1px solid rgba(132, 164, 205, 0.12) !important;
+        backdrop-filter: blur(18px);
+    }
+    [data-testid="stToolbar"],
+    [data-testid="stHeaderActionElements"],
+    [data-testid="stStatusWidget"],
+    [data-testid="stDecoration"] {
+        display: none !important;
+    }
+    [data-testid="stSidebarCollapsedControl"] {
+        display: flex !important;
+        position: fixed !important;
+        top: 0.38rem !important;
+        left: 0.45rem !important;
+        z-index: 1000002 !important;
+        width: 2.1rem !important;
+        height: 2.1rem !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border: 1px solid rgba(132, 164, 205, 0.22) !important;
+        border-radius: 10px !important;
+        background: rgba(13, 27, 45, 0.94) !important;
+        box-shadow: 0 8px 22px rgba(0,0,0,.24) !important;
+    }
+    [data-testid="stSidebar"] {
+        width: min(82vw, 320px) !important;
+        min-width: 0 !important;
+        max-width: min(82vw, 320px) !important;
+        z-index: 1000001 !important;
+        box-shadow: 18px 0 42px rgba(0,0,0,.34) !important;
+    }
+    [data-testid="stSidebar"][aria-expanded="true"] > div:first-child {
+        width: min(82vw, 320px) !important;
+        min-width: min(82vw, 320px) !important;
+        max-width: min(82vw, 320px) !important;
+    }
+    [data-testid="stSidebar"] > div:first-child {
+        padding-top: 0.55rem !important;
+    }
     .block-container {
-        padding-left: 0.62rem;
-        padding-right: 0.62rem;
-        padding-top: 0.62rem;
+        padding-left: 0.70rem;
+        padding-right: 0.70rem;
+        padding-top: 3.15rem !important;
+        padding-bottom: 2.5rem;
     }
     .idx-terminal-header {
-        border-radius: 17px;
-        padding: 1.00rem 1.00rem .95rem;
+        border-radius: 16px;
+        padding: 0.90rem 0.90rem 0.84rem;
+        margin-bottom: 0.66rem;
     }
-    .idx-terminal-header:after { left: 1rem; right: 1rem; }
-    .idx-title { font-size: 1.72rem; }
-    .idx-subtitle { font-size: .80rem; line-height: 1.48; }
-    .idx-chip { font-size: .57rem; padding: .27rem .43rem; }
-    .idx-section-head { margin-top: .95rem; }
-    .idx-section-caption { font-size: .69rem; }
-    .idx-leaderboard { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .48rem; }
-    .idx-funnel { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .48rem; }
-    .idx-pick-card { min-height: 125px; padding: .72rem; }
-    .idx-pick-ticker { font-size: 1.10rem; }
-    .idx-pick-meta { font-size: .62rem; }
-    .idx-funnel-step { padding: .72rem .76rem; }
-    .idx-funnel-value { font-size: 1.30rem; }
-    [data-testid="stMetric"] { min-height: 82px; padding: .68rem .72rem; }
-    [data-testid="stSidebar"] { min-width: min(90vw, 355px); }
+    .idx-terminal-header:after { left: 0.9rem; right: 0.9rem; }
+    .idx-kicker { font-size: .58rem; letter-spacing: .12em; margin-bottom: .30rem; }
+    .idx-title { font-size: 1.46rem; line-height: 1.08; }
+    .idx-version { font-size: .60rem; padding: .29rem .43rem; }
+    .idx-subtitle { font-size: .75rem; line-height: 1.45; margin-top: .48rem; }
+    .idx-chip-row {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overscroll-behavior-inline: contain;
+        scrollbar-width: none;
+        padding-bottom: .10rem;
+        margin-top: .68rem;
+    }
+    .idx-chip-row::-webkit-scrollbar { display: none; }
+    .idx-chip { flex: 0 0 auto; white-space: nowrap; font-size: .55rem; padding: .26rem .42rem; }
+    .idx-section-head { margin-top: .90rem; }
+    .idx-section-title { font-size: .93rem; }
+    .idx-section-caption { font-size: .67rem; }
+    .idx-leaderboard { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .46rem; }
+    .idx-funnel { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .46rem; }
+    .idx-pick-card { min-height: 120px; padding: .70rem; }
+    .idx-pick-ticker { font-size: 1.08rem; }
+    .idx-pick-meta { font-size: .61rem; }
+    .idx-funnel-step { padding: .70rem .74rem; }
+    .idx-funnel-value { font-size: 1.28rem; }
+    [data-testid="stMetric"] { min-height: 80px; padding: .66rem .70rem; }
+    [data-testid="stSegmentedControl"] [role="radiogroup"],
+    [data-baseweb="tab-list"] {
+        overflow-x: auto !important;
+        flex-wrap: nowrap !important;
+        scrollbar-width: none;
+    }
+    [data-testid="stSegmentedControl"] [role="radiogroup"]::-webkit-scrollbar,
+    [data-baseweb="tab-list"]::-webkit-scrollbar { display: none; }
 }
 
 @media (max-width: 390px) {
