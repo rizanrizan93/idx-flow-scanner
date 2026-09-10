@@ -5,6 +5,10 @@ runOnSave = false
 [browser]
 gatherUsageStats = false
 
+[client]
+toolbarMode = "minimal"
+showSidebarNavigation = true
+
 [theme]
 base = "dark"
 primaryColor = "#39BDF8"
