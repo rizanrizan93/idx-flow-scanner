@@ -47,10 +47,13 @@ def test_hot_table_preserves_physical_upsert_contract_and_trigger() -> None:
     assert "CREATE TABLE public.flow_scan_results_hot_v1(" in sql
     assert "PRIMARY KEY(run_id,ticker)" in sql
     assert "REFERENCES public.flow_scan_runs(id) ON DELETE CASCADE" in sql
-    assert "ALTER TABLE public.flow_scan_results_hot_v1 RENAME TO flow_scan_results" in sql
+    swap = sql.index("ALTER TABLE public.flow_scan_results_hot_v1 RENAME TO flow_scan_results")
+    drop_legacy = sql.index("DROP TABLE public.flow_scan_results_legacy_v1 RESTRICT")
+    rename_pkey = sql.index("RENAME CONSTRAINT flow_scan_results_hot_v1_pkey TO flow_scan_results_pkey")
+    rename_score = sql.index("ALTER INDEX public.flow_scan_results_hot_v1_score_idx RENAME TO flow_scan_results_score_idx")
+    assert swap < drop_legacy < rename_pkey < rename_score
     assert "CREATE TRIGGER flow_scan_results_capture_adaptive_broker_obs" in sql
     assert "flow_capture_broker_adaptive_score_observation()" in sql
-    assert "DROP TABLE public.flow_scan_results_legacy_v1 RESTRICT" in sql
     assert "CASCADE" not in sql.split("DROP TABLE public.flow_scan_results_legacy_v1", 1)[1][:80]
 
 
