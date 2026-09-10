@@ -228,10 +228,6 @@ $do$;
 
 ALTER TABLE public.flow_scan_results RENAME TO flow_scan_results_legacy_v1;
 ALTER TABLE public.flow_scan_results_hot_v1 RENAME TO flow_scan_results;
-
--- Drop the legacy table before canonicalizing new constraint/index names. PostgreSQL
--- keeps index names unchanged when a table is renamed, so this ordering prevents
--- collisions with flow_scan_results_pkey/score_idx/ticker_idx.
 DROP TABLE public.flow_scan_results_legacy_v1 RESTRICT;
 
 ALTER TABLE public.flow_scan_results RENAME CONSTRAINT flow_scan_results_hot_v1_pkey TO flow_scan_results_pkey;
@@ -290,7 +286,7 @@ $fn$;
 REVOKE ALL ON FUNCTION public.flow_read_scan_results_run_v1(uuid) FROM public,anon,authenticated;
 GRANT EXECUTE ON FUNCTION public.flow_read_scan_results_run_v1(uuid) TO service_role;
 
--- Verify every archived run can be reconstructed exactly from its payload.
+-- Verify every archived run can be reconstructed to the same canonical row-hash set.
 DO $do$
 DECLARE v_bad bigint;
 BEGIN
@@ -304,18 +300,21 @@ BEGIN
       invalidation numeric,tp1 numeric,tp2 numeric,components jsonb,diagnostics jsonb,guardrail_reason text,
       created_at timestamptz
     )
+  ), row_hashes AS (
+    SELECT e.run_id,
+      encode(extensions.digest(convert_to(concat_ws('|',
+        e.run_id::text,e.ticker,e.as_of_date::text,e.final_score::text,e.phase,e.action,e.evidence_tier,
+        e.evidence_coverage_pct::text,e.real_money_state,coalesce(e.distribution_risk::text,''),
+        coalesce(e.estimated_smart_money_cost::text,''),coalesce(e.premium_to_cost_pct::text,''),
+        coalesce(e.entry_low::text,''),coalesce(e.entry_high::text,''),coalesce(e.invalidation::text,''),
+        coalesce(e.tp1::text,''),coalesce(e.tp2::text,''),e.components::text,e.diagnostics::text,
+        coalesce(e.guardrail_reason,''),e.created_at::text
+      ),'UTF8'),'sha256'),'hex') row_sha
+    FROM expanded e
   ), hashes AS (
-    SELECT e.run_id,count(*)::integer row_count,
-      encode(extensions.digest(convert_to(coalesce(string_agg(
-        encode(extensions.digest(convert_to(concat_ws('|',
-          e.run_id::text,e.ticker,e.as_of_date::text,e.final_score::text,e.phase,e.action,e.evidence_tier,
-          e.evidence_coverage_pct::text,e.real_money_state,coalesce(e.distribution_risk::text,''),
-          coalesce(e.estimated_smart_money_cost::text,''),coalesce(e.premium_to_cost_pct::text,''),
-          coalesce(e.entry_low::text,''),coalesce(e.entry_high::text,''),coalesce(e.invalidation::text,''),
-          coalesce(e.tp1::text,''),coalesce(e.tp2::text,''),e.components::text,e.diagnostics::text,
-          coalesce(e.guardrail_reason,''),e.created_at::text
-        ),'UTF8'),'sha256'),'hex'),'' ORDER BY e.ticker),''),'UTF8'),'sha256'),'hex') logical_sha256
-    FROM expanded e GROUP BY e.run_id
+    SELECT run_id,count(*)::integer row_count,
+      encode(extensions.digest(convert_to(coalesce(string_agg(row_sha,'' ORDER BY row_sha),''),'UTF8'),'sha256'),'hex') logical_sha256
+    FROM row_hashes GROUP BY run_id
   )
   SELECT count(*) INTO v_bad
   FROM public.flow_scan_results_archive_v1 a
