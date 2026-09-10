@@ -101,6 +101,6 @@ def test_storage_registry_tracks_new_physical_backing_without_authorizing_remova
     sql = _sql()
     assert "object_name='flow_stock_residual_activity_compact_v1'" in sql
     assert "storage_class='DERIVABLE'" in sql
-    assert "RETAIN_FULL_PIT_DERIVED_PANEL; DO NOT REMOVE WITHOUT OBJECT_SPECIFIC_PROOF" in sql
+    assert "retention_requirement='RETAIN_FULL_PIT_DERIVED_PANEL; DO NOT REMOVE WITHOUT OBJECT_SPECIFIC_PROOF'" in sql
     assert "select public.flow_refresh_storage_registry_v1();" in sql
     assert "select public.flow_refresh_storage_date_ranges_v1();" in sql
