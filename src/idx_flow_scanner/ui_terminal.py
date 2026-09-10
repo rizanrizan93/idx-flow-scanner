@@ -1,29 +1,42 @@
 from __future__ import annotations
 
 import html
+import os
 from typing import Mapping, Sequence
 
 import pandas as pd
 import streamlit as st
 
 
+CANONICAL_SUPABASE_REF = "djqvhbeonmicztxfisav"
+_AUTO_PERSISTENCE_LABELS = frozenset(
+    {
+        "Dedicated IDX Flow Supabase",
+        "Saya konfirmasi project Supabase ini benar",
+        "Persist hasil scan",
+    }
+)
+
+
 TERMINAL_CSS = r"""
 <style>
 :root {
-    --idx-bg: #07111f;
-    --idx-bg-soft: #0b1626;
-    --idx-panel: #0d1a2c;
-    --idx-panel-2: #101f33;
-    --idx-border: #203149;
-    --idx-border-soft: rgba(125, 151, 184, 0.18);
-    --idx-text: #e7eef8;
-    --idx-muted: #8fa2bc;
-    --idx-accent: #39bdf8;
-    --idx-accent-2: #7c9cff;
-    --idx-positive: #38d9a9;
-    --idx-warning: #f7c65c;
-    --idx-negative: #ff718c;
-    --idx-shadow: 0 18px 50px rgba(0, 0, 0, 0.22);
+    --idx-bg: #06101d;
+    --idx-bg-2: #081523;
+    --idx-panel: rgba(12, 26, 43, 0.82);
+    --idx-panel-solid: #0d1b2d;
+    --idx-panel-2: #112238;
+    --idx-border: rgba(132, 164, 205, 0.18);
+    --idx-border-strong: rgba(83, 180, 255, 0.30);
+    --idx-text: #edf5ff;
+    --idx-muted: #8ca1bb;
+    --idx-accent: #42c5ff;
+    --idx-accent-2: #6d8fff;
+    --idx-positive: #42d7a7;
+    --idx-warning: #f4c95f;
+    --idx-negative: #ff748f;
+    --idx-shadow: 0 18px 55px rgba(0, 0, 0, 0.24);
+    --idx-radius: 18px;
 }
 
 html, body, [class*="css"] {
@@ -32,102 +45,129 @@ html, body, [class*="css"] {
 
 .stApp {
     background:
-        radial-gradient(circle at 10% -10%, rgba(57, 189, 248, 0.10), transparent 26rem),
-        radial-gradient(circle at 88% 0%, rgba(124, 156, 255, 0.08), transparent 32rem),
-        var(--idx-bg);
+        radial-gradient(circle at 8% -10%, rgba(66, 197, 255, 0.12), transparent 30rem),
+        radial-gradient(circle at 92% 6%, rgba(109, 143, 255, 0.10), transparent 34rem),
+        linear-gradient(180deg, #07121f 0%, #06101d 48%, #050d18 100%);
     color: var(--idx-text);
 }
 
-[data-testid="stAppViewContainer"] > .main {
-    background: transparent;
-}
+[data-testid="stAppViewContainer"] > .main { background: transparent; }
 
 [data-testid="stHeader"] {
-    background: rgba(7, 17, 31, 0.78);
-    backdrop-filter: blur(14px);
+    background: rgba(6, 16, 29, 0.72);
+    border-bottom: 1px solid rgba(132, 164, 205, 0.08);
+    backdrop-filter: blur(18px);
 }
 
 [data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #091321 0%, #07111f 100%);
-    border-right: 1px solid var(--idx-border-soft);
+    background:
+        radial-gradient(circle at 20% 0%, rgba(66,197,255,.08), transparent 18rem),
+        linear-gradient(180deg, #091725 0%, #07111e 100%);
+    border-right: 1px solid var(--idx-border);
+}
+
+[data-testid="stSidebar"] > div:first-child {
+    padding-top: 0.8rem;
 }
 
 [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p,
 [data-testid="stSidebar"] label,
 [data-testid="stSidebar"] span {
-    color: #c6d3e5;
+    color: #c9d7e8;
+}
+
+[data-testid="stSidebar"] hr {
+    margin: 1.0rem 0;
+    border-color: rgba(132, 164, 205, 0.13);
+}
+
+[data-testid="stSidebar"] [data-baseweb="select"] > div,
+[data-testid="stSidebar"] [data-testid="stSelectbox"] div[role="button"] {
+    min-height: 44px;
+    border-radius: 12px;
 }
 
 .block-container {
-    max-width: 1560px;
-    padding-top: 1.4rem;
-    padding-bottom: 3rem;
+    max-width: 1580px;
+    padding-top: 1.15rem;
+    padding-bottom: 3.5rem;
 }
 
 .idx-terminal-header {
     position: relative;
     overflow: hidden;
-    padding: 1.25rem 1.35rem 1.15rem;
+    padding: 1.35rem 1.45rem 1.25rem;
     border: 1px solid var(--idx-border);
-    border-radius: 18px;
+    border-radius: 22px;
     background:
-        linear-gradient(135deg, rgba(57,189,248,0.10), transparent 45%),
-        linear-gradient(180deg, rgba(16,31,51,0.96), rgba(11,22,38,0.96));
+        linear-gradient(125deg, rgba(66,197,255,0.11), transparent 42%),
+        linear-gradient(180deg, rgba(17,35,57,0.96), rgba(10,23,39,0.96));
     box-shadow: var(--idx-shadow);
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.85rem;
+}
+
+.idx-terminal-header:before {
+    content: "";
+    position: absolute;
+    width: 18rem;
+    height: 18rem;
+    right: -6rem;
+    top: -7rem;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(66,197,255,.13), transparent 68%);
+    pointer-events: none;
 }
 
 .idx-terminal-header:after {
     content: "";
     position: absolute;
-    right: -5rem;
-    top: -7rem;
-    width: 22rem;
-    height: 22rem;
-    border-radius: 50%;
-    border: 1px solid rgba(57,189,248,0.14);
-    box-shadow: 0 0 0 2rem rgba(57,189,248,0.02), 0 0 0 5rem rgba(57,189,248,0.015);
+    left: 1.45rem;
+    right: 1.45rem;
+    bottom: 0;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(66,197,255,.45), rgba(109,143,255,.12), transparent);
 }
 
 .idx-kicker {
-    font-size: 0.70rem;
-    font-weight: 750;
-    letter-spacing: 0.16em;
+    font-size: 0.69rem;
+    font-weight: 800;
+    letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: var(--idx-accent);
-    margin-bottom: 0.35rem;
+    color: #62d0ff;
+    margin-bottom: 0.42rem;
 }
 
 .idx-title-row {
     display: flex;
-    align-items: baseline;
-    gap: 0.7rem;
+    align-items: center;
+    gap: 0.65rem;
     flex-wrap: wrap;
 }
 
 .idx-title {
-    font-size: clamp(1.65rem, 3vw, 2.5rem);
-    line-height: 1.05;
-    font-weight: 780;
-    letter-spacing: -0.035em;
-    color: #f4f8ff;
+    font-size: clamp(1.7rem, 3vw, 2.55rem);
+    line-height: 1.02;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    color: #f7fbff;
 }
 
 .idx-version {
-    font-size: 0.72rem;
+    font-size: 0.68rem;
     line-height: 1;
-    padding: 0.34rem 0.52rem;
+    padding: 0.35rem 0.54rem;
     border-radius: 999px;
-    border: 1px solid rgba(57,189,248,0.28);
-    background: rgba(57,189,248,0.08);
-    color: #9bddff;
-    font-weight: 700;
+    border: 1px solid rgba(66,197,255,0.30);
+    background: rgba(66,197,255,0.08);
+    color: #a8e6ff;
+    font-weight: 800;
 }
 
 .idx-subtitle {
-    margin-top: 0.55rem;
-    color: var(--idx-muted);
-    font-size: 0.90rem;
+    margin-top: 0.62rem;
+    color: #9aacc1;
+    font-size: 0.91rem;
+    line-height: 1.55;
     max-width: 980px;
 }
 
@@ -135,37 +175,40 @@ html, body, [class*="css"] {
     display: flex;
     flex-wrap: wrap;
     gap: 0.42rem;
-    margin-top: 0.9rem;
+    margin-top: 0.92rem;
 }
 
 .idx-chip {
-    padding: 0.28rem 0.52rem;
-    border-radius: 7px;
-    border: 1px solid var(--idx-border-soft);
-    background: rgba(255,255,255,0.025);
-    color: #adbad0;
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
+    display: inline-flex;
+    align-items: center;
+    gap: .30rem;
+    padding: 0.31rem 0.58rem;
+    border-radius: 999px;
+    border: 1px solid var(--idx-border);
+    background: rgba(255,255,255,0.026);
+    color: #b4c2d4;
+    font-size: 0.65rem;
+    font-weight: 780;
+    letter-spacing: 0.045em;
     text-transform: uppercase;
 }
 
 .idx-chip-positive {
-    color: #76e6c0;
-    border-color: rgba(56,217,169,0.28);
-    background: rgba(56,217,169,0.07);
+    color: #83e8c8;
+    border-color: rgba(66,215,167,0.30);
+    background: rgba(66,215,167,0.075);
 }
 
 .idx-chip-warning {
-    color: #f4cf7b;
-    border-color: rgba(247,198,92,0.28);
-    background: rgba(247,198,92,0.07);
+    color: #f5d98a;
+    border-color: rgba(244,201,95,0.30);
+    background: rgba(244,201,95,0.075);
 }
 
 .idx-chip-accent {
-    color: #8edcff;
-    border-color: rgba(57,189,248,0.28);
-    background: rgba(57,189,248,0.07);
+    color: #9ce2ff;
+    border-color: rgba(66,197,255,0.30);
+    background: rgba(66,197,255,0.075);
 }
 
 .idx-section-head {
@@ -173,277 +216,472 @@ html, body, [class*="css"] {
     align-items: flex-end;
     justify-content: space-between;
     gap: 1rem;
-    margin: 1.05rem 0 0.55rem;
+    margin: 1.18rem 0 0.58rem;
 }
 
 .idx-section-title {
-    color: #eff5ff;
-    font-size: 1.0rem;
-    font-weight: 760;
-    letter-spacing: -0.01em;
+    color: #f2f7ff;
+    font-size: 1.03rem;
+    font-weight: 780;
+    letter-spacing: -0.012em;
 }
 
 .idx-section-caption {
-    color: var(--idx-muted);
+    color: #8599b1;
     font-size: 0.74rem;
-    margin-top: 0.15rem;
+    line-height: 1.45;
+    margin-top: 0.16rem;
 }
 
 .idx-funnel {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 0.65rem;
-    margin: 0.25rem 0 0.9rem;
+    gap: 0.68rem;
+    margin: 0.28rem 0 0.95rem;
+}
+
+.idx-funnel-step,
+.idx-health-card,
+.idx-pick-card,
+.idx-audit-hero {
+    backdrop-filter: blur(14px);
 }
 
 .idx-funnel-step {
-    border: 1px solid var(--idx-border-soft);
-    border-radius: 13px;
-    padding: 0.82rem 0.9rem;
-    background: linear-gradient(180deg, rgba(16,31,51,.9), rgba(11,22,38,.9));
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--idx-border);
+    border-radius: 16px;
+    padding: 0.90rem 0.95rem;
+    background: linear-gradient(180deg, rgba(17,34,55,.88), rgba(9,21,36,.90));
+    box-shadow: 0 8px 30px rgba(0,0,0,.10);
+}
+
+.idx-funnel-step:before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, #42c5ff, rgba(109,143,255,.35));
 }
 
 .idx-funnel-label {
-    font-size: 0.67rem;
+    font-size: 0.64rem;
     text-transform: uppercase;
     letter-spacing: 0.10em;
-    color: #7f93ad;
-    font-weight: 750;
+    color: #8195ad;
+    font-weight: 790;
 }
 
 .idx-funnel-value {
-    font-size: 1.45rem;
-    color: #f2f7ff;
-    font-weight: 780;
-    margin-top: 0.18rem;
+    font-size: 1.55rem;
+    color: #f6f9ff;
+    font-weight: 800;
+    margin-top: 0.20rem;
 }
 
 .idx-funnel-meta {
-    font-size: 0.70rem;
-    color: #8396af;
-    margin-top: 0.06rem;
+    font-size: 0.69rem;
+    color: #8397ae;
+    margin-top: 0.08rem;
+    line-height: 1.35;
 }
 
 .idx-leaderboard {
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 0.58rem;
-    margin: 0.25rem 0 0.9rem;
+    gap: 0.62rem;
+    margin: 0.28rem 0 0.95rem;
 }
 
 .idx-pick-card {
-    min-height: 128px;
-    border: 1px solid var(--idx-border-soft);
-    border-radius: 14px;
-    background: linear-gradient(160deg, rgba(17,33,54,.96), rgba(10,21,36,.96));
-    padding: 0.80rem 0.85rem;
+    min-height: 142px;
+    border: 1px solid var(--idx-border);
+    border-radius: 17px;
+    background:
+        linear-gradient(145deg, rgba(66,197,255,.05), transparent 48%),
+        linear-gradient(165deg, rgba(17,34,55,.96), rgba(9,20,35,.96));
+    padding: 0.90rem 0.92rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,.12);
+    transition: transform .15s ease, border-color .15s ease;
+}
+
+.idx-pick-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(66,197,255,.30);
 }
 
 .idx-pick-rank {
-    font-size: 0.64rem;
+    font-size: 0.61rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: #7187a3;
-    font-weight: 760;
+    font-weight: 780;
 }
 
 .idx-pick-ticker {
-    font-size: 1.22rem;
-    line-height: 1.1;
-    font-weight: 820;
-    color: #f4f8ff;
-    margin-top: 0.22rem;
+    font-size: 1.30rem;
+    line-height: 1.08;
+    font-weight: 840;
+    color: #f6f9ff;
+    margin-top: 0.27rem;
 }
 
 .idx-pick-score {
-    font-size: 0.74rem;
-    color: #7edcc0;
-    font-weight: 700;
-    margin-top: 0.16rem;
+    display: inline-block;
+    font-size: 0.70rem;
+    color: #81e4c3;
+    font-weight: 760;
+    margin-top: 0.18rem;
 }
 
 .idx-pick-meta {
-    font-size: 0.70rem;
-    color: #8da0b9;
-    line-height: 1.35;
-    margin-top: 0.42rem;
+    font-size: 0.69rem;
+    color: #8ea2ba;
+    line-height: 1.45;
+    margin-top: 0.44rem;
 }
 
 .idx-audit-hero {
-    border: 1px solid var(--idx-border);
-    border-radius: 16px;
+    border: 1px solid var(--idx-border-strong);
+    border-radius: 18px;
     background:
-        linear-gradient(115deg, rgba(57,189,248,.08), transparent 42%),
-        var(--idx-panel);
-    padding: 1.0rem 1.05rem;
-    margin-bottom: 0.7rem;
+        linear-gradient(115deg, rgba(66,197,255,.09), transparent 44%),
+        rgba(13,27,45,.90);
+    padding: 1.05rem 1.12rem;
+    margin-bottom: 0.75rem;
+    box-shadow: 0 12px 35px rgba(0,0,0,.13);
 }
 
 .idx-audit-ticker {
-    font-size: 1.55rem;
-    font-weight: 820;
-    letter-spacing: -0.02em;
-    color: #f5f8ff;
+    font-size: 1.58rem;
+    font-weight: 840;
+    letter-spacing: -0.025em;
+    color: #f7faff;
 }
 
 .idx-audit-meta {
-    color: var(--idx-muted);
+    color: #91a3b8;
     font-size: 0.76rem;
-    margin-top: 0.20rem;
+    margin-top: 0.22rem;
 }
 
 .idx-signal {
     display: inline-flex;
     align-items: center;
-    padding: 0.28rem 0.55rem;
-    border-radius: 7px;
-    font-size: 0.68rem;
-    font-weight: 800;
-    letter-spacing: 0.04em;
+    padding: 0.29rem 0.58rem;
+    border-radius: 999px;
+    font-size: 0.65rem;
+    font-weight: 820;
+    letter-spacing: 0.045em;
     text-transform: uppercase;
-    margin-top: 0.55rem;
-    border: 1px solid var(--idx-border-soft);
+    margin-top: 0.58rem;
+    border: 1px solid var(--idx-border);
 }
 
 .idx-signal-positive {
-    color: #79e3bf;
-    background: rgba(56,217,169,.08);
-    border-color: rgba(56,217,169,.30);
+    color: #87e8c8;
+    background: rgba(66,215,167,.08);
+    border-color: rgba(66,215,167,.30);
 }
 
 .idx-signal-warning {
-    color: #f5d27d;
-    background: rgba(247,198,92,.08);
-    border-color: rgba(247,198,92,.28);
+    color: #f5d98a;
+    background: rgba(244,201,95,.08);
+    border-color: rgba(244,201,95,.28);
 }
 
 .idx-signal-negative {
-    color: #ff8fa4;
-    background: rgba(255,113,140,.08);
-    border-color: rgba(255,113,140,.28);
+    color: #ff94a8;
+    background: rgba(255,116,143,.08);
+    border-color: rgba(255,116,143,.28);
 }
 
 .idx-health-card {
-    border: 1px solid var(--idx-border-soft);
-    border-radius: 14px;
-    background: rgba(13,26,44,.78);
-    padding: 0.78rem 0.85rem;
-    min-height: 92px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--idx-border);
+    border-radius: 16px;
+    background: linear-gradient(180deg, rgba(14,29,48,.86), rgba(9,21,36,.86));
+    padding: 0.86rem 0.90rem;
+    min-height: 96px;
+    box-shadow: 0 9px 28px rgba(0,0,0,.10);
+}
+
+.idx-health-card:after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(66,197,255,.28), transparent 72%);
 }
 
 .idx-health-label {
-    color: #7890ab;
-    font-size: 0.65rem;
-    font-weight: 760;
-    letter-spacing: 0.08em;
+    color: #7f94ad;
+    font-size: 0.62rem;
+    font-weight: 780;
+    letter-spacing: 0.085em;
     text-transform: uppercase;
 }
 
 .idx-health-value {
-    color: #eff5ff;
-    font-size: 1.10rem;
-    font-weight: 780;
-    margin-top: 0.25rem;
+    color: #f2f7ff;
+    font-size: 1.12rem;
+    font-weight: 800;
+    margin-top: 0.27rem;
 }
 
 .idx-health-meta {
-    color: #8396af;
-    font-size: 0.68rem;
+    color: #8397af;
+    font-size: 0.67rem;
+    line-height: 1.35;
     margin-top: 0.12rem;
 }
 
+.idx-persistence-card {
+    border: 1px solid rgba(66,215,167,.26);
+    border-radius: 15px;
+    padding: .85rem .88rem;
+    background:
+        linear-gradient(120deg, rgba(66,215,167,.08), rgba(66,197,255,.035)),
+        rgba(11,24,40,.78);
+    box-shadow: 0 8px 26px rgba(0,0,0,.10);
+    margin: .25rem 0 .55rem;
+}
+
+.idx-persistence-card.is-off {
+    border-color: rgba(244,201,95,.26);
+    background:
+        linear-gradient(120deg, rgba(244,201,95,.07), transparent),
+        rgba(11,24,40,.78);
+}
+
+.idx-persistence-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .55rem;
+}
+
+.idx-persistence-label {
+    color: #edf6ff;
+    font-size: .77rem;
+    font-weight: 790;
+}
+
+.idx-persistence-badge {
+    flex: none;
+    padding: .24rem .44rem;
+    border-radius: 999px;
+    color: #87e8c8;
+    background: rgba(66,215,167,.09);
+    border: 1px solid rgba(66,215,167,.22);
+    font-size: .58rem;
+    font-weight: 850;
+    letter-spacing: .06em;
+}
+
+.idx-persistence-card.is-off .idx-persistence-badge {
+    color: #f5d98a;
+    background: rgba(244,201,95,.08);
+    border-color: rgba(244,201,95,.22);
+}
+
+.idx-persistence-meta {
+    margin-top: .36rem;
+    color: #8298b1;
+    font-size: .66rem;
+    line-height: 1.42;
+}
+
 [data-testid="stMetric"] {
-    background: linear-gradient(180deg, rgba(16,31,51,.88), rgba(10,21,36,.88));
-    border: 1px solid var(--idx-border-soft);
-    border-radius: 14px;
-    padding: 0.78rem 0.88rem;
-    min-height: 92px;
+    background: linear-gradient(180deg, rgba(15,31,51,.88), rgba(9,20,35,.90));
+    border: 1px solid var(--idx-border);
+    border-radius: 16px;
+    padding: 0.82rem 0.90rem;
+    min-height: 94px;
+    box-shadow: 0 8px 26px rgba(0,0,0,.09);
 }
 
-[data-testid="stMetricLabel"] {
-    color: #8398b3;
-}
-
-[data-testid="stMetricValue"] {
-    color: #f0f5ff;
-    font-weight: 780;
-}
+[data-testid="stMetricLabel"] { color: #8499b2; }
+[data-testid="stMetricValue"] { color: #f3f7ff; font-weight: 800; }
 
 .stButton > button[kind="primary"] {
-    border: 1px solid rgba(57,189,248,.45);
-    background: linear-gradient(135deg, #1f8ec6, #3d70d7);
-    box-shadow: 0 10px 24px rgba(39, 116, 188, 0.22);
-    font-weight: 760;
+    min-height: 50px;
+    border: 1px solid rgba(66,197,255,.45);
+    border-radius: 13px;
+    background: linear-gradient(135deg, #168fc9 0%, #347bdc 55%, #586ee2 100%);
+    box-shadow: 0 12px 30px rgba(36, 111, 196, 0.26);
+    font-weight: 800;
+    letter-spacing: .01em;
 }
 
-.stButton > button {
-    border-radius: 10px;
+.stButton > button[kind="primary"]:hover {
+    border-color: rgba(131,221,255,.65);
+    box-shadow: 0 14px 34px rgba(36, 111, 196, 0.32);
+}
+
+.stButton > button { border-radius: 12px; }
+
+[data-testid="stSegmentedControl"] {
+    margin: .30rem 0 .72rem;
+}
+
+[data-testid="stSegmentedControl"] [role="radiogroup"] {
+    padding: .25rem;
+    gap: .20rem;
+    border: 1px solid var(--idx-border);
+    border-radius: 14px;
+    background: rgba(9,21,36,.72);
+}
+
+[data-testid="stSegmentedControl"] label {
+    min-height: 40px;
+    border-radius: 10px !important;
 }
 
 [data-baseweb="tab-list"] {
     gap: 0.15rem;
-    background: rgba(11,22,38,.62);
-    border: 1px solid var(--idx-border-soft);
-    border-radius: 12px;
-    padding: 0.22rem;
+    background: rgba(9,21,36,.70);
+    border: 1px solid var(--idx-border);
+    border-radius: 14px;
+    padding: 0.24rem;
 }
 
 [data-baseweb="tab"] {
-    border-radius: 9px;
-    padding: 0.45rem 0.72rem;
-    font-size: 0.80rem;
+    border-radius: 10px;
+    padding: 0.46rem 0.75rem;
+    font-size: 0.79rem;
 }
 
-[data-baseweb="tab"][aria-selected="true"] {
-    background: rgba(57,189,248,.10);
-}
+[data-baseweb="tab"][aria-selected="true"] { background: rgba(66,197,255,.10); }
 
 [data-testid="stDataFrame"] {
-    border: 1px solid var(--idx-border-soft);
-    border-radius: 12px;
+    border: 1px solid var(--idx-border);
+    border-radius: 15px;
     overflow: hidden;
+    box-shadow: 0 8px 26px rgba(0,0,0,.08);
 }
 
 [data-testid="stExpander"] {
-    border: 1px solid var(--idx-border-soft);
-    border-radius: 12px;
-    background: rgba(11,22,38,.55);
+    border: 1px solid var(--idx-border);
+    border-radius: 14px;
+    background: rgba(9,21,36,.56);
 }
 
-hr {
-    border-color: var(--idx-border-soft);
+[data-testid="stAlert"] {
+    border-radius: 14px;
+    border-color: var(--idx-border);
 }
+
+[data-testid="stProgress"] > div > div > div > div {
+    border-radius: 999px;
+}
+
+hr { border-color: rgba(132, 164, 205, 0.13); }
 
 @media (max-width: 1100px) {
-    .idx-leaderboard {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-    .idx-funnel {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
+    .idx-leaderboard { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .idx-funnel { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 680px) {
     .block-container {
-        padding-left: 0.72rem;
-        padding-right: 0.72rem;
-        padding-top: 0.75rem;
+        padding-left: 0.62rem;
+        padding-right: 0.62rem;
+        padding-top: 0.62rem;
     }
     .idx-terminal-header {
-        border-radius: 14px;
-        padding: 1rem;
+        border-radius: 17px;
+        padding: 1.00rem 1.00rem .95rem;
     }
-    .idx-leaderboard,
-    .idx-funnel {
-        grid-template-columns: 1fr;
-    }
+    .idx-terminal-header:after { left: 1rem; right: 1rem; }
+    .idx-title { font-size: 1.72rem; }
+    .idx-subtitle { font-size: .80rem; line-height: 1.48; }
+    .idx-chip { font-size: .57rem; padding: .27rem .43rem; }
+    .idx-section-head { margin-top: .95rem; }
+    .idx-section-caption { font-size: .69rem; }
+    .idx-leaderboard { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .48rem; }
+    .idx-funnel { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .48rem; }
+    .idx-pick-card { min-height: 125px; padding: .72rem; }
+    .idx-pick-ticker { font-size: 1.10rem; }
+    .idx-pick-meta { font-size: .62rem; }
+    .idx-funnel-step { padding: .72rem .76rem; }
+    .idx-funnel-value { font-size: 1.30rem; }
+    [data-testid="stMetric"] { min-height: 82px; padding: .68rem .72rem; }
+    [data-testid="stSidebar"] { min-width: min(90vw, 355px); }
+}
+
+@media (max-width: 390px) {
+    .idx-leaderboard { grid-template-columns: 1fr; }
 }
 </style>
 """
 
 
+def _secret_value(name: str) -> str:
+    try:
+        value = st.secrets.get(name, os.getenv(name))
+    except Exception:
+        value = os.getenv(name)
+    return str(value or "").strip()
+
+
+def canonical_persistence_ready() -> bool:
+    """Return true only for the dedicated canonical IDX Flow Supabase credentials."""
+    expected_url = f"https://{CANONICAL_SUPABASE_REF}.supabase.co"
+    url = _secret_value("SUPABASE_URL").rstrip("/")
+    key = _secret_value("SUPABASE_SECRET_KEY")
+    return bool(key and url == expected_url)
+
+
+def _render_auto_persistence_status(ready: bool) -> None:
+    css_class = "idx-persistence-card" if ready else "idx-persistence-card is-off"
+    badge = "AUTO ON" if ready else "NOT READY"
+    meta = (
+        "Canonical IDX Flow database terverifikasi. Hasil scan, run metadata, dan calibration outcomes disimpan otomatis."
+        if ready
+        else "Credential canonical IDX Flow belum terverifikasi. Persistence tetap fail-closed dan tidak menulis ke project lain."
+    )
+    st.html(
+        f"""
+        <div class="{css_class}">
+          <div class="idx-persistence-top">
+            <div class="idx-persistence-label">Database persistence</div>
+            <div class="idx-persistence-badge">{badge}</div>
+          </div>
+          <div class="idx-persistence-meta">{_escape(meta)}</div>
+        </div>
+        """
+    )
+
+
+def _install_auto_persistence_controls() -> None:
+    """Replace legacy manual persistence interlocks with a canonical fail-closed auto mode."""
+    sentinel = "_idx_flow_original_checkbox"
+    if not hasattr(st, sentinel):
+        setattr(st, sentinel, st.checkbox)
+    original_checkbox = getattr(st, sentinel)
+
+    def checkbox(label, *args, **kwargs):
+        if label not in _AUTO_PERSISTENCE_LABELS:
+            return original_checkbox(label, *args, **kwargs)
+        ready = canonical_persistence_ready()
+        if label == "Dedicated IDX Flow Supabase":
+            _render_auto_persistence_status(ready)
+        return ready
+
+    checkbox.__name__ = "_idx_flow_auto_persistence_checkbox"
+    st.checkbox = checkbox
+
+
 def inject_terminal_theme() -> None:
     st.html(TERMINAL_CSS)
+    _install_auto_persistence_controls()
 
 
 def _escape(value: object) -> str:
@@ -458,25 +696,25 @@ def render_header(
     database_connected: bool,
 ) -> None:
     db_class = "idx-chip-positive" if database_connected else "idx-chip-warning"
-    db_text = "DB CONNECTED" if database_connected else "DB OFF"
+    db_text = "AUTO PERSISTENCE" if database_connected else "DB FAIL-CLOSED"
     st.html(
         f"""
         <div class="idx-terminal-header">
-          <div class="idx-kicker">Market Intelligence / Indonesia Equities</div>
+          <div class="idx-kicker">Indonesia Equity Intelligence</div>
           <div class="idx-title-row">
-            <div class="idx-title">IDX Flow Terminal</div>
+            <div class="idx-title">IDX Flow Scanner</div>
             <div class="idx-version">v{_escape(version)}</div>
           </div>
           <div class="idx-subtitle">
-            Flow-first decision engine combining official IDX foreign and market evidence,
-            verified ZAPI fallback, ownership, corporate actions and SMC/ICT execution.
+            Official-first market intelligence for ranking, evidence validation and SMC/ICT execution planning.
+            Built for fast decision review without weakening production guardrails.
           </div>
           <div class="idx-chip-row">
             <span class="idx-chip idx-chip-accent">IDX OFFICIAL PRIMARY</span>
             <span class="idx-chip">ZAPI FALLBACK</span>
             <span class="idx-chip">{universe_count} TICKERS</span>
             <span class="idx-chip">{sector_count} SECTORS</span>
-            <span class="idx-chip idx-chip-positive">BROKER-DIRECT RETIRED</span>
+            <span class="idx-chip idx-chip-positive">TOP-900 CONTRACT</span>
             <span class="idx-chip {db_class}">{db_text}</span>
           </div>
         </div>
@@ -506,9 +744,9 @@ def render_funnel(
 ) -> None:
     items = [
         ("Research Universe", valid, "valid scored rows"),
-        ("Verified Flow", verified, "full/fresh/valid official or fallback flow"),
-        ("Decision Top", decision, "verified-flow shortlist"),
-        ("Execution Ready", execution, "authorized BUY action"),
+        ("Verified Flow", verified, "official / verified fallback"),
+        ("Decision Top", decision, "priority shortlist"),
+        ("Execution Ready", execution, "authorized BUY setups"),
     ]
     cards = "".join(
         f"""
@@ -545,7 +783,7 @@ def render_leaderboard(frame: pd.DataFrame | None, *, max_cards: int = 5) -> Non
         cards.append(
             f"""
             <div class="idx-pick-card">
-              <div class="idx-pick-rank">#{i} candidate</div>
+              <div class="idx-pick-rank">Priority #{i}</div>
               <div class="idx-pick-ticker">{ticker}</div>
               <div class="idx-pick-score">Score {score}</div>
               <div class="idx-pick-meta">
@@ -603,11 +841,8 @@ def table_column_config(columns: Sequence[str]) -> dict[str, object]:
                 col.replace("_", " ").title(),
                 format="%.0f",
             )
-        elif col in {"decision_rank", "execution_rank"}:
-            config[col] = st.column_config.NumberColumn(
-                "Rank",
-                format="%d",
-            )
+        elif col in {"decision_rank", "execution_rank", "scanner_rank"}:
+            config[col] = st.column_config.NumberColumn("Rank", format="%d")
     return config
 
 
@@ -650,8 +885,8 @@ def render_ticker_hero(row: Mapping[str, object]) -> None:
     st.html(
         f"""
         <div class="idx-audit-hero">
-          <div class="idx-kicker">Single Ticker Command Center</div>
-          <div class="idx-audit-ticker">{ticker} <span style="color:#748ba7;font-weight:650;">/ {sector}</span></div>
+          <div class="idx-kicker">Ticker Decision Audit</div>
+          <div class="idx-audit-ticker">{ticker} <span style="color:#7f94ad;font-weight:650;">/ {sector}</span></div>
           <div class="idx-audit-meta">Score {score} · {phase} · {state}</div>
           <span class="idx-signal {_signal_class(action)}">{action}</span>
         </div>
