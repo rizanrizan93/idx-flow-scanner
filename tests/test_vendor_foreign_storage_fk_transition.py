@@ -2,8 +2,8 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-PREP = ROOT / "supabase/migrations/20260910085900_storage_registry_object_name_update_cascade_v1.sql"
-COMPACTION = ROOT / "supabase/migrations/20260910090000_vendor_foreign_canonical_view_v1.sql"
+PREP = ROOT / "supabase/migrations/20260910042528_storage_registry_object_name_update_cascade_v1.sql"
+COMPACTION = ROOT / "supabase/migrations/20260910042612_vendor_foreign_canonical_view_v1.sql"
 
 
 def _sql(path: Path) -> str:
