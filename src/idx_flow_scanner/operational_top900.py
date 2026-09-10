@@ -128,7 +128,12 @@ def apply_operational_membership_guards(
     results: pd.DataFrame,
     membership: pd.DataFrame,
 ) -> pd.DataFrame:
-    """Keep all valid rows rankable while preventing non-actionable execution."""
+    """Keep all valid rows rankable while preventing non-actionable execution.
+
+    The guard is intentionally idempotent because Streamlit can rerun the entrypoint
+    in a long-lived interpreter. Reapplying it must refresh guard metadata/rank rather
+    than failing when a previously guarded frame already contains ``scanner_rank``.
+    """
     if results is None or results.empty:
         return results
     canonical = validate_operational_top900(membership)
@@ -168,17 +173,16 @@ def apply_operational_membership_guards(
         )
         return diagnostics
 
+    def attach_guardrail_reason(row: pd.Series) -> str:
+        marker = "Top-900 member is not currently production-actionable"
+        existing = str(row.get("guardrail_reason") or "").strip()
+        if marker in existing:
+            return existing
+        return "; ".join(filter(None, [existing, marker]))
+
     guarded["diagnostics"] = guarded.apply(attach_guard, axis=1)
     guarded.loc[blocked, "guardrail_reason"] = guarded.loc[blocked].apply(
-        lambda row: "; ".join(
-            filter(
-                None,
-                [
-                    str(row.get("guardrail_reason") or "").strip(),
-                    "Top-900 member is not currently production-actionable",
-                ],
-            )
-        ),
+        attach_guardrail_reason,
         axis=1,
     )
     raw_rank = guarded.sort_values(
@@ -187,7 +191,10 @@ def apply_operational_membership_guards(
         kind="stable",
     ).index
     rank_by_index = {index: rank for rank, index in enumerate(raw_rank, 1)}
-    guarded.insert(0, "scanner_rank", guarded.index.map(rank_by_index))
+    guarded["scanner_rank"] = guarded.index.map(rank_by_index)
+    guarded = guarded.loc[
+        :, ["scanner_rank"] + [column for column in guarded.columns if column != "scanner_rank"]
+    ]
     guarded = guarded.sort_values(
         ["production_authorized", "final_score", "ticker"],
         ascending=[False, False, True],

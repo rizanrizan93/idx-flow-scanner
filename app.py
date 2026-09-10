@@ -78,6 +78,18 @@ SEED_400_PATH = ROOT / "data" / "cache" / "idx_400_ohlcv_1y.csv.gz"
 EXPECTED_SUPABASE_PROJECT_REF = "djqvhbeonmicztxfisav"
 
 
+def _capture_original(module, attr: str, cache_attr: str):
+    """Capture a monkey-patch target exactly once across Streamlit reruns.
+
+    Community Cloud reruns ``app.py`` in a long-lived interpreter while imported
+    package modules can remain patched in ``sys.modules``. Persisting the pristine
+    callable on that module prevents wrappers from wrapping prior wrappers.
+    """
+    if not hasattr(module, cache_attr):
+        setattr(module, cache_attr, getattr(module, attr))
+    return getattr(module, cache_attr)
+
+
 @st.cache_data(ttl=1800, show_spinner=False)
 def _resolved_universe_path(_store=None) -> str:
     path = materialize_runtime_top900(
@@ -154,7 +166,11 @@ def _database_first_slow_loader(original_loader, database_loader, merger, writer
     return load
 
 
-_original_connect_store = streamlit_app.connect_store
+_original_connect_store = _capture_original(
+    streamlit_app,
+    "connect_store",
+    "_idx_flow_original_connect_store",
+)
 
 
 def _locked_connect_store(enabled: bool):
@@ -171,7 +187,11 @@ def _locked_connect_store(enabled: bool):
     return _original_connect_store(enabled)
 
 
-_original_zapi_foreign = streamlit_app._zapi_foreign
+_original_zapi_foreign = _capture_original(
+    streamlit_app,
+    "_zapi_foreign",
+    "_idx_flow_original_zapi_foreign",
+)
 
 
 def _database_first_zapi_foreign(universe, store, load_price):
@@ -212,9 +232,36 @@ def _database_first_zapi_foreign(universe, store, load_price):
     )
 
 
-_original_scan_one_zapi = zapi_pipeline.scan_one_zapi
-_original_scan_universe_zapi = streamlit_app.scan_universe_zapi
-_original_ticker_market_features = zapi_pipeline.ticker_market_features
+_original_scan_one_zapi = _capture_original(
+    zapi_pipeline,
+    "scan_one_zapi",
+    "_idx_flow_original_scan_one_zapi",
+)
+_original_scan_universe_zapi = _capture_original(
+    streamlit_app,
+    "scan_universe_zapi",
+    "_idx_flow_original_scan_universe_zapi",
+)
+_original_ticker_market_features = _capture_original(
+    zapi_pipeline,
+    "ticker_market_features",
+    "_idx_flow_original_ticker_market_features",
+)
+_original_stock_summary_loader = _capture_original(
+    streamlit_app,
+    "load_bundled_zapi_stock_summary",
+    "_idx_flow_original_stock_summary_loader",
+)
+_original_ownership_loader = _capture_original(
+    streamlit_app,
+    "load_bundled_zapi_ownership",
+    "_idx_flow_original_ownership_loader",
+)
+_original_capital_actions_loader = _capture_original(
+    streamlit_app,
+    "load_bundled_zapi_capital_actions",
+    "_idx_flow_original_capital_actions_loader",
+)
 
 
 def _official_index_market_features(ticker, context):
@@ -312,10 +359,29 @@ def _database_first_scan_universe(*args, **kwargs):
 # pre-scan input-frame counts. These adapters replace only presentation semantics:
 # the values now come from the scored rows users actually see and from canonical
 # OOS memory. Production scoring, ranking and authorization are untouched.
-_original_render_health_cards = streamlit_app.render_health_cards
-_original_render_section = streamlit_app.render_section
-_original_st_columns = st.columns
-_original_create_durable_run_record = streamlit_app.create_durable_run_record
+_original_render_health_cards = _capture_original(
+    streamlit_app,
+    "render_health_cards",
+    "_idx_flow_original_render_health_cards",
+)
+_original_render_section = _capture_original(
+    streamlit_app,
+    "render_section",
+    "_idx_flow_original_render_section",
+)
+_original_st_columns = _capture_original(
+    streamlit_app,
+    "st",
+    "_idx_flow_streamlit_module",
+).columns
+if not hasattr(streamlit_app, "_idx_flow_original_st_columns"):
+    streamlit_app._idx_flow_original_st_columns = _original_st_columns
+_original_st_columns = streamlit_app._idx_flow_original_st_columns
+_original_create_durable_run_record = _capture_original(
+    streamlit_app,
+    "create_durable_run_record",
+    "_idx_flow_original_create_durable_run_record",
+)
 _UI_TRUTH_STATE = {"suppress_legacy_calibration_metrics": False}
 
 
@@ -432,19 +498,19 @@ streamlit_app.prepare_database_first_prices = _prepare_prices
 streamlit_app.connect_store = _locked_connect_store
 streamlit_app._zapi_foreign = _database_first_zapi_foreign
 streamlit_app.load_bundled_zapi_stock_summary = _database_first_slow_loader(
-    streamlit_app.load_bundled_zapi_stock_summary,
+    _original_stock_summary_loader,
     load_stock_summary,
     merge_stock_summary,
     upsert_stock_summary,
 )
 streamlit_app.load_bundled_zapi_ownership = _database_first_slow_loader(
-    streamlit_app.load_bundled_zapi_ownership,
+    _original_ownership_loader,
     load_canonical_ownership,
     merge_canonical_ownership,
     upsert_ownership,
 )
 streamlit_app.load_bundled_zapi_capital_actions = _database_first_slow_loader(
-    streamlit_app.load_bundled_zapi_capital_actions,
+    _original_capital_actions_loader,
     load_canonical_capital_actions,
     merge_canonical_capital_actions,
     upsert_capital_actions,
