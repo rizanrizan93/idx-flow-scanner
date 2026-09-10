@@ -290,11 +290,12 @@ $fn$;
 REVOKE ALL ON FUNCTION public.flow_read_scan_results_run_v1(uuid) FROM public,anon,authenticated;
 GRANT EXECUTE ON FUNCTION public.flow_read_scan_results_run_v1(uuid) TO service_role;
 
+-- Verify every archived run can be reconstructed exactly from its payload.
 DO $do$
 DECLARE v_bad bigint;
 BEGIN
   WITH expanded AS (
-    SELECT a.run_id,x.*
+    SELECT x.*
     FROM public.flow_scan_results_archive_v1 a
     CROSS JOIN LATERAL jsonb_to_recordset(a.payload) AS x(
       run_id uuid,ticker text,as_of_date date,final_score numeric,phase text,action text,
@@ -318,7 +319,7 @@ BEGIN
   )
   SELECT count(*) INTO v_bad
   FROM public.flow_scan_results_archive_v1 a
-  LEFT JOIN hashes h USING(run_id)
+  LEFT JOIN hashes h ON h.run_id=a.run_id
   WHERE h.run_id IS NULL OR h.row_count<>a.row_count OR h.logical_sha256<>a.logical_sha256;
   IF v_bad<>0 THEN
     RAISE EXCEPTION 'scan-results archive reconstruction verification failed for % runs',v_bad;
