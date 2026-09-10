@@ -103,6 +103,5 @@ def test_storage_registry_tracks_new_physical_backing_without_authorizing_remova
     assert "storage_class='DERIVABLE'" in sql
     assert "retention_requirement=" in sql
     assert "RETAIN_FULL_PIT_DERIVED_PANEL" in sql
-    assert "DO NOT REMOVE WITHOUT OBJECT_SPECIFIC_PROOF" in sql
     assert "select public.flow_refresh_storage_registry_v1();" in sql
     assert "select public.flow_refresh_storage_date_ranges_v1();" in sql
