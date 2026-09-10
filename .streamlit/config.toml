@@ -6,7 +6,7 @@ runOnSave = false
 gatherUsageStats = false
 
 [client]
-toolbarMode = "minimal"
+toolbarMode = "viewer"
 showSidebarNavigation = true
 
 [theme]

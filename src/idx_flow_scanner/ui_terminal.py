@@ -591,52 +591,70 @@ hr { border-color: rgba(132, 164, 205, 0.13); }
 
 @media (max-width: 680px) {
     [data-testid="stHeader"] {
-        height: 2.75rem !important;
-        min-height: 2.75rem !important;
-        background: rgba(6, 16, 29, 0.94) !important;
-        border-bottom: 1px solid rgba(132, 164, 205, 0.12) !important;
+        height: 3.6rem !important;
+        min-height: 3.6rem !important;
+        background: rgba(6, 16, 29, 0.96) !important;
+        border-bottom: 1px solid rgba(132, 164, 205, 0.14) !important;
         backdrop-filter: blur(18px);
+        box-shadow: 0 6px 20px rgba(0,0,0,.12);
     }
-    [data-testid="stToolbar"],
+    [data-testid="stToolbar"] {
+        display: flex !important;
+        align-items: center !important;
+        max-width: calc(100vw - 3.8rem) !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        margin-left: 3.45rem !important;
+        padding-right: .35rem !important;
+        scrollbar-width: none;
+        white-space: nowrap;
+    }
+    [data-testid="stToolbar"]::-webkit-scrollbar { display: none; }
     [data-testid="stHeaderActionElements"],
-    [data-testid="stStatusWidget"],
-    [data-testid="stDecoration"] {
-        display: none !important;
+    [data-testid="stStatusWidget"] {
+        display: flex !important;
+        align-items: center !important;
+        flex: 0 0 auto !important;
     }
     [data-testid="stSidebarCollapsedControl"] {
         display: flex !important;
         position: fixed !important;
-        top: 0.38rem !important;
-        left: 0.45rem !important;
+        top: 0.66rem !important;
+        left: 0.48rem !important;
         z-index: 1000002 !important;
-        width: 2.1rem !important;
-        height: 2.1rem !important;
+        width: 2.25rem !important;
+        height: 2.25rem !important;
         align-items: center !important;
         justify-content: center !important;
-        border: 1px solid rgba(132, 164, 205, 0.22) !important;
-        border-radius: 10px !important;
-        background: rgba(13, 27, 45, 0.94) !important;
+        border: 1px solid rgba(132, 164, 205, 0.28) !important;
+        border-radius: 11px !important;
+        background: rgba(13, 27, 45, 0.98) !important;
         box-shadow: 0 8px 22px rgba(0,0,0,.24) !important;
     }
     [data-testid="stSidebar"] {
-        width: min(82vw, 320px) !important;
+        top: 3.6rem !important;
+        height: calc(100dvh - 3.6rem) !important;
+        width: min(84vw, 330px) !important;
         min-width: 0 !important;
-        max-width: min(82vw, 320px) !important;
+        max-width: min(84vw, 330px) !important;
         z-index: 1000001 !important;
         box-shadow: 18px 0 42px rgba(0,0,0,.34) !important;
     }
     [data-testid="stSidebar"][aria-expanded="true"] > div:first-child {
-        width: min(82vw, 320px) !important;
-        min-width: min(82vw, 320px) !important;
-        max-width: min(82vw, 320px) !important;
+        width: min(84vw, 330px) !important;
+        min-width: min(84vw, 330px) !important;
+        max-width: min(84vw, 330px) !important;
+        height: 100% !important;
+        overflow-y: auto !important;
+        overscroll-behavior: contain;
     }
     [data-testid="stSidebar"] > div:first-child {
-        padding-top: 0.55rem !important;
+        padding-top: 0.65rem !important;
     }
     .block-container {
         padding-left: 0.70rem;
         padding-right: 0.70rem;
-        padding-top: 3.15rem !important;
+        padding-top: 4.20rem !important;
         padding-bottom: 2.5rem;
     }
     .idx-terminal-header {
