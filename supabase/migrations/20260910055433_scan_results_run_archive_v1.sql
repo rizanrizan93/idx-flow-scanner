@@ -15,25 +15,20 @@ BEGIN
   IF v_kind IS DISTINCT FROM 'r'::"char" THEN
     RAISE EXCEPTION 'scan-results archive denied: expected physical table, got %',v_kind;
   END IF;
-
   IF to_regclass('public.flow_scan_results_archive_v1') IS NOT NULL
      OR to_regclass('public.flow_scan_results_hot_v1') IS NOT NULL
      OR to_regclass('public.flow_scan_results_legacy_v1') IS NOT NULL THEN
     RAISE EXCEPTION 'scan-results archive denied: target or legacy object already exists';
   END IF;
-
   SELECT count(*)::bigint INTO v_rows FROM public.flow_scan_results;
   IF v_rows<1000 THEN
     RAISE EXCEPTION 'scan-results archive denied: unexpectedly small source % rows',v_rows;
   END IF;
-
   SELECT count(*)::bigint INTO v_incoming_fk
-  FROM pg_constraint
-  WHERE contype='f' AND confrelid='public.flow_scan_results'::regclass;
+  FROM pg_constraint WHERE contype='f' AND confrelid='public.flow_scan_results'::regclass;
   IF v_incoming_fk<>0 THEN
     RAISE EXCEPTION 'scan-results archive denied: % incoming FK references exist',v_incoming_fk;
   END IF;
-
   SELECT count(*)::bigint INTO v_trigger_count
   FROM pg_trigger
   WHERE tgrelid='public.flow_scan_results'::regclass AND NOT tgisinternal
@@ -117,8 +112,7 @@ CREATE TABLE public.flow_scan_results_archive_v1(
   payload_sha256 text NOT NULL CHECK(length(payload_sha256)=64),
   logical_sha256 text NOT NULL CHECK(length(logical_sha256)=64),
   archived_at timestamptz NOT NULL DEFAULT statement_timestamp(),
-  production_influence_enabled boolean NOT NULL DEFAULT false
-    CHECK(production_influence_enabled=false)
+  production_influence_enabled boolean NOT NULL DEFAULT false CHECK(production_influence_enabled=false)
 );
 
 WITH prepared AS (
@@ -217,7 +211,6 @@ BEGIN
   IF v_missing_latest<>0 THEN
     RAISE EXCEPTION 'scan-results archive denied: % latest ticker/date rows would be lost from hot table',v_missing_latest;
   END IF;
-
   SELECT before_rows,before_bytes INTO v_before,v_before_bytes
   FROM flow_scan_results_compaction_stats_v1;
   SELECT count(*) INTO v_hot FROM public.flow_scan_results_hot_v1;
@@ -225,7 +218,6 @@ BEGIN
   IF v_before<>v_hot+v_archived THEN
     RAISE EXCEPTION 'scan-results row conservation failed: before %, hot %, archived %',v_before,v_hot,v_archived;
   END IF;
-
   v_new_bytes:=pg_total_relation_size('public.flow_scan_results_hot_v1'::regclass)
              +pg_total_relation_size('public.flow_scan_results_archive_v1'::regclass);
   IF v_before_bytes-v_new_bytes < 10*1024*1024 THEN
@@ -236,6 +228,11 @@ $do$;
 
 ALTER TABLE public.flow_scan_results RENAME TO flow_scan_results_legacy_v1;
 ALTER TABLE public.flow_scan_results_hot_v1 RENAME TO flow_scan_results;
+
+-- Drop the legacy table before canonicalizing new constraint/index names. PostgreSQL
+-- keeps index names unchanged when a table is renamed, so this ordering prevents
+-- collisions with flow_scan_results_pkey/score_idx/ticker_idx.
+DROP TABLE public.flow_scan_results_legacy_v1 RESTRICT;
 
 ALTER TABLE public.flow_scan_results RENAME CONSTRAINT flow_scan_results_hot_v1_pkey TO flow_scan_results_pkey;
 ALTER TABLE public.flow_scan_results RENAME CONSTRAINT flow_scan_results_hot_v1_final_score_check TO flow_scan_results_final_score_check;
@@ -253,8 +250,6 @@ GRANT SELECT ON TABLE public.flow_scan_results_archive_v1 TO service_role;
 CREATE TRIGGER flow_scan_results_capture_adaptive_broker_obs
 AFTER INSERT OR UPDATE OF diagnostics,final_score ON public.flow_scan_results
 FOR EACH ROW EXECUTE FUNCTION public.flow_capture_broker_adaptive_score_observation();
-
-DROP TABLE public.flow_scan_results_legacy_v1 RESTRICT;
 
 CREATE FUNCTION public.flow_read_scan_results_run_v1(p_run_id uuid)
 RETURNS TABLE(
@@ -276,7 +271,6 @@ BEGIN
     FROM public.flow_scan_results s WHERE s.run_id=p_run_id ORDER BY s.ticker;
     RETURN;
   END IF;
-
   RETURN QUERY
   SELECT x.run_id,x.ticker,x.as_of_date,x.final_score,x.phase,x.action,x.evidence_tier,
     x.evidence_coverage_pct,x.real_money_state,x.distribution_risk,x.estimated_smart_money_cost,
@@ -296,7 +290,6 @@ $fn$;
 REVOKE ALL ON FUNCTION public.flow_read_scan_results_run_v1(uuid) FROM public,anon,authenticated;
 GRANT EXECUTE ON FUNCTION public.flow_read_scan_results_run_v1(uuid) TO service_role;
 
--- Verify every archived run can be reconstructed exactly from its payload.
 DO $do$
 DECLARE v_bad bigint;
 BEGIN
@@ -377,7 +370,6 @@ SELECT 'SCAN_RESULTS_SUPERSEDED_RUN_ARCHIVE_V1',s.before_rows,
   )
 FROM flow_scan_results_compaction_stats_v1 s;
 
--- Storage registry refresh is observability only; removal remains unauthorized.
 SELECT public.flow_refresh_storage_registry_v1();
 UPDATE public.flow_storage_object_registry_v1
 SET storage_class='HOT_OPERATIONAL',
@@ -394,5 +386,3 @@ SET storage_class='COLD_RESEARCH',
     derivation_state='ARCHIVED_FROM_CANONICAL_SCAN_RESULTS',
     removal_authorized=false
 WHERE object_name='flow_scan_results_archive_v1';
-
--- Final safety: experimental production influence remains untouched/false by this migration.
