@@ -6,7 +6,7 @@ MIGRATION = (
     ROOT
     / "supabase"
     / "migrations"
-    / "20260910090000_vendor_foreign_canonical_view_v1.sql"
+    / "20260910042612_vendor_foreign_canonical_view_v1.sql"
 )
 
 
