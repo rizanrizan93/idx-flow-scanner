@@ -28,7 +28,7 @@ st.set_page_config(
     page_title="Research / Shadow | IDX Flow",
     page_icon="🧪",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="auto",
 )
 inject_terminal_theme()
 
@@ -52,7 +52,7 @@ RESEARCH_CSS = r"""
     align-items: center;
     padding: .28rem .52rem;
     border-radius: 999px;
-    border: 1px solid rgba(244,201,95,.30);
+    border: 1px solid rgba(244, 201, 95, .30);
     background: rgba(244,201,95,.08);
     color: #f5d98a;
     font-size: .62rem;
