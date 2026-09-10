@@ -2,7 +2,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-MIGRATION = ROOT / "supabase/migrations/20260910120000_stock_residual_compact_view_v1.sql"
+MIGRATION = ROOT / "supabase/migrations/20260910044236_stock_residual_compact_view_v1.sql"
 
 
 def _sql() -> str:
@@ -101,6 +101,6 @@ def test_storage_registry_tracks_new_physical_backing_without_authorizing_remova
     sql = _sql()
     assert "object_name='flow_stock_residual_activity_compact_v1'" in sql
     assert "storage_class='DERIVABLE'" in sql
-    assert "RETAIN_FULL_PIT_DERIVED_PANEL; DO_NOT_REMOVE WITHOUT OBJECT_SPECIFIC_PROOF" in sql
+    assert "RETAIN_FULL_PIT_DERIVED_PANEL; DO NOT REMOVE WITHOUT OBJECT_SPECIFIC_PROOF" in sql
     assert "select public.flow_refresh_storage_registry_v1();" in sql
     assert "select public.flow_refresh_storage_date_ranges_v1();" in sql
