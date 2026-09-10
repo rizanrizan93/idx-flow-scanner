@@ -2,7 +2,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-MIGRATION = ROOT / "supabase/migrations/20260910055433_scan_results_run_archive_v1.sql"
+MIGRATION = ROOT / "supabase/migrations/20260910062251_scan_results_run_archive_v1.sql"
 
 
 def _sql() -> str:
