@@ -40,6 +40,9 @@ def test_archive_is_whole_run_lossless_and_hash_verified() -> None:
     assert "logical_sha256" in sql
     assert "jsonb_array_length(payload)<>row_count" in sql
     assert "archive reconstruction verification failed" in sql
+    assert "SELECT x.*\n    FROM public.flow_scan_results_archive_v1 a" in sql
+    assert "SELECT a.run_id,x.*" not in sql
+    assert "LEFT JOIN hashes h ON h.run_id=a.run_id" in sql
 
 
 def test_hot_table_preserves_physical_upsert_contract_and_trigger() -> None:
