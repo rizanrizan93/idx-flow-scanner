@@ -1,7 +1,7 @@
 from pathlib import Path
 
 
-MIGRATION = Path("supabase/migrations/20260911075500_runtime_finalization_outcome_v1.sql")
+MIGRATION = Path("supabase/migrations/20260911073747_runtime_finalization_outcome_v1.sql")
 MANAGED = Path("src/idx_flow_scanner/managed.py")
 
 
