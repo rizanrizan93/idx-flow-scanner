@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import math
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -106,7 +107,7 @@ def decide_managed_run(
 def recent_runs(store: Any, limit: int = 20) -> list[dict[str, Any]]:
     response = (
         store.client.table("flow_scan_runs")
-        .select("id,status,universe_count,processed_count,error_count,config,started_at,completed_at,heartbeat_at,current_ticker")
+        .select("id,status,universe_count,attempted_count,processed_count,error_count,config,started_at,completed_at,heartbeat_at,current_ticker")
         .order("started_at", desc=True)
         .limit(int(limit))
         .execute()
@@ -140,15 +141,50 @@ def load_persisted_results(store: Any, run_id: str) -> pd.DataFrame:
     return apply_production_authorization(frame)
 
 
-def mark_stale_managed_runs(store: Any, *, max_age_minutes: int = MANAGED_ACTIVE_TIMEOUT_MINUTES) -> int:
-    """Fail clearly stale RUNNING rows from managed or manual scans.
+def _rpc_integer(value: Any) -> int:
+    if isinstance(value, list) and len(value) == 1:
+        value = value[0]
+    if isinstance(value, dict):
+        if len(value) == 1:
+            value = next(iter(value.values()))
+        else:
+            raise ValueError("ambiguous RPC response")
+    return int(value or 0)
 
-    Cleanup must never lag behind the managed gate timeout. Otherwise a RUNNING
-    row can stop blocking at 45 minutes while remaining RUNNING until a later
-    cleanup threshold, allowing duplicate managed scans. Explicit larger values
-    are therefore capped at the managed active timeout.
+
+def _persisted_result_count(store: Any, run_id: str) -> int:
+    response = (
+        store.client.table("flow_scan_results")
+        .select("ticker", count="exact")
+        .eq("run_id", run_id)
+        .execute()
+    )
+    count = getattr(response, "count", None)
+    if count is None:
+        raise RuntimeError("exact persisted-result count unavailable")
+    return int(count)
+
+
+def mark_stale_managed_runs(store: Any, *, max_age_minutes: int = MANAGED_ACTIVE_TIMEOUT_MINUTES) -> int:
+    """Finalize clearly stale RUNNING rows without discarding persisted truth.
+
+    Canonical recovery is server-side and result-aware: a fully attempted run with
+    >=90% persisted result rows is terminally reconciled as COMPLETED or
+    COMPLETED_PARTIAL. Only stale runs without sufficient persisted evidence fail.
+    The client fallback mirrors the same rule for deployments where the RPC has not
+    reached the runtime yet.
     """
     effective_age_minutes = min(max(1, int(max_age_minutes)), MANAGED_ACTIVE_TIMEOUT_MINUTES)
+
+    try:
+        response = store.client.rpc(
+            "flow_reap_stale_scan_runs",
+            {"p_max_age_minutes": effective_age_minutes},
+        ).execute()
+        return _rpc_integer(response.data)
+    except Exception:
+        pass
+
     rows = recent_runs(store, limit=100)
     cutoff = datetime.now(timezone.utc) - timedelta(minutes=effective_age_minutes)
     changed = 0
@@ -158,12 +194,56 @@ def mark_stale_managed_runs(store: Any, *, max_age_minutes: int = MANAGED_ACTIVE
         heartbeat = _parse_time(run.get("heartbeat_at")) or _parse_time(run.get("started_at"))
         if heartbeat is None or heartbeat >= cutoff:
             continue
+
+        run_id = str(run.get("id") or "")
+        universe_count = int(run.get("universe_count") or 0)
+        attempted_count = int(run.get("attempted_count") or 0)
         try:
-            store.client.table("flow_scan_runs").update({
-                "status": "FAILED",
-                "completed_at": datetime.now(timezone.utc).isoformat(),
+            result_count = _persisted_result_count(store, run_id)
+        except Exception:
+            result_count = 0
+
+        required = int(math.ceil(0.90 * max(universe_count, 0)))
+        recovered = bool(
+            universe_count > 0
+            and attempted_count >= universe_count
+            and result_count >= required
+        )
+        now_iso = datetime.now(timezone.utc).isoformat()
+        config = run.get("config") if isinstance(run.get("config"), dict) else {}
+        if recovered:
+            terminal_status = "COMPLETED" if result_count >= universe_count else "COMPLETED_PARTIAL"
+            payload = {
+                "status": terminal_status,
+                "processed_count": result_count,
+                "error_count": max(int(run.get("error_count") or 0), max(universe_count - result_count, 0)),
+                "completed_at": now_iso,
                 "current_ticker": None,
-            }).eq("id", run.get("id")).execute()
+                "config": {
+                    **config,
+                    "stale_recovery_reason": "PERSISTED_RESULTS_PROVE_SCAN_COMPLETION",
+                    "stale_recovered_at": now_iso,
+                    "stale_max_age_minutes": effective_age_minutes,
+                    "stale_recovered_result_rows": result_count,
+                    "stale_recovered_status": terminal_status,
+                },
+            }
+        else:
+            payload = {
+                "status": "FAILED",
+                "completed_at": now_iso,
+                "current_ticker": None,
+                "error_count": max(int(run.get("error_count") or 0), 1),
+                "config": {
+                    **config,
+                    "stale_failure_reason": "CLIENT_STALE_HEARTBEAT",
+                    "stale_reaped_at": now_iso,
+                    "stale_max_age_minutes": effective_age_minutes,
+                    "stale_observed_result_rows": result_count,
+                },
+            }
+        try:
+            store.client.table("flow_scan_runs").update(payload).eq("id", run_id).execute()
             changed += 1
         except Exception:
             pass
