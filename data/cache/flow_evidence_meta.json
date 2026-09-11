@@ -5,8 +5,8 @@
     "providers": [],
     "status": "RETIRED"
   },
-  "generated_at": "2026-09-10T16:40:59.404830+00:00",
-  "target_trade_date": "2026-09-10",
+  "generated_at": "2026-09-11T16:46:30.808547+00:00",
+  "target_trade_date": "2026-09-11",
   "universe_count": 700,
   "zapi_capital_actions": {
     "days": 72,
