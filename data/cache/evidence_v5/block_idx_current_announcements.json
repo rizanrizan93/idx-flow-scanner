@@ -1,6 +1,133 @@
 {
   "rows": [
     {
+      "announcement_id": "BLOCKIDX-a5412a3eb1f82e5c6ae0a17d400a859c",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "5a48028f38_a2e77b4a68.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/5a48028f38_a2e77b4a68.pdf"
+        },
+        {
+          "file_name": "20260910_KAII_Pembayaran Kupon/Bagi Hasil/Ijarah/Pokok_32147130_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/703b2b3cd5_3e04c59c63.pdf"
+        }
+      ],
+      "content_hash": "bf18dc0a62a42d5b4d2ac7a2db8a41ff2f89a94a9c56500ee09fb6d9649032bd",
+      "disclosure_type": "OTHER_DISCLOSURE",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/5a48028f38_a2e77b4a68.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-09-11T08:13:53+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "KAII",
+      "title": "Informasi Kupon [ KAII ]"
+    },
+    {
+      "announcement_id": "BLOCKIDX-291919fb6f8d12e23b0c4d97492e5a20",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "9ec2b7a821_9589db8e6a.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/9ec2b7a821_9589db8e6a.pdf"
+        },
+        {
+          "file_name": "20260910_HAIS_Laporan Informasi dan Fakta Material_32147683_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/98869d6178_56c2f6f2fa.pdf"
+        }
+      ],
+      "content_hash": "b9307ec6a283eb657a835fc7184079570b8d8c982e4d8f3223e53030327d8b30",
+      "disclosure_type": "MANAGEMENT_GOVERNANCE",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/9ec2b7a821_9589db8e6a.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-09-11T07:40:55+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "HAIS",
+      "title": "RUPSLB HIS Sahkan Perubahan Susunan Direksi [ HAIS ]"
+    },
+    {
+      "announcement_id": "BLOCKIDX-8433c1770f4bf615b8bb9e6604d36c93",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "22b028bb1a_e5485154f2.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/22b028bb1a_e5485154f2.pdf"
+        },
+        {
+          "file_name": "20260910_IPAC_Pengumuman RUPS_32147042_lamp2.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/46d6eaf78e_790f835237.pdf"
+        },
+        {
+          "file_name": "20260910_IPAC_Pengumuman RUPS_32147042_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/5c125195a3_38bf8e6b54.pdf"
+        }
+      ],
+      "content_hash": "581fceed6b8b67ac195724a6c9a398c15b0f67e92665a2d3b3d3043faa46ec15",
+      "disclosure_type": "OWNERSHIP",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/22b028bb1a_e5485154f2.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-09-11T05:34:00+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "IPAC",
+      "title": "Pemberitahuan Rencana Rapat Umum Pemegang Saham Luar Biasa [ IPAC ]"
+    },
+    {
+      "announcement_id": "BLOCKIDX-d17fa04423b695b3c0ea586a39195f72",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "24e3984bcc_151daa1854.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/24e3984bcc_151daa1854.pdf"
+        },
+        {
+          "file_name": "20260910_IPAC_Laporan Informasi dan Fakta Material_32147040_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/44754c8989_c0015eb4ef.pdf"
+        },
+        {
+          "file_name": "20260910_IPAC_Laporan Informasi dan Fakta Material_32147040_lamp2.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/479f4dd961_f602df3b03.pdf"
+        },
+        {
+          "file_name": "20260910_IPAC_Laporan Informasi dan Fakta Material_32147040_lamp3.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/776cfabda8_227ffca589.pdf"
+        }
+      ],
+      "content_hash": "d9c1f5ba4112c6860e1a9f5781254bca7c3acd8ff8863578cf3b197945b714d7",
+      "disclosure_type": "OWNERSHIP",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/24e3984bcc_151daa1854.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-09-11T05:33:01+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "IPAC",
+      "title": "Penyampaian Keterbukaan Informasi kepada Pemegang Saham Sehubungan dengan Rencana Perubahan Status dari Perusahaan Terbuka Menjadi Perusahaan Tertutup (Rencana Go Private) dan Penghapusan Pencatatan Saham dari Bursa Efek Indonesia (Delisting) oleh PT Era Graharealty Tbk (Perseroan) [ IPAC ]"
+    },
+    {
       "announcement_id": "BLOCKIDX-d0be99f2e427a2d169c2bef093d60ee4",
       "announcement_no": null,
       "attachment_urls": [
@@ -182,128 +309,6 @@
       "source_verified": true,
       "ticker": "DPNS",
       "title": "Laporan Bulanan Registrasi Pemegang Efek [ DPNS ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-1780bdf92386dad1884d3fd0d19c9d31",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "611ed68535_0bebf6f60a.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/611ed68535_0bebf6f60a.pdf"
-        },
-        {
-          "file_name": "20260910_BEER_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32147788_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/25dccd5fdc_9683cdf134.pdf"
-        }
-      ],
-      "content_hash": "75aab5879f5b1efa524104e1944da2b890e27f98ee8974e808aaa7bed92125f1",
-      "disclosure_type": "OWNERSHIP",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/611ed68535_0bebf6f60a.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-10T23:04:41+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "BEER",
-      "title": "Laporan Bulanan Registrasi Pemegang Efek [ BEER ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-acf5c3646a493b924894e870a61106e9",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "da902d3ff5_ce2912a731.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/da902d3ff5_ce2912a731.pdf"
-        },
-        {
-          "file_name": "20260910_ASGR_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32147619_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/a71aca43e2_09d80c1af3.pdf"
-        }
-      ],
-      "content_hash": "a20d066b70b7a8dc0e1fd21729f275d893270ece370d588025569aa554c98ebc",
-      "disclosure_type": "OWNERSHIP",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/da902d3ff5_ce2912a731.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-10T22:48:37+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "ASGR",
-      "title": "Laporan Bulanan Registrasi Pemegang Efek [ ASGR ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-2467fb721bcc1bfd0b3db44f49a74aa7",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "a565fb2c56_b522fff865.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/a565fb2c56_b522fff865.pdf"
-        },
-        {
-          "file_name": "20260910_BEER_Pemanggilan RUPS_32147784_lamp2.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/3e43cbb352_88402b5909.pdf"
-        },
-        {
-          "file_name": "20260910_BEER_Pemanggilan RUPS_32147784_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/cedf96cd40_b3f5bf59c0.pdf"
-        }
-      ],
-      "content_hash": "84bd08bfe00837b31daa92bd0e4dce2ae6a2207882e6f0def0c0a08dadb31f7a",
-      "disclosure_type": "OWNERSHIP",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/a565fb2c56_b522fff865.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-10T22:26:35+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "BEER",
-      "title": "Pemanggilan Rapat Umum Pemegang Saham Luar Biasa [ BEER ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-5fdd369bed5597a82297a1279ce1997c",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "ffc4b7c51a_90fda023ce.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/ffc4b7c51a_90fda023ce.pdf"
-        },
-        {
-          "file_name": "20260910_MKNT_Perubahan dan/atau Tambahan Keterbukaan Informasi terkait Aksi Korporasi_32147780_lamp2.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/0460dc74f7_647a704dc3.pdf"
-        },
-        {
-          "file_name": "20260910_MKNT_Perubahan dan/atau Tambahan Keterbukaan Informasi terkait Aksi Korporasi_32147780_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/3b9f766716_503eea8c65.pdf"
-        }
-      ],
-      "content_hash": "0591638cce6887d59a01f8eb5172addea572f006f96ac1af0086e7de43df05b3",
-      "disclosure_type": "CAPITAL_ACTION",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/ffc4b7c51a_90fda023ce.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-10T21:59:54+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "MKNT",
-      "title": "Penambahan modal tanpa HMETD - Perubahan dan/atau Tambahan Informasi Penambahan Modal Tanpa HMETD [ MKNT ]"
     }
   ],
   "schema_version": "BLOCK_IDX_DISCLOSURE_CACHE_V5_1",
