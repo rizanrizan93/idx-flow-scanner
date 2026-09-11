@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import pandas as pd
 
@@ -9,6 +9,10 @@ SHADOW_PREDICTIVE_TABLE = "flow_shadow_predictive_score_v1"
 FINANCIAL_SHADOW_TABLE = "flow_financial_shadow_scan_comparison_v5"
 STRATEGY_LIFECYCLE_TABLE = "flow_strategy_lifecycle_state_v3"
 GATE15_ASSESSMENT_TABLE = "flow_gate15_promotion_assessment_v2"
+RESEARCH_HORIZON_POLICY_TABLE = "flow_research_horizon_policy_v1"
+RESEARCH_HORIZON_SNAPSHOT_TABLE = "flow_research_horizon_snapshot_v1"
+RESEARCH_HORIZON_OUTCOME_TABLE = "flow_research_horizon_outcome_v1"
+RESEARCH_HORIZON_RANKING_RPC = "flow_research_horizon_rankings_v1"
 
 
 @dataclass(frozen=True)
@@ -16,6 +20,10 @@ class ShadowResearchBundle:
     predictive_scores: pd.DataFrame
     financial_scores: pd.DataFrame
     lifecycle: pd.DataFrame
+    horizon_rankings: pd.DataFrame = field(default_factory=pd.DataFrame)
+    horizon_snapshots: pd.DataFrame = field(default_factory=pd.DataFrame)
+    horizon_outcomes: pd.DataFrame = field(default_factory=pd.DataFrame)
+    horizon_policies: pd.DataFrame = field(default_factory=pd.DataFrame)
     errors: tuple[str, ...] = ()
 
 
@@ -204,6 +212,135 @@ def load_shadow_strategy_lifecycle(store, *, limit: int = 200) -> pd.DataFrame:
     return lifecycle.sort_values(["candidate_type", "candidate_id"], na_position="last").reset_index(drop=True)
 
 
+def load_research_horizon_rankings(store) -> pd.DataFrame:
+    """Load current 5D/20D/60D research priority rankings from the latest PIT close.
+
+    The RPC calculates rankings on demand from the latest canonical market-memory panel,
+    official close, Top-900 universe and PIT financial snapshot. The score is a research
+    priority score, not a calibrated expected-return forecast.
+    """
+    if store is None:
+        return pd.DataFrame()
+    response = store.client.rpc(
+        RESEARCH_HORIZON_RANKING_RPC,
+        {"p_as_of_date": None},
+    ).execute()
+    frame = pd.DataFrame(_rows(response))
+    if frame.empty:
+        return frame
+    frame = _numeric(
+        frame,
+        (
+            "horizon_days",
+            "research_rank",
+            "universe_rank",
+            "close",
+            "traded_value",
+            "foreign_net_volume_pct",
+            "stock_residual_activity_z",
+            "fin_balance_score",
+            "risk_event_20d_count",
+            "capital_action_90d_count",
+            "ihsg_return_5d_pct",
+            "ihsg_return_20d_pct",
+            "top10_value_share_pct",
+            "market_activity_intensity_z",
+            "research_priority_score",
+        ),
+    )
+    frame["research_status"] = "RESEARCH ONLY"
+    return frame.sort_values(["horizon_days", "research_rank", "ticker"], na_position="last").reset_index(drop=True)
+
+
+def load_research_horizon_snapshots(store, *, limit: int = 180) -> pd.DataFrame:
+    """Load compact prospective strategy-state history without large component payloads."""
+    if store is None:
+        return pd.DataFrame()
+    columns = (
+        "strategy_contract,strategy_id,horizon_days,signal_date,universe_snapshot_date,"
+        "market_gate_state,signal_state,ranked_count,eligible_count,market_context,thresholds,"
+        "captured_at,production_influence_enabled"
+    )
+    response = (
+        store.client.table(RESEARCH_HORIZON_SNAPSHOT_TABLE)
+        .select(columns)
+        .eq("production_influence_enabled", False)
+        .order("signal_date", desc=True)
+        .limit(max(3, min(int(limit), 1000)))
+        .execute()
+    )
+    frame = pd.DataFrame(_rows(response))
+    if frame.empty:
+        return frame
+    frame = _numeric(frame, ("horizon_days", "ranked_count", "eligible_count"))
+    frame["research_status"] = "RESEARCH ONLY"
+    return frame.reset_index(drop=True)
+
+
+def load_research_horizon_outcomes(store, *, limit: int = 300) -> pd.DataFrame:
+    """Load clean prospective OOS basket outcomes accumulated by the research scheduler."""
+    if store is None:
+        return pd.DataFrame()
+    columns = (
+        "strategy_contract,strategy_id,horizon_days,signal_date,target_date,maturity_state,"
+        "component_count,valid_component_count,excluded_component_count,coverage_pct,"
+        "mean_return_pct,median_return_pct,win_rate_pct,mean_alpha_vs_ihsg_pct,"
+        "mean_alpha_vs_sector_pct,mean_mfe_pct,mean_mae_pct,evaluated_at,production_influence_enabled"
+    )
+    response = (
+        store.client.table(RESEARCH_HORIZON_OUTCOME_TABLE)
+        .select(columns)
+        .eq("production_influence_enabled", False)
+        .order("signal_date", desc=True)
+        .limit(max(3, min(int(limit), 2000)))
+        .execute()
+    )
+    frame = pd.DataFrame(_rows(response))
+    if frame.empty:
+        return frame
+    frame = _numeric(
+        frame,
+        (
+            "horizon_days",
+            "component_count",
+            "valid_component_count",
+            "excluded_component_count",
+            "coverage_pct",
+            "mean_return_pct",
+            "median_return_pct",
+            "win_rate_pct",
+            "mean_alpha_vs_ihsg_pct",
+            "mean_alpha_vs_sector_pct",
+            "mean_mfe_pct",
+            "mean_mae_pct",
+        ),
+    )
+    frame["research_status"] = "RESEARCH ONLY"
+    return frame.reset_index(drop=True)
+
+
+def load_research_horizon_policies(store) -> pd.DataFrame:
+    """Load frozen threshold contracts for the horizon strategies."""
+    if store is None:
+        return pd.DataFrame()
+    response = (
+        store.client.table(RESEARCH_HORIZON_POLICY_TABLE)
+        .select(
+            "strategy_contract,strategy_id,display_name,horizon_days,description,thresholds,"
+            "policy_state,frozen_at,production_influence_enabled"
+        )
+        .eq("production_influence_enabled", False)
+        .order("horizon_days")
+        .execute()
+    )
+    frame = pd.DataFrame(_rows(response))
+    if frame.empty:
+        return frame
+    frame = _numeric(frame, ("horizon_days",))
+    frame["research_status"] = "RESEARCH ONLY"
+    return frame.reset_index(drop=True)
+
+
 def load_shadow_research_bundle(store, *, limit: int = 200) -> ShadowResearchBundle:
     """Best-effort read bundle; one unavailable research source must not break the page."""
     errors: list[str] = []
@@ -226,9 +363,37 @@ def load_shadow_research_bundle(store, *, limit: int = 200) -> ShadowResearchBun
         lifecycle = pd.DataFrame()
         errors.append(f"strategy lifecycle: {exc}")
 
+    try:
+        horizon_rankings = load_research_horizon_rankings(store)
+    except Exception as exc:
+        horizon_rankings = pd.DataFrame()
+        errors.append(f"horizon rankings: {exc}")
+
+    try:
+        horizon_snapshots = load_research_horizon_snapshots(store)
+    except Exception as exc:
+        horizon_snapshots = pd.DataFrame()
+        errors.append(f"horizon snapshots: {exc}")
+
+    try:
+        horizon_outcomes = load_research_horizon_outcomes(store)
+    except Exception as exc:
+        horizon_outcomes = pd.DataFrame()
+        errors.append(f"horizon outcomes: {exc}")
+
+    try:
+        horizon_policies = load_research_horizon_policies(store)
+    except Exception as exc:
+        horizon_policies = pd.DataFrame()
+        errors.append(f"horizon policies: {exc}")
+
     return ShadowResearchBundle(
         predictive_scores=predictive,
         financial_scores=financial,
         lifecycle=lifecycle,
+        horizon_rankings=horizon_rankings,
+        horizon_snapshots=horizon_snapshots,
+        horizon_outcomes=horizon_outcomes,
+        horizon_policies=horizon_policies,
         errors=tuple(errors),
     )

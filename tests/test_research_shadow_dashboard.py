@@ -213,4 +213,4 @@ def test_research_loader_is_read_only() -> None:
 
 
 def test_research_dashboard_release_version() -> None:
-    assert (ROOT / "VERSION").read_text(encoding="utf-8").strip() == "0.5.1"
+    assert (ROOT / "VERSION").read_text(encoding="utf-8").strip() == "0.5.2"
