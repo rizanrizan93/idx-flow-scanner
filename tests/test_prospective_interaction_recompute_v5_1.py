@@ -1,7 +1,7 @@
 from pathlib import Path
 
 
-MIGRATION = Path("supabase/migrations/20260911072500_prospective_interaction_recompute_v5_1.sql")
+MIGRATION = Path("supabase/migrations/20260911074341_prospective_interaction_recompute_v5_1.sql")
 
 
 def test_interaction_recompute_uses_unnest_equality_join_not_any_array_join():
