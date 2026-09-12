@@ -1,0 +1,2 @@
+select cron.schedule('flow-research-adaptive-router-v2','5 12 * * 1-5','select public.flow_run_research_adaptive_daily_v2();');
+select cron.schedule('flow-research-adaptive-router-retry-v2','35 12 * * 1-5','select public.flow_run_research_adaptive_daily_v2();');
