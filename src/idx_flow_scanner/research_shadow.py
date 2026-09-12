@@ -7,11 +7,13 @@ import pandas as pd
 
 SHADOW_PREDICTIVE_TABLE = "flow_shadow_predictive_score_v1"
 FINANCIAL_SHADOW_TABLE = "flow_financial_shadow_scan_comparison_v5"
+FINANCIAL_SHADOW_CURRENT_TABLE = "flow_financial_shadow_current_v6"
 STRATEGY_LIFECYCLE_TABLE = "flow_strategy_lifecycle_state_v3"
 GATE15_ASSESSMENT_TABLE = "flow_gate15_promotion_assessment_v2"
 RESEARCH_HORIZON_POLICY_TABLE = "flow_research_horizon_policy_v1"
 RESEARCH_HORIZON_SNAPSHOT_TABLE = "flow_research_horizon_snapshot_v1"
 RESEARCH_HORIZON_OUTCOME_TABLE = "flow_research_horizon_outcome_v1"
+RESEARCH_HORIZON_UI_CACHE_TABLE = "flow_research_horizon_ui_cache_v1"
 RESEARCH_HORIZON_RANKING_RPC = "flow_research_horizon_rankings_v1"
 
 
@@ -112,9 +114,50 @@ def load_latest_shadow_predictive_scores(store, *, limit: int = 200) -> pd.DataF
 
 
 def load_latest_financial_shadow_scores(store, *, limit: int = 200) -> pd.DataFrame:
-    """Load the latest financial shadow comparison without production influence."""
+    """Load the latest PIT financial shadow ranking, falling back to legacy comparison rows."""
     if store is None:
         return pd.DataFrame()
+
+    try:
+        current_date = _latest_value(store, FINANCIAL_SHADOW_CURRENT_TABLE, "as_of_date")
+    except Exception:
+        current_date = None
+
+    if current_date is not None:
+        current_columns = (
+            "ticker,as_of_date,sector,financial_state,report_year,report_period,report_period_end,"
+            "published_at,quality_score,growth_score,balance_score,cashflow_score,"
+            "financial_shadow_score,financial_shadow_rank,production_influence_enabled,refreshed_at"
+        )
+        response = (
+            store.client.table(FINANCIAL_SHADOW_CURRENT_TABLE)
+            .select(current_columns)
+            .eq("as_of_date", current_date)
+            .eq("production_influence_enabled", False)
+            .order("financial_shadow_rank")
+            .limit(max(1, min(int(limit), 250)))
+            .execute()
+        )
+        frame = pd.DataFrame(_rows(response))
+        if not frame.empty:
+            frame = _numeric(
+                frame,
+                (
+                    "report_year",
+                    "quality_score",
+                    "growth_score",
+                    "balance_score",
+                    "cashflow_score",
+                    "financial_shadow_score",
+                    "financial_shadow_rank",
+                ),
+            )
+            frame["research_status"] = "RESEARCH ONLY"
+            frame["financial_source"] = "LATEST_PIT_CACHE"
+            return frame.sort_values(
+                ["financial_shadow_rank", "ticker"], na_position="last"
+            ).reset_index(drop=True)
+
     as_of_date = _latest_value(store, FINANCIAL_SHADOW_TABLE, "as_of_date")
     if as_of_date is None:
         return pd.DataFrame()
@@ -150,6 +193,7 @@ def load_latest_financial_shadow_scores(store, *, limit: int = 200) -> pd.DataFr
         ),
     )
     frame["research_status"] = "RESEARCH ONLY"
+    frame["financial_source"] = "LEGACY_COMPARISON"
     return frame.sort_values(["financial_shadow_rank", "ticker"], na_position="last").reset_index(drop=True)
 
 
@@ -213,18 +257,31 @@ def load_shadow_strategy_lifecycle(store, *, limit: int = 200) -> pd.DataFrame:
 
 
 def load_research_horizon_rankings(store) -> pd.DataFrame:
-    """Load current 5D/20D/60D research priority rankings from the latest PIT close.
+    """Load the latest precomputed 5D/20D/60D research rankings for the dashboard.
 
-    The RPC calculates rankings on demand from the latest canonical market-memory panel,
-    official close, Top-900 universe and PIT financial snapshot. The score is a research
-    priority score, not a calibrated expected-return forecast.
+    Heavy PIT computation runs once after close in the research scheduler. The Streamlit
+    page reads this bounded cache instead of recomputing Top-900 plus financial PIT on
+    every page load, preventing PostgREST statement timeouts.
     """
     if store is None:
         return pd.DataFrame()
-    response = store.client.rpc(
-        RESEARCH_HORIZON_RANKING_RPC,
-        {"p_as_of_date": None},
-    ).execute()
+
+    columns = (
+        "strategy_contract,strategy_id,display_name,horizon_days,as_of_date,universe_snapshot_date,"
+        "research_rank,ticker,stock_name,sector,universe_rank,current_tradeable,production_actionable,"
+        "close,traded_value,foreign_net_volume_pct,stock_residual_activity_z,fin_balance_score,"
+        "risk_event_20d_count,capital_action_90d_count,ihsg_return_5d_pct,ihsg_return_20d_pct,"
+        "top10_value_share_pct,market_activity_intensity_z,market_gate_state,signal_state,"
+        "research_priority_score,production_influence_enabled,refreshed_at"
+    )
+    response = (
+        store.client.table(RESEARCH_HORIZON_UI_CACHE_TABLE)
+        .select(columns)
+        .eq("production_influence_enabled", False)
+        .order("horizon_days")
+        .limit(1000)
+        .execute()
+    )
     frame = pd.DataFrame(_rows(response))
     if frame.empty:
         return frame
