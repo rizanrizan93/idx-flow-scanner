@@ -13,6 +13,8 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
+from idx_flow_scanner.research_adaptive import load_adaptive_research_bundle
+from idx_flow_scanner.research_adaptive_ui import render_adaptive_router
 from idx_flow_scanner.research_shadow import load_shadow_research_bundle
 from idx_flow_scanner.storage import SupabaseStore
 from idx_flow_scanner.ui_terminal import (
@@ -158,7 +160,7 @@ def _render_horizon_strategy(
 ) -> None:
     ranking = bundle.horizon_rankings
     if ranking is None or ranking.empty or "strategy_id" not in ranking.columns:
-        st.info("Current horizon ranking belum tersedia dari canonical research RPC.")
+        st.info("Current horizon ranking belum tersedia dari canonical research cache.")
         return
 
     view = ranking[ranking["strategy_id"].astype(str) == strategy_id].copy()
@@ -324,12 +326,12 @@ st.html(
         <div class="idx-version">v{version}</div>
       </div>
       <div class="idx-subtitle">
-        Read-only view of experimental horizon strategies, rankings, financial shadow scoring and Gate-15 lifecycle state.
+        Read-only view of experimental horizon strategies, adaptive routing, rankings, financial shadow scoring and Gate-15 lifecycle state.
         Production ranking remains isolated.
       </div>
       <div class="idx-chip-row">
         <span class="idx-chip idx-chip-warning">RESEARCH ONLY</span>
-        <span class="idx-chip">5D / 20D / 60D</span>
+        <span class="idx-chip">ADAPTIVE / 5D / 20D / 60D</span>
         <span class="idx-chip">FORWARD OOS</span>
         <span class="idx-chip idx-chip-positive">PRODUCTION ISOLATED</span>
       </div>
@@ -359,6 +361,7 @@ except Exception as exc:
     st.stop()
 
 bundle = load_shadow_research_bundle(store, limit=250)
+adaptive = load_adaptive_research_bundle(store)
 predictive = bundle.predictive_scores
 financial = bundle.financial_scores
 lifecycle = bundle.lifecycle
@@ -372,6 +375,9 @@ for frame in (
     bundle.horizon_snapshots,
     bundle.horizon_outcomes,
     bundle.horizon_policies,
+    adaptive.policies,
+    adaptive.snapshots,
+    adaptive.outcomes,
 ):
     if frame is not None and not frame.empty and "production_influence_enabled" in frame.columns:
         all_influence_off = all_influence_off and not frame["production_influence_enabled"].fillna(False).astype(bool).any()
@@ -381,19 +387,30 @@ active_horizon_rows = 0
 if bundle.horizon_rankings is not None and not bundle.horizon_rankings.empty and "signal_state" in bundle.horizon_rankings.columns:
     active_horizon_rows = int((bundle.horizon_rankings["signal_state"].astype(str) == "ACTIVE").sum())
 
+adaptive_state = "—"
+adaptive_detail = "adaptive snapshot unavailable"
+if not adaptive.snapshots.empty:
+    latest_adaptive = adaptive.snapshots.sort_values("signal_date", ascending=False).iloc[0]
+    adaptive_state = str(latest_adaptive.get("router_state", "—"))
+    adaptive_detail = (
+        f"{float(latest_adaptive.get('active_weight_pct', 0) or 0):.0f}% active · "
+        f"{float(latest_adaptive.get('cash_weight_pct', 0) or 0):.0f}% cash"
+    )
+
 render_health_cards(
     [
         ("Horizon Ranking", current_horizon_date, f"{active_horizon_rows} active research candidates"),
-        ("Research Strategies", len(lifecycle), "lifecycle candidates still outside production"),
+        ("Adaptive Router", adaptive_state, adaptive_detail),
         ("Shadow Signal", _latest(predictive, "signal_date"), f"{len(predictive)} ranking rows loaded"),
         ("Financial Shadow", _latest(financial, "as_of_date"), f"{len(financial)} comparison rows loaded"),
         ("Production Influence", "OFF" if all_influence_off else "CHECK", "research lane is isolated from execution scoring"),
     ]
 )
 
-if bundle.errors:
-    with st.expander(f"Research data warnings ({len(bundle.errors)})", expanded=False):
-        for message in bundle.errors:
+research_errors = tuple(bundle.errors) + tuple(adaptive.errors)
+if research_errors:
+    with st.expander(f"Research data warnings ({len(research_errors)})", expanded=False):
+        for message in research_errors:
             st.caption(message)
 
 horizon_tab, shadow_tab, financial_tab, lifecycle_tab = st.tabs(
@@ -408,11 +425,17 @@ horizon_tab, shadow_tab, financial_tab, lifecycle_tab = st.tabs(
 with horizon_tab:
     render_section(
         "Research Strategy Horizons",
-        "Frozen 5D, 20D and 60D research contracts calculated from the latest canonical close and evaluated prospectively.",
+        "Frozen Adaptive, 5D, 20D and 60D research contracts calculated from canonical close data and evaluated prospectively.",
     )
-    five_tab, twenty_tab, sixty_tab = st.tabs(
-        ["5D · BRFE-5", "20D · BPL-20", "60D · QBA-60"]
+    adaptive_tab, five_tab, twenty_tab, sixty_tab = st.tabs(
+        ["Adaptive · 40/40/20", "5D · BRFE-5", "20D · BPL-20", "60D · QBA-60"]
     )
+    with adaptive_tab:
+        render_adaptive_router(
+            adaptive,
+            render_section=render_section,
+            number_column=_number,
+        )
     with five_tab:
         _render_horizon_strategy(
             "BRFE_5",
