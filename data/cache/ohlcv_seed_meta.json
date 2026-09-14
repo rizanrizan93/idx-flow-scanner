@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-11T16:44:56.245885+00:00",
+  "generated_at": "2026-09-14T18:12:12.166985+00:00",
   "latest_trade_date": "2026-09-11",
   "minimum_bars": 80,
   "period": "1y",
@@ -44,8 +44,8 @@
   "sector_enrichment": {
     "coverage_pct": 100.0,
     "known": 700,
-    "requests": 2,
-    "resolved": 2,
+    "requests": 6,
+    "resolved": 6,
     "source": "STOCKANALYSIS_PROFILE_FALLBACK_ONLY_FOR_UNKNOWN",
     "status": "UPDATED",
     "unknown": 0
