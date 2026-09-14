@@ -6,7 +6,7 @@
     },
     "corporate_action_events": {
       "semantics": "EVENT_DRIVEN_MARKET_WIDE_FEED_NOT_EXPECTED_FOR_EVERY_TICKER",
-      "tickers_with_events": 95
+      "tickers_with_events": 94
     },
     "foreign_flow": {
       "pct": 57.14,
@@ -23,12 +23,12 @@
       "tickers": 398
     },
     "ohlcv": {
-      "pct": 98.57,
-      "tickers": 690
+      "pct": 98.0,
+      "tickers": 686
     },
     "ownership": {
-      "pct": 98.71,
-      "tickers": 691
+      "pct": 97.86,
+      "tickers": 685
     },
     "sector": {
       "pct": 100.0,
@@ -39,7 +39,7 @@
       "tickers": 400
     }
   },
-  "generated_at": "2026-09-11T16:46:34.145120+00:00",
+  "generated_at": "2026-09-14T18:13:43.634544+00:00",
   "missing_core_sample": [
     "AADI",
     "AALI",
@@ -74,6 +74,7 @@
     "BAJA",
     "BANK",
     "BAPA",
+    "BAYU",
     "BBCA",
     "BBHI",
     "BBKP",
@@ -106,6 +107,7 @@
     "BRMS",
     "BRPT",
     "BSDE",
+    "BSIM",
     "BTEK",
     "BTPS",
     "BUKA",
@@ -116,11 +118,9 @@
     "CASS",
     "CBDK",
     "CBRE",
+    "CBUT",
     "CDIA",
-    "CENT",
-    "CFIN",
-    "CMNT",
-    "CMRY"
+    "CENT"
   ],
   "missing_full_sample": [
     "AADI",
@@ -156,6 +156,7 @@
     "BAJA",
     "BANK",
     "BAPA",
+    "BAYU",
     "BBCA",
     "BBHI",
     "BBKP",
@@ -188,6 +189,7 @@
     "BRMS",
     "BRPT",
     "BSDE",
+    "BSIM",
     "BTEK",
     "BTPS",
     "BUKA",
@@ -198,11 +200,9 @@
     "CASS",
     "CBDK",
     "CBRE",
+    "CBUT",
     "CDIA",
-    "CENT",
-    "CFIN",
-    "CMNT",
-    "CMRY"
+    "CENT"
   ],
   "provider_status": {
     "capital_actions": "QUOTA_EXHAUSTED: Zapi rate/monthly quota exhausted",
