@@ -1,41 +1,41 @@
 {
-  "generated_at": "2026-09-15T17:17:38.558333+00:00",
-  "latest_trade_date": "2026-09-14",
+  "generated_at": "2026-09-16T17:19:45.767484+00:00",
+  "latest_trade_date": "2026-09-15",
   "minimum_bars": 80,
   "period": "1y",
   "recent_mirror_bars_per_ticker": 10,
   "recent_mirror_rows": 6920,
   "rejected": [
     {
-      "bars": 1,
+      "bars": 0,
       "ticker": "SCPI"
     },
     {
-      "bars": 20,
+      "bars": 0,
       "ticker": "META"
     },
     {
-      "bars": 45,
+      "bars": 46,
       "ticker": "RANS"
     },
     {
-      "bars": 47,
+      "bars": 48,
       "ticker": "BACH"
     },
     {
-      "bars": 48,
+      "bars": 49,
       "ticker": "JECX"
     },
     {
-      "bars": 46,
+      "bars": 47,
       "ticker": "PRDL"
     },
     {
-      "bars": 48,
+      "bars": 49,
       "ticker": "JELI"
     },
     {
-      "bars": 47,
+      "bars": 48,
       "ticker": "EMMI"
     }
   ],
