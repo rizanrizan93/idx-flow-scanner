@@ -23,8 +23,8 @@
       "tickers": 398
     },
     "ohlcv": {
-      "pct": 98.43,
-      "tickers": 689
+      "pct": 98.57,
+      "tickers": 690
     },
     "ownership": {
       "pct": 97.86,
@@ -39,7 +39,7 @@
       "tickers": 400
     }
   },
-  "generated_at": "2026-09-15T17:21:11.389990+00:00",
+  "generated_at": "2026-09-16T17:23:20.836630+00:00",
   "missing_core_sample": [
     "AADI",
     "AALI",
@@ -54,6 +54,7 @@
     "AGRS",
     "AHAP",
     "AKRA",
+    "AKSI",
     "ALII",
     "AMMN",
     "AMRT",
@@ -74,7 +75,6 @@
     "BAJA",
     "BANK",
     "BAPA",
-    "BAYU",
     "BBCA",
     "BBHI",
     "BBKP",
@@ -136,6 +136,7 @@
     "AGRS",
     "AHAP",
     "AKRA",
+    "AKSI",
     "ALII",
     "AMMN",
     "AMRT",
@@ -156,7 +157,6 @@
     "BAJA",
     "BANK",
     "BAPA",
-    "BAYU",
     "BBCA",
     "BBHI",
     "BBKP",
