@@ -1,29 +1,29 @@
 {
   "announcement_rows": 10,
-  "captured_at": "2026-09-16T02:46:54.340035+07:00",
+  "captured_at": "2026-09-16T08:31:41.183202+07:00",
   "download_smoke": [
     {
-      "announcement_id": "BLOCKIDX-e4fa3e95e475c325f2b7c90826f8e286",
+      "announcement_id": "BLOCKIDX-dc3d3d12914496c2865f7a77e2b96198",
       "binary_persisted": false,
-      "bytes": 5278,
+      "bytes": 8328,
       "content_type": "application/pdf",
-      "sha256": "67827f0c52f7d1cc5d71dd2ac3d8f5e2e2103cc760e230566124fc6a9b85ec16",
-      "ticker": "XDIF",
-      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/b9885f84ab_d976ef986a.pdf"
+      "sha256": "30b43326da4e796fc4984b4443fd593ad3ba411221918c98a521f0081804153a",
+      "ticker": "KLBF",
+      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/f0273d2c81_4c9fa08b78.pdf"
     },
     {
-      "announcement_id": "BLOCKIDX-e4fa3e95e475c325f2b7c90826f8e286",
+      "announcement_id": "BLOCKIDX-dc3d3d12914496c2865f7a77e2b96198",
       "binary_persisted": false,
-      "bytes": 14586,
-      "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "sha256": "a990cfb3ac58343625f9e42007ff4e38f6c5552ec1caee6d5607fe902be6b6b4",
-      "ticker": "XDIF",
-      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_INAV/202609/ef25a08019_dbeaab4ce1.xlsx"
+      "bytes": 1084888,
+      "content_type": "application/pdf",
+      "sha256": "ece3a05a213cb7ac4265fe92d9df232256d01753c3793d4980d8998fddd66c50",
+      "ticker": "KLBF",
+      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/2880fe6de6_7212d27ceb.pdf"
     }
   ],
   "financial_filing_rows": 0,
   "no_fabricated_evidence": true,
-  "ownership_rows_on_current_page": 3,
+  "ownership_rows_on_current_page": 1,
   "point_in_time_eligible_rows": 10,
   "production_scoring_changed": false,
   "source_page": "https://block.idx.id/id/berita/pengumuman"

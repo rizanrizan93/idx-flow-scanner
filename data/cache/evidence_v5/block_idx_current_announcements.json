@@ -1,6 +1,90 @@
 {
   "rows": [
     {
+      "announcement_id": "BLOCKIDX-dc3d3d12914496c2865f7a77e2b96198",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "f0273d2c81_4c9fa08b78.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/f0273d2c81_4c9fa08b78.pdf"
+        },
+        {
+          "file_name": "20260915_KLBF_Laporan Informasi dan Fakta Material_32148780_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/2880fe6de6_7212d27ceb.pdf"
+        }
+      ],
+      "content_hash": "2abe1924b599296dcd2d440d26090d2c06b688badc618f6293068ab14b8694ab",
+      "disclosure_type": "OTHER_DISCLOSURE",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/f0273d2c81_4c9fa08b78.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-09-16T08:11:14+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "KLBF",
+      "title": "Rencana Pembelian Kembali Saham dalam Kondisi Pasar yang Berfluktuasi secara Signifikan [ KLBF ]"
+    },
+    {
+      "announcement_id": "BLOCKIDX-d047368d2d53a653b80a4c420c02791a",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "513fb75881_6665ed3c19.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/513fb75881_6665ed3c19.pdf"
+        },
+        {
+          "file_name": "20260915_MGNA_Pencatatan Saham Tambahan dari Konversi_32148554_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/0a9c0f7980_f7953e659e.pdf"
+        }
+      ],
+      "content_hash": "4a3db91f3f2171e0539876a431c42640f39da238f95b063b2e5b327a42a35cf1",
+      "disclosure_type": "OTHER_DISCLOSURE",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/513fb75881_6665ed3c19.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-09-16T06:23:21+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "MGNA",
+      "title": "Pencatatan Saham [ MGNA ]"
+    },
+    {
+      "announcement_id": "BLOCKIDX-1b077eb597938736892fcc7aef46b451",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "7a76cd85bb_fa3fe05f65.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/7a76cd85bb_fa3fe05f65.pdf"
+        },
+        {
+          "file_name": "20260915_XIHD_Pencatatan Awal/Tambahan ETF_32148560_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/6f5d9fe91b_870290d3e5.pdf"
+        }
+      ],
+      "content_hash": "a2da84ec7ab6973ecb6a3db286b5e68133755d8ee5da763a6488cbfb16e820bf",
+      "disclosure_type": "OTHER_DISCLOSURE",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/7a76cd85bb_fa3fe05f65.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-09-16T06:22:43+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "XIHD",
+      "title": "Pengumuman Bursa Pencatatan Tambahan ETF [ XIHD ]"
+    },
+    {
       "announcement_id": "BLOCKIDX-e4fa3e95e475c325f2b7c90826f8e286",
       "announcement_no": null,
       "attachment_urls": [
@@ -235,90 +319,6 @@
       "source_verified": true,
       "ticker": "EPAC",
       "title": "Penjelasan atas Permintaan Penjelasan Bursa [ EPAC ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-69faa42ad4d1fb00bb74b94ec157b1b3",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "0bb9a439be_29448f9ac5.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/0bb9a439be_29448f9ac5.pdf"
-        },
-        {
-          "file_name": "20260915_DPUM_Laporan Informasi dan Fakta Material_32148573_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/5f67d79980_1790f11ff5.pdf"
-        }
-      ],
-      "content_hash": "c453ec9bfef673daf62cfcec797b8452a2897342f261b13f3b446427905448bc",
-      "disclosure_type": "OWNERSHIP",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/0bb9a439be_29448f9ac5.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-15T20:52:55+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "DPUM",
-      "title": "Informasi mengenai profil, dukungan, dan rencana strategis PT Rama Indonesia sebagai pemegang saham pengendali baru Perseroan [ DPUM ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-3e9f848e90a9a77b89306f5cd1b754b4",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "3dabc6ef9a_e9e12656f0.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/3dabc6ef9a_e9e12656f0.pdf"
-        },
-        {
-          "file_name": "20260915_RAJA_Public Expose_32148778_lamp2.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/865c129d6e_1ff2444c95.pdf"
-        },
-        {
-          "file_name": "20260915_RAJA_Public Expose_32148778_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/99e4b42359_766225b4fa.pdf"
-        }
-      ],
-      "content_hash": "5d0d5bcb0be39dd9e862995ba6af7df08416b8d51e5e0ae25508713a5a939d01",
-      "disclosure_type": "PUBLIC_EXPOSE",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/3dabc6ef9a_e9e12656f0.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-15T20:24:25+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "RAJA",
-      "title": "Rencana Penyelenggaraan Public Expose - Tahunan (KOREKSI) [ RAJA ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-d55267cff33833dca877a213b9e86ab7",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "LK-15092026-7764-00.pdf-0.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_KSEI/LK-15092026-7764-00.pdf-0.pdf"
-        }
-      ],
-      "content_hash": "a2ad783543bafa6ebd0943abbacd5fa46e4798d2044df466b505f825e88a3349",
-      "disclosure_type": "OWNERSHIP",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_KSEI/LK-15092026-7764-00.pdf-0.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-15T20:21:44+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "NASI",
-      "title": "LAPORAN KEPEMILIKAN ATAU SETIAP PERUBAHAN KEPEMILIKAN SAHAM PERUSAHAAN TERBUKA [ NASI ]"
     }
   ],
   "schema_version": "BLOCK_IDX_DISCLOSURE_CACHE_V5_1",
