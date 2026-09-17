@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-16T17:19:45.767484+00:00",
-  "latest_trade_date": "2026-09-15",
+  "generated_at": "2026-09-17T17:17:00.008454+00:00",
+  "latest_trade_date": "2026-09-16",
   "minimum_bars": 80,
   "period": "1y",
   "recent_mirror_bars_per_ticker": 10,
@@ -15,27 +15,27 @@
       "ticker": "META"
     },
     {
-      "bars": 46,
+      "bars": 47,
       "ticker": "RANS"
     },
     {
-      "bars": 48,
+      "bars": 49,
       "ticker": "BACH"
     },
     {
-      "bars": 49,
+      "bars": 50,
       "ticker": "JECX"
     },
     {
-      "bars": 47,
+      "bars": 48,
       "ticker": "PRDL"
     },
     {
-      "bars": 49,
+      "bars": 50,
       "ticker": "JELI"
     },
     {
-      "bars": 48,
+      "bars": 49,
       "ticker": "EMMI"
     }
   ],
@@ -44,10 +44,10 @@
   "sector_enrichment": {
     "coverage_pct": 100.0,
     "known": 700,
-    "requests": 0,
-    "resolved": 0,
+    "requests": 2,
+    "resolved": 2,
     "source": "STOCKANALYSIS_PROFILE_FALLBACK_ONLY_FOR_UNKNOWN",
-    "status": "PRESERVED",
+    "status": "UPDATED",
     "unknown": 0
   },
   "source": "Yahoo Finance public chart/download endpoints",
