@@ -1,6 +1,90 @@
 {
   "rows": [
     {
+      "announcement_id": "BLOCKIDX-48343a101344aec91f743f81c2cd2181",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "39d018120b_8d8c29372e.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/39d018120b_8d8c29372e.pdf"
+        },
+        {
+          "file_name": "20260916_YOII_Tanggapan atas Permintaan Penjelasan Bursa_32149133_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/e7e4a6cac5_f52f60957c.pdf"
+        }
+      ],
+      "content_hash": "d541971c1cbd3742a9d6c5f497a30b20438ea42520a4f8d9a26b8b3a1a80436d",
+      "disclosure_type": "VOLATILITY_EXPLANATION",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/39d018120b_8d8c29372e.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-09-17T08:08:56+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "YOII",
+      "title": "Penjelasan atas Volatilitas Transaksi [ YOII ]"
+    },
+    {
+      "announcement_id": "BLOCKIDX-4c5eafd736851fc4f710940efb9f743a",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "0d485eaee9_39cf7da8de.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/0d485eaee9_39cf7da8de.pdf"
+        },
+        {
+          "file_name": "20260917_BBRM_Tanggapan atas Permintaan Penjelasan Bursa_32149247_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/ad65e38fd3_a73ad7e9c3.pdf"
+        }
+      ],
+      "content_hash": "0b0abc26905a46da580928c1928e4b35c5e58f9fcae275afa333765875c69db7",
+      "disclosure_type": "VOLATILITY_EXPLANATION",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/0d485eaee9_39cf7da8de.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-09-17T06:35:50+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "BBRM",
+      "title": "Penjelasan atas Permintaan Penjelasan Bursa [ BBRM ]"
+    },
+    {
+      "announcement_id": "BLOCKIDX-760f59b3c07d7659af5740865dfa8b0d",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "500f67e172_212430a912.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/500f67e172_212430a912.pdf"
+        },
+        {
+          "file_name": "20260917_BBRM_Tanggapan atas Permintaan Penjelasan Bursa_32149246_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/63637f5b31_d61c7339e7.pdf"
+        }
+      ],
+      "content_hash": "6026fa848dd98034abef5cef44a0adec6f4b9da3bbfb8538c1138e6daa320ab0",
+      "disclosure_type": "VOLATILITY_EXPLANATION",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/500f67e172_212430a912.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-09-17T06:24:10+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "BBRM",
+      "title": "Penjelasan atas Volatilitas Transaksi [ BBRM ]"
+    },
+    {
       "announcement_id": "BLOCKIDX-552e3cea831cea0c67d5e7d268819836",
       "announcement_no": null,
       "attachment_urls": [
@@ -215,90 +299,6 @@
       "source_verified": true,
       "ticker": "PGEO",
       "title": "Pencatatan Saham [ PGEO ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-1303f1f48a278007afb02c51b2af99e2",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "9a623adef2_79cdc03144.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/9a623adef2_79cdc03144.pdf"
-        },
-        {
-          "file_name": "20260916_CYBR_Pencatatan Saham Tambahan dari Konversi_32148896_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/3a1d39b4ce_d671d14932.pdf"
-        }
-      ],
-      "content_hash": "b19392f696888af26864b6b1874aa25f20c9b4f376a8d08d86641cf001d099a8",
-      "disclosure_type": "OTHER_DISCLOSURE",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/9a623adef2_79cdc03144.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-16T23:49:43+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "CYBR",
-      "title": "Pencatatan Saham [ CYBR ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-b323e83b6e73ab266a748bb578343f63",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "dab519fef5_536b258d54.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/dab519fef5_536b258d54.pdf"
-        },
-        {
-          "file_name": "20260916_ISAP_Pencatatan Saham Tambahan dari Konversi_32148868_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/c8b85795a4_158b05bc22.pdf"
-        }
-      ],
-      "content_hash": "7e084001a54d55a0a1e1873c60c6c06df1d91f6883076051494d35c7983e8188",
-      "disclosure_type": "OTHER_DISCLOSURE",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/dab519fef5_536b258d54.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-16T23:49:09+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "ISAP",
-      "title": "Pencatatan Saham [ ISAP ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-24bb92db1fdfd0750532cdd91eba409b",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "8010ba20df_693d6f4568.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/8010ba20df_693d6f4568.pdf"
-        },
-        {
-          "file_name": "20260916_XPDV_Pencatatan Awal/Tambahan ETF_32148903_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/b1cfd9e322_2a7991493a.pdf"
-        }
-      ],
-      "content_hash": "cc53c81bd2e960a3739c8ef3577bc9ee69947a5ce4225b429fe7a70bba5db575",
-      "disclosure_type": "OTHER_DISCLOSURE",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/8010ba20df_693d6f4568.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-16T23:48:36+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "XPDV",
-      "title": "Pengumuman Bursa Pencatatan Tambahan ETF [ XPDV ]"
     }
   ],
   "schema_version": "BLOCK_IDX_DISCLOSURE_CACHE_V5_1",

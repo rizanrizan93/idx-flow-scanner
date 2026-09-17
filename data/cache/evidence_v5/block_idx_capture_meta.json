@@ -1,24 +1,24 @@
 {
   "announcement_rows": 10,
-  "captured_at": "2026-09-17T02:38:52.440975+07:00",
+  "captured_at": "2026-09-17T08:35:57.945457+07:00",
   "download_smoke": [
     {
-      "announcement_id": "BLOCKIDX-552e3cea831cea0c67d5e7d268819836",
+      "announcement_id": "BLOCKIDX-48343a101344aec91f743f81c2cd2181",
       "binary_persisted": false,
-      "bytes": 5421,
+      "bytes": 9698,
       "content_type": "application/pdf",
-      "sha256": "c3123c1f6864642d6238945610dda81fb952d0833273fc8882f0afd1a42e73b6",
-      "ticker": "CSIS",
-      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/bb1146fbb6_a40032f00e.pdf"
+      "sha256": "fbafc0b615e2615228b5c03b62ec73a69e7ae2a9e27b8172f2e004f793d5eb2c",
+      "ticker": "YOII",
+      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/39d018120b_8d8c29372e.pdf"
     },
     {
-      "announcement_id": "BLOCKIDX-552e3cea831cea0c67d5e7d268819836",
+      "announcement_id": "BLOCKIDX-48343a101344aec91f743f81c2cd2181",
       "binary_persisted": false,
-      "bytes": 336605,
+      "bytes": 643413,
       "content_type": "application/pdf",
-      "sha256": "8bb34a461ee2f46afb42a5890006ccf348ec535a1b766e6487ddcff53203f0f0",
-      "ticker": "CSIS",
-      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/44f99f7276_4fe01587ee.pdf"
+      "sha256": "cac2bef52df4eea6ebc5be48069d3863d68dc4866eba16731941b563b36e0633",
+      "ticker": "YOII",
+      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/e7e4a6cac5_f52f60957c.pdf"
     }
   ],
   "financial_filing_rows": 0,
