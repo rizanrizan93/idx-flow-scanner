@@ -6,7 +6,7 @@
     },
     "corporate_action_events": {
       "semantics": "EVENT_DRIVEN_MARKET_WIDE_FEED_NOT_EXPECTED_FOR_EVERY_TICKER",
-      "tickers_with_events": 94
+      "tickers_with_events": 95
     },
     "foreign_flow": {
       "pct": 57.14,
@@ -23,8 +23,8 @@
       "tickers": 398
     },
     "ohlcv": {
-      "pct": 98.57,
-      "tickers": 690
+      "pct": 98.43,
+      "tickers": 689
     },
     "ownership": {
       "pct": 97.71,
@@ -39,7 +39,7 @@
       "tickers": 400
     }
   },
-  "generated_at": "2026-09-17T17:18:34.826482+00:00",
+  "generated_at": "2026-09-18T16:43:58.952071+00:00",
   "missing_core_sample": [
     "AADI",
     "AALI",
@@ -114,13 +114,13 @@
     "BUVA",
     "BYAN",
     "CARS",
-    "CASS",
     "CBDK",
     "CBRE",
     "CBUT",
     "CDIA",
     "CENT",
-    "CFIN"
+    "CFIN",
+    "CMNT"
   ],
   "missing_full_sample": [
     "AADI",
@@ -196,13 +196,13 @@
     "BUVA",
     "BYAN",
     "CARS",
-    "CASS",
     "CBDK",
     "CBRE",
     "CBUT",
     "CDIA",
     "CENT",
-    "CFIN"
+    "CFIN",
+    "CMNT"
   ],
   "provider_status": {
     "capital_actions": "QUOTA_EXHAUSTED: Zapi rate/monthly quota exhausted",
