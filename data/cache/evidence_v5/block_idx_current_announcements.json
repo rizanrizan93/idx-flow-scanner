@@ -1,6 +1,39 @@
 {
   "rows": [
     {
+      "announcement_id": "BLOCKIDX-16554d3bbb1e134978efaab589be6589",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "abd0c71411_8214a9a26c.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/abd0c71411_8214a9a26c.pdf"
+        },
+        {
+          "file_name": "20260917_IFII_Jadwal Aksi Korporasi (Khusus Penyampaian Dividen Interim)_32149394_lamp2.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/062a2b6768_102858f275.pdf"
+        },
+        {
+          "file_name": "20260917_IFII_Jadwal Aksi Korporasi (Khusus Penyampaian Dividen Interim)_32149394_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/2415da7949_eefdeb72fe.pdf"
+        }
+      ],
+      "content_hash": "119315695be5693986cfe55fcaaac61512fcc3ec21345d226e948c11689af7e7",
+      "disclosure_type": "CAPITAL_ACTION",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/abd0c71411_8214a9a26c.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-09-18T08:15:05+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "IFII",
+      "title": "Jadwal Dividen Tunai Interim [ IFII ]"
+    },
+    {
       "announcement_id": "BLOCKIDX-8e8e8cfc6eb0a88de085ee8264397a5e",
       "announcement_no": null,
       "attachment_urls": [
@@ -281,39 +314,6 @@
       "source_verified": true,
       "ticker": "MGLV",
       "title": "Laporan Hasil Public Expose - Insidentil [ MGLV ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-08e60a8e952f3a575f8f26e082b525d8",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "d532314bfb_8323bd2b8a.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/d532314bfb_8323bd2b8a.pdf"
-        },
-        {
-          "file_name": "20260917_YELO_Pengumuman RUPS_32149555_lamp2.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/14800e60a1_3c59521000.pdf"
-        },
-        {
-          "file_name": "20260917_YELO_Pengumuman RUPS_32149555_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/23b9d85c27_57c91e406f.pdf"
-        }
-      ],
-      "content_hash": "432b85aa5ca688e62b19689d50b05998aed62ad3af5589d27c0eef6a92d3593d",
-      "disclosure_type": "OWNERSHIP",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/d532314bfb_8323bd2b8a.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-17T20:53:35+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "YELO",
-      "title": "Pemberitahuan Rencana Rapat Umum Pemegang Saham Luar Biasa [ YELO ]"
     }
   ],
   "schema_version": "BLOCK_IDX_DISCLOSURE_CACHE_V5_1",
