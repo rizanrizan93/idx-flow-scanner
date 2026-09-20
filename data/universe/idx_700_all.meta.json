@@ -1,7 +1,7 @@
 {
   "actual_universe_count": 700,
   "fallback_sector_policy": "UNKNOWN_IF_UNVERIFIED_NEVER_FABRICATED",
-  "generated_at": "2026-09-13T14:55:52.517185+00:00",
+  "generated_at": "2026-09-20T14:43:07.738304+00:00",
   "legacy_anchor_count": 400,
   "liquidity_addition_count": 300,
   "liquidity_source_contract": "ZAPI_STOCK_SUMMARY_IF_AVAILABLE_YAHOO_OHLCV_FALLBACK",
@@ -14,15 +14,15 @@
   "sector_enrichment": {
     "coverage_pct": 100.0,
     "known": 700,
-    "requests": 0,
-    "resolved": 0,
+    "requests": 1,
+    "resolved": 1,
     "source": "STOCKANALYSIS_PROFILE_FALLBACK_ONLY_FOR_UNKNOWN",
-    "status": "PRESERVED",
+    "status": "UPDATED",
     "unknown": 0
   },
   "sector_enrichment_contract": "CARRY_FORWARD_VERIFIED_THEN_STOCKANALYSIS_ONLY_FOR_UNKNOWN",
   "selection_policy": "LEGACY_400_PLUS_CURRENT_ACTIVE_IDX_RANKED_BY_TRADED_VALUE_FREQUENCY_VOLUME_AND_MARKET_RANK",
-  "snapshot_date": "2026-09-13",
+  "snapshot_date": "2026-09-20",
   "target_universe_count": 700,
   "unique_tickers": 700,
   "zapi_quota_required_for_universe": false
