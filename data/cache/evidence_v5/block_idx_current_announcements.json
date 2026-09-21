@@ -1,6 +1,210 @@
 {
   "rows": [
     {
+      "announcement_id": "BLOCKIDX-f3c2208b24150d98205e4220b94af5f9",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "LK-20092026-3558-00.pdf-0.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_KSEI/LK-20092026-3558-00.pdf-0.pdf"
+        }
+      ],
+      "content_hash": "8320597bde4fc26ab88f550457de69fc1c5f15ea929bdffbed6ae3ab2e9e7863",
+      "disclosure_type": "OWNERSHIP",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_KSEI/LK-20092026-3558-00.pdf-0.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-09-20T23:18:47+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "WINR",
+      "title": "LAPORAN KEPEMILIKAN ATAU SETIAP PERUBAHAN KEPEMILIKAN SAHAM PERUSAHAAN TERBUKA [ WINR ]"
+    },
+    {
+      "announcement_id": "BLOCKIDX-fdf907850c18eb0a12aac573bf6fe8b2",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "14827d2511_52f9d5f5e9.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/14827d2511_52f9d5f5e9.pdf"
+        },
+        {
+          "file_name": "20260920_ADHI_Laporan Informasi dan Fakta Material_32149911_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/558ff5fcb3_4419fd2498.pdf"
+        }
+      ],
+      "content_hash": "c9c314f306a9722621c77458c5877720eb1ce942bfcfe6147f303dcd27d88b51",
+      "disclosure_type": "OTHER_DISCLOSURE",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/14827d2511_52f9d5f5e9.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-09-20T18:51:02+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "ADHI",
+      "title": "Press Release \"ADHI Karya Masuki Tahap Implementasi Restrukturisasi melalui Penandatanganan Master Restructuring Agreement\" [ ADHI ]"
+    },
+    {
+      "announcement_id": "BLOCKIDX-e5b24a8b0c9eb09e05ba7dcf56a05e20",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "7a1159ea22_3321df6211.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/7a1159ea22_3321df6211.pdf"
+        },
+        {
+          "file_name": "20260920_ADHI_Laporan Informasi dan Fakta Material_32149909_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/5f55aec31e_e42f8c9a88.pdf"
+        }
+      ],
+      "content_hash": "542303cf347e7362cbb432d9421ff151aa8b5301250ac007b0c9c3b4b84927da",
+      "disclosure_type": "OTHER_DISCLOSURE",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/7a1159ea22_3321df6211.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-09-20T18:42:48+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "ADHI",
+      "title": "Laporan Informasi atau Fakta Material Penandatanganan Master Restructuring Agreement (MRA) untuk Tujuan Restrukturisasi [ ADHI ]"
+    },
+    {
+      "announcement_id": "BLOCKIDX-55ca13578d15e488fd139230a8707831",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "LK-20092026-5560-00.pdf-0.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_KSEI/LK-20092026-5560-00.pdf-0.pdf"
+        }
+      ],
+      "content_hash": "2ed63ed85ab8b78d32440b3120ac79921108f1a07eabb7a974209cf6afb08c3d",
+      "disclosure_type": "OWNERSHIP",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_KSEI/LK-20092026-5560-00.pdf-0.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-09-20T09:34:45+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "BMRI",
+      "title": "LAPORAN KEPEMILIKAN ATAU SETIAP PERUBAHAN KEPEMILIKAN SAHAM PERUSAHAAN TERBUKA [ BMRI ]"
+    },
+    {
+      "announcement_id": "BLOCKIDX-8d1c6b81351363015688f8cbe2ccb2a3",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "LK-20092026-5384-00.pdf-0.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_KSEI/LK-20092026-5384-00.pdf-0.pdf"
+        }
+      ],
+      "content_hash": "13492e8a82dde2b16c6965c13f2fe17b1be3bdc96da57d708c6046d4c5d36ee2",
+      "disclosure_type": "OWNERSHIP",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_KSEI/LK-20092026-5384-00.pdf-0.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-09-20T08:07:55+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "BMBL",
+      "title": "LAPORAN KEPEMILIKAN ATAU SETIAP PERUBAHAN KEPEMILIKAN SAHAM PERUSAHAAN TERBUKA [ BMBL ]"
+    },
+    {
+      "announcement_id": "BLOCKIDX-d0be50548c369a54066c64beff9dcc64",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "3cfe8014c6_aeafdcc36f.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/3cfe8014c6_aeafdcc36f.pdf"
+        },
+        {
+          "file_name": "20260919_MKNT_Perubahan Pengurus_32149906_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/36246aff58_5ad283dd12.pdf"
+        }
+      ],
+      "content_hash": "f2156f4dc8907d6e238140b4b9218e58232a84e267275e555b6732d09e285361",
+      "disclosure_type": "OTHER_DISCLOSURE",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/3cfe8014c6_aeafdcc36f.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-09-19T13:48:04+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "MKNT",
+      "title": "Perubahan Pengurus [ MKNT ]"
+    },
+    {
+      "announcement_id": "BLOCKIDX-c2f6acd07f595a822fa540508d8d60c3",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "LK-19092026-7762-00.pdf-0.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_KSEI/LK-19092026-7762-00.pdf-0.pdf"
+        }
+      ],
+      "content_hash": "45ab1444082eafa661c4d698bdc8dc5c870ad74b841347cade39fa7d48a3c547",
+      "disclosure_type": "OWNERSHIP",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_KSEI/LK-19092026-7762-00.pdf-0.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-09-19T13:01:15+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "WINR",
+      "title": "LAPORAN KEPEMILIKAN ATAU SETIAP PERUBAHAN KEPEMILIKAN SAHAM PERUSAHAAN TERBUKA [ WINR ]"
+    },
+    {
+      "announcement_id": "BLOCKIDX-bd741ea4c63737875511dd6e6818d89c",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "8471b1cd9e_5179895cc3.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/8471b1cd9e_5179895cc3.pdf"
+        },
+        {
+          "file_name": "20260918_APIA_Perubahan Pengurus_32149674_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/a264965a1c_c1c1f30057.pdf"
+        }
+      ],
+      "content_hash": "5d1a7c5e7353619eb4a4d3453fc8935109a19ec9fcc070f35afd1a01ebef430a",
+      "disclosure_type": "OTHER_DISCLOSURE",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/8471b1cd9e_5179895cc3.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-09-19T02:35:25+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "APIA",
+      "title": "Perubahan Pengurus [ APIA ]"
+    },
+    {
       "announcement_id": "BLOCKIDX-c31673d10bc158e5955345b5663d30cf",
       "announcement_no": null,
       "attachment_urls": [
@@ -65,235 +269,6 @@
       "source_verified": true,
       "ticker": "TOWR",
       "title": "LAPORAN KEPEMILIKAN ATAU SETIAP PERUBAHAN KEPEMILIKAN SAHAM PERUSAHAAN TERBUKA [ TOWR ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-5d789e0d7ed6b39e18d579a24e7abf77",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "2fbeebd6d7_d775f1a93b.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/2fbeebd6d7_d775f1a93b.pdf"
-        },
-        {
-          "file_name": "20260918_BIKE_Laporan Informasi dan Fakta Material_32149895_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/eb6b17964f_f1fbe501fa.pdf"
-        }
-      ],
-      "content_hash": "50aa3885c6351c3a6c68fae9036774c32d5cdd08fc7520a16b6b6fe01155b9aa",
-      "disclosure_type": "OTHER_DISCLOSURE",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/2fbeebd6d7_d775f1a93b.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-18T23:01:55+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "BIKE",
-      "title": "Menandatangani MOU dengan Perumda Pasar Jaya [ BIKE ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-b9bc47036d76a3dacb68c083f4cee9a4",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "60c1de8224_099a10997a.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/60c1de8224_099a10997a.pdf"
-        },
-        {
-          "file_name": "20260918_SOFA_Tanggapan atas Permintaan Penjelasan Bursa_32149896_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/d113539d5d_d2d525fe9b.pdf"
-        }
-      ],
-      "content_hash": "1a097a6aa063c78e7a4e377001a9d9dfb868dc972635abc3d7e43a32dbfbc200",
-      "disclosure_type": "VOLATILITY_EXPLANATION",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/60c1de8224_099a10997a.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-18T22:59:32+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "SOFA",
-      "title": "Penjelasan atas Permintaan Penjelasan Bursa [ SOFA ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-732a1c40d203353cd315d8076989ba1a",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "20260918_ARKO_E032_587c32bb-29fc-4d8d-8cad-cbad51a26ce2-20260919014953.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260918_ARKO_E032_587c32bb-29fc-4d8d-8cad-cbad51a26ce2-20260919014953.pdf"
-        },
-        {
-          "file_name": "20260919_ARKO_E032_587c32bb-29fc-4d8d-8cad-cbad51a26ce2_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260919_ARKO_E032_587c32bb-29fc-4d8d-8cad-cbad51a26ce2_lamp1-20260919014955.pdf"
-        }
-      ],
-      "content_hash": "c7e697da5f6245b8f5afc0d4719a6d884961402abbb4a3eb0f4bfc16d42f393d",
-      "disclosure_type": "OTHER_DISCLOSURE",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260918_ARKO_E032_587c32bb-29fc-4d8d-8cad-cbad51a26ce2-20260919014953.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-18T22:46:18+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "ARKO",
-      "title": "Informasi Rencana Call Option Efek Bersifat Utang/Sukuk [ ARKO ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-94f33b8850763e60f3a2fa1925d72d96",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "cbbe09b898_580115d213.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/cbbe09b898_580115d213.pdf"
-        },
-        {
-          "file_name": "20260918_XPIN_Laporan Harian atas Nilai Aktiva Bersih dan Komposisi Portofolio_32149885_lamp3.xlsx",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_INAV/202609/26ea0966e7_bebdf5e7ad.xlsx"
-        },
-        {
-          "file_name": "20260918_XPIN_Laporan Harian atas Nilai Aktiva Bersih dan Komposisi Portofolio_32149885_lamp2.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/9e5551c140_b8cc086853.pdf"
-        },
-        {
-          "file_name": "20260918_XPIN_Laporan Harian atas Nilai Aktiva Bersih dan Komposisi Portofolio_32149885_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/ecdf647e22_342ac4e1f8.pdf"
-        }
-      ],
-      "content_hash": "cc84f8a3060dd625aa03370d7bae93b8875b0d617055ad2754377d694f414c3f",
-      "disclosure_type": "OTHER_DISCLOSURE",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/cbbe09b898_580115d213.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-18T22:32:41+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "XPIN",
-      "title": "Laporan Harian atas Nilai Aktiva Bersih dan Komposisi Portofolio [ XPIN ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-ef7eba74a7c90adc93f9f20108e3b16b",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "20260918_DR_E081_88f74c52-7e23-40ad-9680-3c3795593c00-20260919015035.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260918_DR_E081_88f74c52-7e23-40ad-9680-3c3795593c00-20260919015035.pdf"
-        },
-        {
-          "file_name": "20260919_DR_E081_88f74c52-7e23-40ad-9680-3c3795593c00_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260919_DR_E081_88f74c52-7e23-40ad-9680-3c3795593c00_lamp1-20260919015037.pdf"
-        }
-      ],
-      "content_hash": "6680688445c12815f58f47ee9d45d62d073897754ff046fdec958c5c343f2d9c",
-      "disclosure_type": "OTHER_DISCLOSURE",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260918_DR_E081_88f74c52-7e23-40ad-9680-3c3795593c00-20260919015035.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-18T22:30:56+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "DR",
-      "title": "Pemberitahuan tanggal pelaksanaan waran terstruktur [ DR ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-4880920951738b54579a470c62fb08ad",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "LK-18092026-8160-00.pdf-0.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_KSEI/LK-18092026-8160-00.pdf-0.pdf"
-        }
-      ],
-      "content_hash": "9b7ce0138ffa38dc1f2895d09d4c8d96da45cc161e27399603134691644408a2",
-      "disclosure_type": "OWNERSHIP",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_KSEI/LK-18092026-8160-00.pdf-0.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-18T22:29:37+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "TOWR",
-      "title": "LAPORAN KEPEMILIKAN ATAU SETIAP PERUBAHAN KEPEMILIKAN SAHAM PERUSAHAAN TERBUKA [ TOWR ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-e3a027ada22bdc408709ecffef20bddb",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "20260918_DR_E082_a6357b4f-61b8-4ed0-855f-f28d914d0e9c-20260919015049.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260918_DR_E082_a6357b4f-61b8-4ed0-855f-f28d914d0e9c-20260919015049.pdf"
-        },
-        {
-          "file_name": "20260919_DR_E082_a6357b4f-61b8-4ed0-855f-f28d914d0e9c_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260919_DR_E082_a6357b4f-61b8-4ed0-855f-f28d914d0e9c_lamp1-20260919015052.pdf"
-        }
-      ],
-      "content_hash": "ac7da2b5578f9fac8e86a04e7966f3724fdd2c871a74b46270ee545335e57ebc",
-      "disclosure_type": "OTHER_DISCLOSURE",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260918_DR_E082_a6357b4f-61b8-4ed0-855f-f28d914d0e9c-20260919015049.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-18T22:28:52+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "DR",
-      "title": "Penyesuaian Structured Warrant atas Aksi Korporasi Saham Underlying [ DR ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-9cea8d67185c68541b5f428ff51e5ef7",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "20260918_DR_E083_2f23b755-70dd-4e03-a1e8-956b09f24e4f-20260919015040.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260918_DR_E083_2f23b755-70dd-4e03-a1e8-956b09f24e4f-20260919015040.pdf"
-        },
-        {
-          "file_name": "20260919_DR_E083_2f23b755-70dd-4e03-a1e8-956b09f24e4f_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260919_DR_E083_2f23b755-70dd-4e03-a1e8-956b09f24e4f_lamp1-20260919015041.pdf"
-        }
-      ],
-      "content_hash": "e0491d5487341a477e0d9399710a0b9b9682e3941b631859e226aa3e3084565d",
-      "disclosure_type": "OTHER_DISCLOSURE",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260918_DR_E083_2f23b755-70dd-4e03-a1e8-956b09f24e4f-20260919015040.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-18T22:28:38+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "DR",
-      "title": "Penyesuaian Jumlah dan/atau Tanggal Pelaksanaan Waran Terstruktur [ DR ]"
     }
   ],
   "schema_version": "BLOCK_IDX_DISCLOSURE_CACHE_V5_1",
