@@ -27,8 +27,8 @@
       "tickers": 689
     },
     "ownership": {
-      "pct": 97.71,
-      "tickers": 684
+      "pct": 97.43,
+      "tickers": 682
     },
     "sector": {
       "pct": 100.0,
@@ -39,7 +39,7 @@
       "tickers": 400
     }
   },
-  "generated_at": "2026-09-18T16:43:58.952071+00:00",
+  "generated_at": "2026-09-21T18:26:58.953954+00:00",
   "missing_core_sample": [
     "AADI",
     "AALI",
@@ -114,13 +114,13 @@
     "BUVA",
     "BYAN",
     "CARS",
+    "CASS",
     "CBDK",
     "CBRE",
     "CBUT",
     "CDIA",
     "CENT",
-    "CFIN",
-    "CMNT"
+    "CFIN"
   ],
   "missing_full_sample": [
     "AADI",
@@ -196,13 +196,13 @@
     "BUVA",
     "BYAN",
     "CARS",
+    "CASS",
     "CBDK",
     "CBRE",
     "CBUT",
     "CDIA",
     "CENT",
-    "CFIN",
-    "CMNT"
+    "CFIN"
   ],
   "provider_status": {
     "capital_actions": "QUOTA_EXHAUSTED: Zapi rate/monthly quota exhausted",
