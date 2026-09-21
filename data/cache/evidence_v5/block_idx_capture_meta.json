@@ -1,29 +1,29 @@
 {
   "announcement_rows": 10,
-  "captured_at": "2026-09-21T08:21:00.285028+07:00",
+  "captured_at": "2026-09-22T03:30:00.792042+07:00",
   "download_smoke": [
     {
-      "announcement_id": "BLOCKIDX-f3c2208b24150d98205e4220b94af5f9",
+      "announcement_id": "BLOCKIDX-d74004120ae53fa65347600346414242",
       "binary_persisted": false,
-      "bytes": 10663,
+      "bytes": 797624,
       "content_type": "application/pdf",
-      "sha256": "b91847dd8a813217016b1abafc0ea1542db6067de25aa5d41645238795e9510a",
-      "ticker": "WINR",
-      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_KSEI/LK-20092026-3558-00.pdf-0.pdf"
+      "sha256": "ca7aafa1764d9341de052e6c3a6ad61d2a6c245ff583219e2a0ab9554117742b",
+      "ticker": "MEDC",
+      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260921165840-64414-0/FinancialStatement-2026-II-MEDC.pdf"
     },
     {
-      "announcement_id": "BLOCKIDX-fdf907850c18eb0a12aac573bf6fe8b2",
+      "announcement_id": "BLOCKIDX-d74004120ae53fa65347600346414242",
       "binary_persisted": false,
-      "bytes": 8396,
+      "bytes": 1447209,
       "content_type": "application/pdf",
-      "sha256": "04d874133010c4b24b212eb59d71e50b7b60a973f03658e583205e62843795e8",
-      "ticker": "ADHI",
-      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/14827d2511_52f9d5f5e9.pdf"
+      "sha256": "65384b56ceee3d992227a77bc2587890a359ea5b55ebbf136d5df2cd8e310515",
+      "ticker": "MEDC",
+      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260921165840-64414-0/Checklist Pengungkapan Lapkeu - 30 June 2026.pdf"
     }
   ],
-  "financial_filing_rows": 0,
+  "financial_filing_rows": 1,
   "no_fabricated_evidence": true,
-  "ownership_rows_on_current_page": 5,
+  "ownership_rows_on_current_page": 0,
   "point_in_time_eligible_rows": 10,
   "production_scoring_changed": false,
   "source_page": "https://block.idx.id/id/berita/pengumuman"
