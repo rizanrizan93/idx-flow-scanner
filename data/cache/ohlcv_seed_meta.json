@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-18T16:42:31.781055+00:00",
+  "generated_at": "2026-09-21T18:22:57.045107+00:00",
   "latest_trade_date": "2026-09-18",
   "minimum_bars": 80,
   "period": "1y",
@@ -15,12 +15,12 @@
       "ticker": "META"
     },
     {
-      "bars": 51,
-      "ticker": "BACH"
-    },
-    {
       "bars": 49,
       "ticker": "RANS"
+    },
+    {
+      "bars": 51,
+      "ticker": "BACH"
     },
     {
       "bars": 52,
@@ -44,10 +44,10 @@
   "sector_enrichment": {
     "coverage_pct": 100.0,
     "known": 700,
-    "requests": 3,
-    "resolved": 3,
+    "requests": 0,
+    "resolved": 0,
     "source": "STOCKANALYSIS_PROFILE_FALLBACK_ONLY_FOR_UNKNOWN",
-    "status": "UPDATED",
+    "status": "PRESERVED",
     "unknown": 0
   },
   "source": "Yahoo Finance public chart/download endpoints",
