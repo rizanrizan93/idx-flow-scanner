@@ -1,6 +1,95 @@
 {
   "rows": [
     {
+      "announcement_id": "BLOCKIDX-944eb7a9f8259af9b1bec72120bfbc05",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "4a759b835b_81eeb65f03.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/4a759b835b_81eeb65f03.pdf"
+        },
+        {
+          "file_name": "20260921_UCID_Pemanggilan RUPS_32149952_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/f3085372ae_0cd7652e92.pdf"
+        }
+      ],
+      "content_hash": "6a37c0a9799009ba9b22ce956b8ff4274a6759b6880ecbfefcf66ae0a77deba4",
+      "disclosure_type": "OWNERSHIP",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/4a759b835b_81eeb65f03.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-09-22T08:33:59+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "UCID",
+      "title": "Pemanggilan Rapat Umum Pemegang Saham Luar Biasa [ UCID ]"
+    },
+    {
+      "announcement_id": "BLOCKIDX-42a7e519bd9b5dc4b6ad75fb54023d59",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "adfdc9243d_d5fa78dfb3.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/adfdc9243d_d5fa78dfb3.pdf"
+        },
+        {
+          "file_name": "20260922_BSSR_Jadwal Aksi Korporasi (Khusus Penyampaian Dividen Interim)_32150192_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/5666791dcd_36aaa483ce.pdf"
+        },
+        {
+          "file_name": "20260922_BSSR_Jadwal Aksi Korporasi (Khusus Penyampaian Dividen Interim)_32150192_lamp2.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/d84c030dd3_cf69fd5c50.pdf"
+        }
+      ],
+      "content_hash": "5b652e9d03f3957b79cb7e53a75aed195e51119ebf17e2f1a8b340fbac03d65a",
+      "disclosure_type": "CAPITAL_ACTION",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/adfdc9243d_d5fa78dfb3.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-09-22T01:34:53+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "BSSR",
+      "title": "Jadwal Dividen Tunai Interim (KOREKSI) [ BSSR ]"
+    },
+    {
+      "announcement_id": "BLOCKIDX-296fddc73f98a097d99ecf471951d916",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "747a918b60_83b5803476.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/747a918b60_83b5803476.pdf"
+        },
+        {
+          "file_name": "20260921_ADHI_Penyampaian Bukti Iklan_32150083_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/f31475252f_6c2da0a87d.pdf"
+        }
+      ],
+      "content_hash": "e1efb0e935579a9ec09423422dc6db3b4e5599219a7d2c39a8d2cbd97ebe8f55",
+      "disclosure_type": "OTHER_DISCLOSURE",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/747a918b60_83b5803476.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-09-22T00:44:08+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "ADHI",
+      "title": "Penyampaian Bukti Iklan Hasil Rapat Umum Pemegang Obligasi [ ADHI ]"
+    },
+    {
       "announcement_id": "BLOCKIDX-d74004120ae53fa65347600346414242",
       "announcement_no": null,
       "attachment_urls": [
@@ -255,95 +344,6 @@
       "source_verified": true,
       "ticker": "DYAN",
       "title": "Perjanjian Pengikatan Jual Beli Tanah dan Bangunan [ DYAN ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-a3f650908726d5015c3b1e43a8f668f9",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "f0ca1edc8e_659dd17e14.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/f0ca1edc8e_659dd17e14.pdf"
-        },
-        {
-          "file_name": "20260921_VICI_Public Expose_32149988_lamp2.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/093f7d8717_de827c0167.pdf"
-        },
-        {
-          "file_name": "20260921_VICI_Public Expose_32149988_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/89fdda6209_8c20c19b32.pdf"
-        }
-      ],
-      "content_hash": "0a822ecf0b2a49cc3a91f4cc37dee96dbcf20fbfc8662b4421e92643540d8573",
-      "disclosure_type": "PUBLIC_EXPOSE",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/f0ca1edc8e_659dd17e14.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-21T19:44:24+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "VICI",
-      "title": "Laporan Hasil Public Expose - Insidentil [ VICI ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-30522ba053517c202425b02a5e2976ff",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "566b369146_d8eeddd1ec.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/566b369146_d8eeddd1ec.pdf"
-        },
-        {
-          "file_name": "20260921_XKGS_Pencatatan Awal/Tambahan ETF_32150167_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/b355bcea1b_b41b4c8738.pdf"
-        }
-      ],
-      "content_hash": "05688cffcbb260740c56d479df3beb816da0701fe562e6496d8674de39ddb446",
-      "disclosure_type": "OTHER_DISCLOSURE",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/566b369146_d8eeddd1ec.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-21T19:41:45+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "XKGS",
-      "title": "Pengumuman Bursa Pencatatan Awal ETF [ XKGS ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-adfc774cf13df0f8ac656f39a2a251a7",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "1054cb2c87_b2a3e08086.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/1054cb2c87_b2a3e08086.pdf"
-        },
-        {
-          "file_name": "20260921_DNRK_Pembayaran Kupon/Bagi Hasil/Ijarah/Pokok_32150171_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/de0eb80645_b72dca64ad.pdf"
-        }
-      ],
-      "content_hash": "2213ef6ab68f711eaa65857f0f86d725e11d10605d19a1583d50e7c5498eafa0",
-      "disclosure_type": "OTHER_DISCLOSURE",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/1054cb2c87_b2a3e08086.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-21T19:30:12+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "DNRK",
-      "title": "Informasi Pokokdan Kupon / Ijarah Fee / Bagi Hasil [ DNRK ]"
     }
   ],
   "schema_version": "BLOCK_IDX_DISCLOSURE_CACHE_V5_1",

@@ -1,29 +1,29 @@
 {
   "announcement_rows": 10,
-  "captured_at": "2026-09-22T03:30:00.792042+07:00",
+  "captured_at": "2026-09-22T08:43:51.232109+07:00",
   "download_smoke": [
     {
-      "announcement_id": "BLOCKIDX-d74004120ae53fa65347600346414242",
+      "announcement_id": "BLOCKIDX-944eb7a9f8259af9b1bec72120bfbc05",
       "binary_persisted": false,
-      "bytes": 797624,
+      "bytes": 7565,
       "content_type": "application/pdf",
-      "sha256": "ca7aafa1764d9341de052e6c3a6ad61d2a6c245ff583219e2a0ab9554117742b",
-      "ticker": "MEDC",
-      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260921165840-64414-0/FinancialStatement-2026-II-MEDC.pdf"
+      "sha256": "e85cc81631789c3a04d2ee3db15c7d5d72d969ab0cc50051c20eb39950614cb5",
+      "ticker": "UCID",
+      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/4a759b835b_81eeb65f03.pdf"
     },
     {
-      "announcement_id": "BLOCKIDX-d74004120ae53fa65347600346414242",
+      "announcement_id": "BLOCKIDX-944eb7a9f8259af9b1bec72120bfbc05",
       "binary_persisted": false,
-      "bytes": 1447209,
+      "bytes": 465831,
       "content_type": "application/pdf",
-      "sha256": "65384b56ceee3d992227a77bc2587890a359ea5b55ebbf136d5df2cd8e310515",
-      "ticker": "MEDC",
-      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260921165840-64414-0/Checklist Pengungkapan Lapkeu - 30 June 2026.pdf"
+      "sha256": "0ec932b92756a824041b0098a1d4fe74a4e3968414e6e4c685a481da65ae6fb2",
+      "ticker": "UCID",
+      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/f3085372ae_0cd7652e92.pdf"
     }
   ],
   "financial_filing_rows": 1,
   "no_fabricated_evidence": true,
-  "ownership_rows_on_current_page": 0,
+  "ownership_rows_on_current_page": 1,
   "point_in_time_eligible_rows": 10,
   "production_scoring_changed": false,
   "source_page": "https://block.idx.id/id/berita/pengumuman"
