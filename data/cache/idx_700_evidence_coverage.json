@@ -23,12 +23,12 @@
       "tickers": 398
     },
     "ohlcv": {
-      "pct": 98.43,
-      "tickers": 689
+      "pct": 98.57,
+      "tickers": 690
     },
     "ownership": {
-      "pct": 97.0,
-      "tickers": 679
+      "pct": 97.14,
+      "tickers": 680
     },
     "sector": {
       "pct": 100.0,
@@ -39,7 +39,7 @@
       "tickers": 400
     }
   },
-  "generated_at": "2026-09-22T17:17:38.479546+00:00",
+  "generated_at": "2026-09-23T17:28:36.468423+00:00",
   "missing_core_sample": [
     "AADI",
     "AALI",
@@ -102,7 +102,6 @@
     "BNBA",
     "BNBR",
     "BNGA",
-    "BOLA",
     "BREN",
     "BRIS",
     "BRMS",
@@ -120,7 +119,8 @@
     "CBRE",
     "CBUT",
     "CDIA",
-    "CENT"
+    "CENT",
+    "CFIN"
   ],
   "missing_full_sample": [
     "AADI",
@@ -184,7 +184,6 @@
     "BNBA",
     "BNBR",
     "BNGA",
-    "BOLA",
     "BREN",
     "BRIS",
     "BRMS",
@@ -202,7 +201,8 @@
     "CBRE",
     "CBUT",
     "CDIA",
-    "CENT"
+    "CENT",
+    "CFIN"
   ],
   "provider_status": {
     "capital_actions": "QUOTA_EXHAUSTED: Zapi rate/monthly quota exhausted",
