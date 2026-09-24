@@ -1,6 +1,39 @@
 {
   "rows": [
     {
+      "announcement_id": "BLOCKIDX-c552a836e283cac73abaa8802da9a92e",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "304c880728_e940ca23b5.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/304c880728_e940ca23b5.pdf"
+        },
+        {
+          "file_name": "20260922_LPPI_Laporan Informasi dan Fakta Material_32150253_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/0d0e62f84a_ff917288e3.pdf"
+        },
+        {
+          "file_name": "20260922_LPPI_Laporan Informasi dan Fakta Material_32150253_lamp2.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/5c3ebb96aa_a8287dd9b9.pdf"
+        }
+      ],
+      "content_hash": "974d48750c4ddfd87daeb992808c62fbdcd42908ea3b1cd83e1d26b677241ba6",
+      "disclosure_type": "OTHER_DISCLOSURE",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/304c880728_e940ca23b5.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-09-24T07:32:38+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "LPPI",
+      "title": "Informasi Tambahan Ringkas perubahan perubahan/keterangan tambahan yang diperlukan terkait rencana Penawaran Umum Berkelanjutan Obligasi Berkelanjutan IV Lontar Papyrus Pulp & Paper Industry Tahap IV Tahun 2026 dan Sukuk Mudharabah Berkelanjutan II Lontar Papyrus Pulp & Paper Industry Tahap IV Tahun 2026 [ LPPI ]"
+    },
+    {
       "announcement_id": "BLOCKIDX-6bc1d3264062acf607867b1c99b1b2fc",
       "announcement_no": null,
       "attachment_urls": [
@@ -281,34 +314,6 @@
       "source_verified": true,
       "ticker": "HYGN",
       "title": "Laporan Hasil Public Expose - Tahunan [ HYGN ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-551c65cd7fdde332c27e092e551a716e",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "2a8874b440_bd016b476f.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/2a8874b440_bd016b476f.pdf"
-        },
-        {
-          "file_name": "20260923_BSML_Pengumuman RUPS_32150504_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/372cc3d85a_04d90d8e2f.pdf"
-        }
-      ],
-      "content_hash": "ad2ad4ab1973f421f547f2b8a158a4117cbf12b98b7763b0e39fcf3e57efea92",
-      "disclosure_type": "OWNERSHIP",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/2a8874b440_bd016b476f.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-23T21:02:11+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "BSML",
-      "title": "Pemberitahuan Rencana Rapat Umum Pemegang Saham Luar Biasa [ BSML ]"
     }
   ],
   "schema_version": "BLOCK_IDX_DISCLOSURE_CACHE_V5_1",
