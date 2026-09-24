@@ -6,7 +6,7 @@
     },
     "corporate_action_events": {
       "semantics": "EVENT_DRIVEN_MARKET_WIDE_FEED_NOT_EXPECTED_FOR_EVERY_TICKER",
-      "tickers_with_events": 95
+      "tickers_with_events": 96
     },
     "foreign_flow": {
       "pct": 57.14,
@@ -23,12 +23,12 @@
       "tickers": 398
     },
     "ohlcv": {
-      "pct": 98.57,
-      "tickers": 690
+      "pct": 98.86,
+      "tickers": 692
     },
     "ownership": {
-      "pct": 97.14,
-      "tickers": 680
+      "pct": 97.0,
+      "tickers": 679
     },
     "sector": {
       "pct": 100.0,
@@ -39,7 +39,7 @@
       "tickers": 400
     }
   },
-  "generated_at": "2026-09-23T17:28:36.468423+00:00",
+  "generated_at": "2026-09-24T17:33:35.809070+00:00",
   "missing_core_sample": [
     "AADI",
     "AALI",

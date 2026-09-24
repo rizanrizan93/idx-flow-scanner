@@ -5,16 +5,16 @@
     "providers": [],
     "status": "RETIRED"
   },
-  "generated_at": "2026-09-23T17:28:31.666032+00:00",
-  "target_trade_date": "2026-09-23",
+  "generated_at": "2026-09-24T17:33:34.079611+00:00",
+  "target_trade_date": "2026-09-24",
   "universe_count": 700,
   "zapi_capital_actions": {
     "days": 72,
     "details": {},
     "freshest": "2026-09-03",
-    "rows": 126,
+    "rows": 127,
     "status": "QUOTA_EXHAUSTED: Zapi rate/monthly quota exhausted",
-    "tickers": 95,
+    "tickers": 96,
     "token_present": true,
     "upcoming_events": 0
   },
