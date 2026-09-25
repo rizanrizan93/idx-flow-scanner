@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-24T17:31:44.729941+00:00",
-  "latest_trade_date": "2026-09-23",
+  "generated_at": "2026-09-25T17:31:15.275214+00:00",
+  "latest_trade_date": "2026-09-24",
   "minimum_bars": 80,
   "period": "1y",
   "recent_mirror_bars_per_ticker": 10,
@@ -15,27 +15,27 @@
       "ticker": "META"
     },
     {
-      "bars": 52,
+      "bars": 53,
       "ticker": "RANS"
     },
     {
-      "bars": 54,
+      "bars": 55,
       "ticker": "BACH"
     },
     {
-      "bars": 55,
+      "bars": 56,
       "ticker": "JECX"
     },
     {
-      "bars": 53,
+      "bars": 54,
       "ticker": "PRDL"
     },
     {
-      "bars": 55,
+      "bars": 56,
       "ticker": "JELI"
     },
     {
-      "bars": 54,
+      "bars": 55,
       "ticker": "EMMI"
     }
   ],
