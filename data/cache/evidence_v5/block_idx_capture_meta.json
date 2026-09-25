@@ -1,29 +1,29 @@
 {
   "announcement_rows": 10,
-  "captured_at": "2026-09-25T08:43:04.341617+07:00",
+  "captured_at": "2026-09-26T03:05:21.904431+07:00",
   "download_smoke": [
     {
-      "announcement_id": "BLOCKIDX-04f3e7ce70d1e0636af5e3eb170c0d18",
+      "announcement_id": "BLOCKIDX-2ae663424f3316195dfbde84c8a4fd1e",
       "binary_persisted": false,
-      "bytes": 7641,
+      "bytes": 825118,
       "content_type": "application/pdf",
-      "sha256": "88676aeb207cc3763098708d0b935fb7436d7362ba79573ae2a46c4ba0755000",
-      "ticker": "EPAC",
-      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/c86c59ff15_2985c17172.pdf"
+      "sha256": "f60db331fc0f3628f27ffe1ca87359b40997af5bf809beb3c8b140f4f1a3ee17",
+      "ticker": "VKTR",
+      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260925234616-64436-0/FinancialStatement-2026-I-VKTR.pdf"
     },
     {
-      "announcement_id": "BLOCKIDX-04f3e7ce70d1e0636af5e3eb170c0d18",
+      "announcement_id": "BLOCKIDX-2ae663424f3316195dfbde84c8a4fd1e",
       "binary_persisted": false,
-      "bytes": 474359,
-      "content_type": "application/pdf",
-      "sha256": "daeea6824ebc7ebc2971422e91774894fcf0c776b09de5bd5f374f265860ea75",
-      "ticker": "EPAC",
-      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/15e2eac031_31c3040b29.pdf"
+      "bytes": 517032,
+      "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "sha256": "36850c77a07738ec2e3065fdabfe4bd1ee76750bba8e9c3410d6577e2d0dee88",
+      "ticker": "VKTR",
+      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260925234616-64436-0/FinancialStatement-2026-I-VKTR.xlsx"
     }
   ],
   "financial_filing_rows": 0,
   "no_fabricated_evidence": true,
-  "ownership_rows_on_current_page": 1,
+  "ownership_rows_on_current_page": 3,
   "point_in_time_eligible_rows": 10,
   "production_scoring_changed": false,
   "source_page": "https://block.idx.id/id/berita/pengumuman"
