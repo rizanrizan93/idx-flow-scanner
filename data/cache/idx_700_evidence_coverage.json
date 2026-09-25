@@ -23,12 +23,12 @@
       "tickers": 398
     },
     "ohlcv": {
-      "pct": 98.86,
-      "tickers": 692
+      "pct": 98.57,
+      "tickers": 690
     },
     "ownership": {
-      "pct": 97.0,
-      "tickers": 679
+      "pct": 96.86,
+      "tickers": 678
     },
     "sector": {
       "pct": 100.0,
@@ -39,7 +39,7 @@
       "tickers": 400
     }
   },
-  "generated_at": "2026-09-24T17:33:35.809070+00:00",
+  "generated_at": "2026-09-25T17:32:58.020234+00:00",
   "missing_core_sample": [
     "AADI",
     "AALI",
