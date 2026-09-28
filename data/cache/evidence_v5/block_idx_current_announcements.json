@@ -1,6 +1,141 @@
 {
   "rows": [
     {
+      "announcement_id": "BLOCKIDX-4c3e65d1949802e5b776b5d6dd91be62",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "7de0f3d810_63fbee561f.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/7de0f3d810_63fbee561f.pdf"
+        },
+        {
+          "file_name": "20260927_CRAB_Laporan Informasi dan Fakta Material_32161272_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/abfd01bb35_25a81f61df.pdf"
+        }
+      ],
+      "content_hash": "bd2e8ec12d959704f15aa7875a14af36fc29c5f13fa4a9e2f727442c3dd0dd23",
+      "disclosure_type": "MANAGEMENT_GOVERNANCE",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/7de0f3d810_63fbee561f.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-09-28T08:26:44+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "CRAB",
+      "title": "Perubahan susunan Direksi dan Komisaris Perseroan [ CRAB ]"
+    },
+    {
+      "announcement_id": "BLOCKIDX-f74510e30746a318a9fcdf24eef7fc6e",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "LK-28092026-4055-00.pdf-0.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_KSEI/LK-28092026-4055-00.pdf-0.pdf"
+        }
+      ],
+      "content_hash": "c7d938cd4cfc4091b05d741dc5db30df0ba36779c1560db2c300e63d9ab36a03",
+      "disclosure_type": "OWNERSHIP",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_KSEI/LK-28092026-4055-00.pdf-0.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-09-28T07:58:33+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "TAPG",
+      "title": "LAPORAN KEPEMILIKAN ATAU SETIAP PERUBAHAN KEPEMILIKAN SAHAM PERUSAHAAN TERBUKA [ TAPG ]"
+    },
+    {
+      "announcement_id": "BLOCKIDX-231af244bb1cd6f37fde55cadba8993f",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "4728758561_9d23eeb792.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/4728758561_9d23eeb792.pdf"
+        },
+        {
+          "file_name": "20260925_KDTN_Perubahan Corsec Komite Audit Alamat NPWP Internal Audit_32151111_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/34fc2de11e_3d705040b8.pdf"
+        }
+      ],
+      "content_hash": "f59a98b186bfef770b3e0234cc07964a8af5c1570d8899579d3c6ce624538f1d",
+      "disclosure_type": "OTHER_DISCLOSURE",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/4728758561_9d23eeb792.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-09-28T07:31:53+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "KDTN",
+      "title": "Perubahan Corporate Secretary [ KDTN ]"
+    },
+    {
+      "announcement_id": "BLOCKIDX-4f599d2adbbb8422f3391b2c01708584",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "a403835a0a_bf19a312ce.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/a403835a0a_bf19a312ce.pdf"
+        },
+        {
+          "file_name": "20260925_KDTN_Laporan Informasi dan Fakta Material_32151113_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/72bf4e2e77_55384ad440.pdf"
+        }
+      ],
+      "content_hash": "99cc36a6e304231aaea90885b5cc88ac61bb435a25affa811d66cfb6fea17d5f",
+      "disclosure_type": "OTHER_DISCLOSURE",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/a403835a0a_bf19a312ce.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-09-28T07:30:38+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "KDTN",
+      "title": "Perubahan Corporate Secretary [ KDTN ]"
+    },
+    {
+      "announcement_id": "BLOCKIDX-2b5313f79c5abc7bc51a273d212e2c2d",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "39838a2688_c12eb1ef81.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/39838a2688_c12eb1ef81.pdf"
+        },
+        {
+          "file_name": "20260926_Pemantauan Khusus_32161269_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/a20fed7457_295f0df9ba.pdf"
+        }
+      ],
+      "content_hash": "25b752c8b52a4b2d39ba28b2abed60e61b984f12fa665bae0060ef18c32a9daa",
+      "disclosure_type": "OTHER_DISCLOSURE",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/39838a2688_c12eb1ef81.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-09-27T07:57:00+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": null,
+      "title": "IMBAUAN KEPADA PENGGUNA WEBSITE PT BURSA EFEK INDONESIA (BEI) TERKAIT INFORMASI PENGUJIAN SISTEM [ ]"
+    },
+    {
       "announcement_id": "BLOCKIDX-2ae663424f3316195dfbde84c8a4fd1e",
       "announcement_no": null,
       "attachment_urls": [
@@ -199,141 +334,6 @@
       "source_verified": true,
       "ticker": "WINR",
       "title": "LAPORAN KEPEMILIKAN ATAU SETIAP PERUBAHAN KEPEMILIKAN SAHAM PERUSAHAAN TERBUKA [ WINR ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-ca4dd251ce46e0f282f1eaa58ff6e3d2",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "f2f9aa6fd3_335f793504.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/f2f9aa6fd3_335f793504.pdf"
-        },
-        {
-          "file_name": "20260925_PIPA_Laporan Penggunaan Dana Hasil Penawaran Umum_32151266_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/c594dbe541_6168de8bdc.pdf"
-        }
-      ],
-      "content_hash": "3bd0fa836aea61207a6dd13d3cc0ce5b1ac34b3ff55932d719077ce52256e38d",
-      "disclosure_type": "OTHER_DISCLOSURE",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/f2f9aa6fd3_335f793504.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-25T21:37:08+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "PIPA",
-      "title": "Laporan Perubahan Penggunaan Dana Hasil Penawaran Umum (KOREKSI) [ PIPA ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-5affde691bd97b01f8c60d6878fc45ae",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "636c68f29f_e1529d26b1.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/636c68f29f_e1529d26b1.pdf"
-        },
-        {
-          "file_name": "20260925_AHAP_Laporan Informasi dan Fakta Material_32151263_lamp2.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/4074368180_405060db95.pdf"
-        },
-        {
-          "file_name": "20260925_AHAP_Laporan Informasi dan Fakta Material_32151263_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/8dd9b971c0_020fad5af8.pdf"
-        }
-      ],
-      "content_hash": "dc6389ecc67c8b2bb958e8778bfda29884e123afe5111de054aedbad0f88b0a3",
-      "disclosure_type": "OWNERSHIP",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/636c68f29f_e1529d26b1.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-25T21:26:37+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "AHAP",
-      "title": "Keterbukaan Informasi Kepada Pemegang Saham Dalam Rangka Penambahan Modal Dengan Memberikan Hak Memesan Efek Terlebih Dahulu (PMHMETD) V [ AHAP ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-8f9411e07c05539d48b2d874d2843194",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "LK-25092026-4963-00.pdf-0.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_KSEI/LK-25092026-4963-00.pdf-0.pdf"
-        }
-      ],
-      "content_hash": "92e97b732bce7abe9148973e7584ffb98af7ea620daf8ef3852fb03c14de84bd",
-      "disclosure_type": "OWNERSHIP",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_KSEI/LK-25092026-4963-00.pdf-0.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-25T21:03:51+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "TOWR",
-      "title": "LAPORAN KEPEMILIKAN ATAU SETIAP PERUBAHAN KEPEMILIKAN SAHAM PERUSAHAAN TERBUKA [ TOWR ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-3cda98edc53f43f6ede72a69f229bc58",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "687aa760d6_f8f86b4e52.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/687aa760d6_f8f86b4e52.pdf"
-        }
-      ],
-      "content_hash": "1023d1e9c0c6ec117881c3467c3e4cf6580a6321f6b3fa2246b775c6c6af2511",
-      "disclosure_type": "OTHER_DISCLOSURE",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/687aa760d6_f8f86b4e52.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-25T20:14:08+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "JARR",
-      "title": "Penyampaian Bukti Iklan Hasil RUPS [ JARR ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-94cc3c9edf1cb07ac8665a1ccef0b046",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "5392cd0a69_1e5bbfbca6.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/5392cd0a69_1e5bbfbca6.pdf"
-        },
-        {
-          "file_name": "20260924_WIKA_Laporan Hasil Pemeringkatan_32150743_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/a7dca43f11_13582a06bb.pdf"
-        }
-      ],
-      "content_hash": "62a58e2e3e5bd5d9db6ef6b1a5a4445ef47871ab7e14b5b95f73e233950264b8",
-      "disclosure_type": "OTHER_DISCLOSURE",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/5392cd0a69_1e5bbfbca6.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-25T20:07:03+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "WIKA",
-      "title": "Laporan Hasil Pemeringkatan Pemeringkatan Karena Terdapat Fakta Material [ WIKA ]"
     }
   ],
   "schema_version": "BLOCK_IDX_DISCLOSURE_CACHE_V5_1",
