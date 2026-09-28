@@ -1,339 +1,394 @@
 {
   "rows": [
     {
-      "announcement_id": "BLOCKIDX-4c3e65d1949802e5b776b5d6dd91be62",
+      "announcement_id": "BLOCKIDX-650e33f4a79d4acec6a8013f46cc458e",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "7de0f3d810_63fbee561f.pdf",
+          "file_name": "9ff4f1264e_71cbd4e2f7.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/7de0f3d810_63fbee561f.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/9ff4f1264e_71cbd4e2f7.pdf"
         },
         {
-          "file_name": "20260927_CRAB_Laporan Informasi dan Fakta Material_32161272_lamp1.pdf",
+          "file_name": "20260929_SOFA_Perubahan dan/atau Tambahan Keterbukaan Informasi terkait Aksi Korporasi_32161556_lamp3.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/abfd01bb35_25a81f61df.pdf"
-        }
-      ],
-      "content_hash": "bd2e8ec12d959704f15aa7875a14af36fc29c5f13fa4a9e2f727442c3dd0dd23",
-      "disclosure_type": "MANAGEMENT_GOVERNANCE",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/7de0f3d810_63fbee561f.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-28T08:26:44+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "CRAB",
-      "title": "Perubahan susunan Direksi dan Komisaris Perseroan [ CRAB ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-f74510e30746a318a9fcdf24eef7fc6e",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "LK-28092026-4055-00.pdf-0.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_KSEI/LK-28092026-4055-00.pdf-0.pdf"
-        }
-      ],
-      "content_hash": "c7d938cd4cfc4091b05d741dc5db30df0ba36779c1560db2c300e63d9ab36a03",
-      "disclosure_type": "OWNERSHIP",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_KSEI/LK-28092026-4055-00.pdf-0.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-28T07:58:33+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "TAPG",
-      "title": "LAPORAN KEPEMILIKAN ATAU SETIAP PERUBAHAN KEPEMILIKAN SAHAM PERUSAHAAN TERBUKA [ TAPG ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-231af244bb1cd6f37fde55cadba8993f",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "4728758561_9d23eeb792.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/4728758561_9d23eeb792.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/3e3f80551c_f44d8ab196.pdf"
         },
         {
-          "file_name": "20260925_KDTN_Perubahan Corsec Komite Audit Alamat NPWP Internal Audit_32151111_lamp1.pdf",
+          "file_name": "20260929_SOFA_Perubahan dan/atau Tambahan Keterbukaan Informasi terkait Aksi Korporasi_32161556_lamp1.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/34fc2de11e_3d705040b8.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/5f205c64f3_1e9a051958.pdf"
+        },
+        {
+          "file_name": "20260929_SOFA_Perubahan dan/atau Tambahan Keterbukaan Informasi terkait Aksi Korporasi_32161556_lamp2.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/d5f0419ee8_9200da7e63.pdf"
         }
       ],
-      "content_hash": "f59a98b186bfef770b3e0234cc07964a8af5c1570d8899579d3c6ce624538f1d",
+      "content_hash": "37f0c45bcb41a90c274f374f9845281becc31653c93d784fbef03f122b4cdaaa",
       "disclosure_type": "OTHER_DISCLOSURE",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/4728758561_9d23eeb792.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/9ff4f1264e_71cbd4e2f7.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-09-28T07:31:53+07:00",
+      "published_at": "2026-09-29T00:10:34+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "KDTN",
-      "title": "Perubahan Corporate Secretary [ KDTN ]"
+      "ticker": "SOFA",
+      "title": "Penyampaian Informasi rencana Transaksi material - Rencana Transaksi Perubahan Kegiatan Usaha (KOREKSI) [ SOFA ]"
     },
     {
-      "announcement_id": "BLOCKIDX-4f599d2adbbb8422f3391b2c01708584",
+      "announcement_id": "BLOCKIDX-1929daab96edd288a59e7730d8776731",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "a403835a0a_bf19a312ce.pdf",
+          "file_name": "99c23e42bb_ef8064e2b5.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/a403835a0a_bf19a312ce.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/99c23e42bb_ef8064e2b5.pdf"
         },
         {
-          "file_name": "20260925_KDTN_Laporan Informasi dan Fakta Material_32151113_lamp1.pdf",
+          "file_name": "20260929_SOFA_Perubahan dan/atau Tambahan Keterbukaan Informasi terkait Aksi Korporasi_32161555_lamp3.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/72bf4e2e77_55384ad440.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/05e586cad2_35fd80d060.pdf"
+        },
+        {
+          "file_name": "20260929_SOFA_Perubahan dan/atau Tambahan Keterbukaan Informasi terkait Aksi Korporasi_32161555_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/139fdeb5f0_5cdcbc182d.pdf"
+        },
+        {
+          "file_name": "20260929_SOFA_Perubahan dan/atau Tambahan Keterbukaan Informasi terkait Aksi Korporasi_32161555_lamp2.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/9f963c0fbc_2c8b16a42a.pdf"
         }
       ],
-      "content_hash": "99cc36a6e304231aaea90885b5cc88ac61bb435a25affa811d66cfb6fea17d5f",
+      "content_hash": "2d926c2ef7215cff0ac9e5551edb19f28d3c3dcd3b9ce02c2205ccfd60650594",
       "disclosure_type": "OTHER_DISCLOSURE",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/a403835a0a_bf19a312ce.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/99c23e42bb_ef8064e2b5.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-09-28T07:30:38+07:00",
+      "published_at": "2026-09-29T00:07:01+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "KDTN",
-      "title": "Perubahan Corporate Secretary [ KDTN ]"
+      "ticker": "SOFA",
+      "title": "Penyampaian Informasi rencana Transaksi material - Rencana Transaksi Perubahan Kegiatan Usaha (KOREKSI) [ SOFA ]"
     },
     {
-      "announcement_id": "BLOCKIDX-2b5313f79c5abc7bc51a273d212e2c2d",
+      "announcement_id": "BLOCKIDX-0fff35be2b3b3181935eaac17d4cc35e",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "39838a2688_c12eb1ef81.pdf",
+          "file_name": "acb7660bae_219bb30b6c.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/39838a2688_c12eb1ef81.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/acb7660bae_219bb30b6c.pdf"
         },
         {
-          "file_name": "20260926_Pemantauan Khusus_32161269_lamp1.pdf",
+          "file_name": "20260924_SOFA_Perubahan dan/atau Tambahan Keterbukaan Informasi terkait Aksi Korporasi_32150856_lamp9.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/a20fed7457_295f0df9ba.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/01c00413be_6bb790c65f.pdf"
+        },
+        {
+          "file_name": "20260924_SOFA_Perubahan dan/atau Tambahan Keterbukaan Informasi terkait Aksi Korporasi_32150856_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/2143c9133e_6ea267759f.pdf"
+        },
+        {
+          "file_name": "20260924_SOFA_Perubahan dan/atau Tambahan Keterbukaan Informasi terkait Aksi Korporasi_32150856_lamp8.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/47f9638a16_08ff2aa0ba.pdf"
+        },
+        {
+          "file_name": "20260924_SOFA_Perubahan dan/atau Tambahan Keterbukaan Informasi terkait Aksi Korporasi_32150856_lamp2.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/51bc2ae608_fdfe63cefa.pdf"
+        },
+        {
+          "file_name": "20260924_SOFA_Perubahan dan/atau Tambahan Keterbukaan Informasi terkait Aksi Korporasi_32150856_lamp10.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/54f2335257_7c1ad20b1e.pdf"
+        },
+        {
+          "file_name": "20260924_SOFA_Perubahan dan/atau Tambahan Keterbukaan Informasi terkait Aksi Korporasi_32150856_lamp6.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/62d5c8049e_fe9cd9fe5b.pdf"
+        },
+        {
+          "file_name": "20260924_SOFA_Perubahan dan/atau Tambahan Keterbukaan Informasi terkait Aksi Korporasi_32150856_lamp5.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/8a8a18a20f_ad0d36b7a1.pdf"
+        },
+        {
+          "file_name": "20260924_SOFA_Perubahan dan/atau Tambahan Keterbukaan Informasi terkait Aksi Korporasi_32150856_lamp11.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/aa000cd08d_2c0d755825.pdf"
+        },
+        {
+          "file_name": "20260924_SOFA_Perubahan dan/atau Tambahan Keterbukaan Informasi terkait Aksi Korporasi_32150856_lamp4.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/c4a03ece8e_93f7542766.pdf"
+        },
+        {
+          "file_name": "20260924_SOFA_Perubahan dan/atau Tambahan Keterbukaan Informasi terkait Aksi Korporasi_32150856_lamp7.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/cfbfb84e7e_e06b4aae39.pdf"
+        },
+        {
+          "file_name": "20260924_SOFA_Perubahan dan/atau Tambahan Keterbukaan Informasi terkait Aksi Korporasi_32150856_lamp12.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/e433d2c02a_8744bb4db8.pdf"
+        },
+        {
+          "file_name": "20260924_SOFA_Perubahan dan/atau Tambahan Keterbukaan Informasi terkait Aksi Korporasi_32150856_lamp3.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/e9be88202b_59fd44283f.pdf"
+        },
+        {
+          "file_name": "20260924_SOFA_Perubahan dan/atau Tambahan Keterbukaan Informasi terkait Aksi Korporasi_32150856_lamp13.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/fb0624e60e_cf4c933b26.pdf"
         }
       ],
-      "content_hash": "25b752c8b52a4b2d39ba28b2abed60e61b984f12fa665bae0060ef18c32a9daa",
+      "content_hash": "302aef6eed92a75d456ca5b384087b109dfd84e4fe1e687081308a6f1ea3187b",
       "disclosure_type": "OTHER_DISCLOSURE",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/39838a2688_c12eb1ef81.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/acb7660bae_219bb30b6c.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-09-27T07:57:00+07:00",
+      "published_at": "2026-09-28T23:54:41+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": null,
-      "title": "IMBAUAN KEPADA PENGGUNA WEBSITE PT BURSA EFEK INDONESIA (BEI) TERKAIT INFORMASI PENGUJIAN SISTEM [ ]"
+      "ticker": "SOFA",
+      "title": "Penyampaian Informasi rencana Transaksi material - Rencana Transaksi Perubahan Kegiatan Usaha [ SOFA ]"
     },
     {
-      "announcement_id": "BLOCKIDX-2ae663424f3316195dfbde84c8a4fd1e",
+      "announcement_id": "BLOCKIDX-c3cdd7f63c9ecfe4bafa7a426dbc275e",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "FinancialStatement-2026-I-VKTR.pdf",
+          "file_name": "cea4a7dc27_3059ca69c2.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260925234616-64436-0/FinancialStatement-2026-I-VKTR.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/cea4a7dc27_3059ca69c2.pdf"
         },
         {
-          "file_name": "FinancialStatement-2026-I-VKTR.xlsx",
+          "file_name": "20260928_TAMU_Laporan Informasi dan Fakta Material_32161554_lamp1.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260925234616-64436-0/FinancialStatement-2026-I-VKTR.xlsx"
-        },
-        {
-          "file_name": "inlineXBRL.zip",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260925234616-64436-0/inlineXBRL.zip"
-        },
-        {
-          "file_name": "instance.zip",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260925234616-64436-0/instance.zip"
-        },
-        {
-          "file_name": "VKTR_(Report-Billingual) 31 Maret 2026_V3.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260925234616-64436-0/VKTR_(Report-Billingual) 31 Maret 2026_V3.pdf"
-        },
-        {
-          "file_name": "VKTR_Checklist OJK Maret 2026_FinalV2.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260925234616-64436-0/VKTR_Checklist OJK Maret 2026_FinalV2.pdf"
-        },
-        {
-          "file_name": "VKTR_Kenaikan 20 persen aset Q1V250926.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260925234616-64436-0/VKTR_Kenaikan 20 persen aset Q1V250926.pdf"
-        },
-        {
-          "file_name": "VKTR_SPD 31 Maret 2026_250926.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260925234616-64436-0/VKTR_SPD 31 Maret 2026_250926.pdf"
-        },
-        {
-          "file_name": "VKTR_Surat pengantar LK Audited Q1-2026 Sept.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260925234616-64436-0/VKTR_Surat pengantar LK Audited Q1-2026 Sept.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/a5a04941a9_8aff1c676a.pdf"
         }
       ],
-      "content_hash": "c1d563ff2cf0d13f59dabf6d2a81980593b1debeb73e13920a52f9d75b6049c2",
-      "disclosure_type": "FINANCIAL_REPORT",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260925234616-64436-0/FinancialStatement-2026-I-VKTR.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-25T23:33:37+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "VKTR",
-      "title": "Penyampaian Laporan Keuangan Interim (KOREKSI) [ VKTR ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-b28b86d15f40ea898a631ee70b719744",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "33b590e6be_f386e3ebd8.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/33b590e6be_f386e3ebd8.pdf"
-        },
-        {
-          "file_name": "20260925_XPIN_Laporan Harian atas Nilai Aktiva Bersih dan Komposisi Portofolio_32151262_lamp3.xlsx",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_INAV/202609/5a73de19a6_228901fc57.xlsx"
-        },
-        {
-          "file_name": "20260925_XPIN_Laporan Harian atas Nilai Aktiva Bersih dan Komposisi Portofolio_32151262_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/6b36328a39_b12c0f845a.pdf"
-        },
-        {
-          "file_name": "20260925_XPIN_Laporan Harian atas Nilai Aktiva Bersih dan Komposisi Portofolio_32151262_lamp2.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/8e73c91fcc_d9df002fe2.pdf"
-        }
-      ],
-      "content_hash": "3cb9ab5166ae6bbe0f1ae033f9c36eb98066b39e250a441c19bd155ab6aaa716",
+      "content_hash": "6224fcb542e8e6ef1ccec87ac2350381721568d07b637197fc5533ce5dfdb9da",
       "disclosure_type": "OTHER_DISCLOSURE",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/33b590e6be_f386e3ebd8.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/cea4a7dc27_3059ca69c2.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-09-25T22:32:39+07:00",
+      "published_at": "2026-09-28T23:15:42+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "TAMU",
+      "title": "Restrukturisasi utang [ TAMU ]"
+    },
+    {
+      "announcement_id": "BLOCKIDX-28c7a2a7ecd0ab39c12286ed4e87e0e5",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "e6c140238f_0cb7ce9d13.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/e6c140238f_0cb7ce9d13.pdf"
+        },
+        {
+          "file_name": "20260928_TOBA_Laporan Penggunaan Dana Hasil Penawaran Umum_32161550_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/6e25b0c888_6dc4aaa311.pdf"
+        }
+      ],
+      "content_hash": "ae150fb0bda807bd7f6716174fe807d38f31d4744e4cd9426671566a34c6ca94",
+      "disclosure_type": "OTHER_DISCLOSURE",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/e6c140238f_0cb7ce9d13.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-09-28T22:12:25+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "TOBA",
+      "title": "Laporan Penggunaan Dana Hasil Penawaran Umum (KOREKSI) [ TOBA ]"
+    },
+    {
+      "announcement_id": "BLOCKIDX-3c03c01d4a21f71b1bb9945d43b03eb7",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "e604818fb5_56982d5081.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/e604818fb5_56982d5081.pdf"
+        },
+        {
+          "file_name": "20260928_TOBA_Laporan Penggunaan Dana Hasil Penawaran Umum_32161549_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/c2e5901373_e1b7b88a91.pdf"
+        }
+      ],
+      "content_hash": "670ceb32871d081273c12443b2d8d649ddf1aa8ecb00bce838f45c25c9267e09",
+      "disclosure_type": "OTHER_DISCLOSURE",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/e604818fb5_56982d5081.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-09-28T22:09:09+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "TOBA",
+      "title": "Laporan Penggunaan Dana Hasil Penawaran Umum (KOREKSI) [ TOBA ]"
+    },
+    {
+      "announcement_id": "BLOCKIDX-ceccc29d02f23899f942aaed0c482cb7",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "9ad99e083a_3dbda5c41e.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/9ad99e083a_3dbda5c41e.pdf"
+        },
+        {
+          "file_name": "20260928_TOBA_Laporan Penggunaan Dana Hasil Penawaran Umum_32161548_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/d1eaecf131_f0d225a418.pdf"
+        }
+      ],
+      "content_hash": "1413693b67b76a7e413997e264e6e30887799f13d8a663947326d6be639fb5ae",
+      "disclosure_type": "OTHER_DISCLOSURE",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/9ad99e083a_3dbda5c41e.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-09-28T22:04:27+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "TOBA",
+      "title": "Laporan Penggunaan Dana Hasil Penawaran Umum (KOREKSI) [ TOBA ]"
+    },
+    {
+      "announcement_id": "BLOCKIDX-aa9760ca8f02a7d8fe42b5d13a779844",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "0693c4b85f_7aa242cbfc.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/0693c4b85f_7aa242cbfc.pdf"
+        },
+        {
+          "file_name": "20260928_XPIN_Laporan Harian atas Nilai Aktiva Bersih dan Komposisi Portofolio_32161552_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/10198be156_143e31e751.pdf"
+        },
+        {
+          "file_name": "20260928_XPIN_Laporan Harian atas Nilai Aktiva Bersih dan Komposisi Portofolio_32161552_lamp3.xlsx",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_INAV/202609/b95e223128_281373103c.xlsx"
+        },
+        {
+          "file_name": "20260928_XPIN_Laporan Harian atas Nilai Aktiva Bersih dan Komposisi Portofolio_32161552_lamp2.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/d330cbc647_d4ce6f6722.pdf"
+        }
+      ],
+      "content_hash": "3f7fa3bec228974173d2265f2a92b2c94a012e5e390023977b2a9023627e8a4c",
+      "disclosure_type": "OTHER_DISCLOSURE",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/0693c4b85f_7aa242cbfc.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-09-28T21:36:48+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
       "ticker": "XPIN",
       "title": "Laporan Harian atas Nilai Aktiva Bersih dan Komposisi Portofolio [ XPIN ]"
     },
     {
-      "announcement_id": "BLOCKIDX-4a2bb7255300a8cbcfa4cc9009d81956",
+      "announcement_id": "BLOCKIDX-aea443d02a06abd8d8e5bd0444fec2d5",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "9e279afa29_4f6c6386c4.pdf",
+          "file_name": "0d6009fadc_e6d43e012a.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/9e279afa29_4f6c6386c4.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/0d6009fadc_e6d43e012a.pdf"
         },
         {
-          "file_name": "20260925_XBIN_Laporan Harian atas Nilai Aktiva Bersih dan Komposisi Portofolio_32151261_lamp2.pdf",
+          "file_name": "20260928_R-ABFII_Laporan Harian atas Nilai Aktiva Bersih dan Komposisi Portofolio_32161551_lamp3.xlsx",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/593ba6524d_53c2c244be.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_INAV/202609/20aeb0416f_bb1e8dae62.xlsx"
         },
         {
-          "file_name": "20260925_XBIN_Laporan Harian atas Nilai Aktiva Bersih dan Komposisi Portofolio_32151261_lamp3.xlsx",
+          "file_name": "20260928_R-ABFII_Laporan Harian atas Nilai Aktiva Bersih dan Komposisi Portofolio_32161551_lamp2.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_INAV/202609/68241b4e6d_92f635e838.xlsx"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/c0d6db1dac_f275effa2e.pdf"
         },
         {
-          "file_name": "20260925_XBIN_Laporan Harian atas Nilai Aktiva Bersih dan Komposisi Portofolio_32151261_lamp1.pdf",
+          "file_name": "20260928_R-ABFII_Laporan Harian atas Nilai Aktiva Bersih dan Komposisi Portofolio_32161551_lamp1.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/99006dac71_56c4711213.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/e2cc04f417_f9c3fb5fe5.pdf"
         }
       ],
-      "content_hash": "57f023690942fc45c663d2192fe30bc87e9378ca61ca671bfe87fd353fd33deb",
+      "content_hash": "bffbcfc420801a7fd57f6e8a3f48bd70834b90c59f1874f191b9bb30db649bb1",
       "disclosure_type": "OTHER_DISCLOSURE",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/9e279afa29_4f6c6386c4.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/0d6009fadc_e6d43e012a.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-09-25T22:30:38+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "XBIN",
-      "title": "Laporan Harian atas Nilai Aktiva Bersih dan Komposisi Portofolio [ XBIN ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-bf6a60be2079fa5a8f849c0153a48317",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "dff859e972_d50e19a3ed.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/dff859e972_d50e19a3ed.pdf"
-        },
-        {
-          "file_name": "20260925_R-ABFII_Laporan Harian atas Nilai Aktiva Bersih dan Komposisi Portofolio_32151259_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/2fdfdae406_e40d1d76dd.pdf"
-        },
-        {
-          "file_name": "20260925_R-ABFII_Laporan Harian atas Nilai Aktiva Bersih dan Komposisi Portofolio_32151259_lamp3.xlsx",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_INAV/202609/42143396dc_ec40cb3bd7.xlsx"
-        },
-        {
-          "file_name": "20260925_R-ABFII_Laporan Harian atas Nilai Aktiva Bersih dan Komposisi Portofolio_32151259_lamp2.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/8550a0c702_121968d4d4.pdf"
-        }
-      ],
-      "content_hash": "b6ff1183bf80d629a563a1b3ef1ed3ad3ebcf4afdb64cff4d6c276aa08061f4e",
-      "disclosure_type": "OTHER_DISCLOSURE",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/dff859e972_d50e19a3ed.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-25T22:29:21+07:00",
+      "published_at": "2026-09-28T21:36:12+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
       "ticker": "R-ABFII",
       "title": "Laporan Harian atas Nilai Aktiva Bersih dan Komposisi Portofolio [ R-ABFII ]"
     },
     {
-      "announcement_id": "BLOCKIDX-cb137b2d4d5933fce0e14fbb716949ae",
+      "announcement_id": "BLOCKIDX-62d7122155e3bf7ab4f54b10aa2b81f4",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "LK-25092026-8338-00.pdf-0.pdf",
+          "file_name": "379fa02362_77380d711e.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_KSEI/LK-25092026-8338-00.pdf-0.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/379fa02362_77380d711e.pdf"
+        },
+        {
+          "file_name": "20260928_PTBA_Transaksi Material Tanpa Persetujuan RUPS_32161546_lamp2.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/81190bf105_c0759ad848.pdf"
+        },
+        {
+          "file_name": "20260928_PTBA_Transaksi Material Tanpa Persetujuan RUPS_32161546_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/96e4d68185_eb794689c0.pdf"
+        },
+        {
+          "file_name": "20260928_PTBA_Transaksi Material Tanpa Persetujuan RUPS_32161546_lamp3.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/daee93d1d7_0dbddf2f2f.pdf"
         }
       ],
-      "content_hash": "c3b1763e28289a09208c5fd854f0c6524404c4428edab821a57ff5112631c09a",
-      "disclosure_type": "OWNERSHIP",
+      "content_hash": "8924d12362557614300ef9fe3ff22ffb9cb9eb08022289f8e69901fea2b53096",
+      "disclosure_type": "OTHER_DISCLOSURE",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_KSEI/LK-25092026-8338-00.pdf-0.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/379fa02362_77380d711e.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-09-25T22:02:15+07:00",
+      "published_at": "2026-09-28T20:54:23+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "WINR",
-      "title": "LAPORAN KEPEMILIKAN ATAU SETIAP PERUBAHAN KEPEMILIKAN SAHAM PERUSAHAAN TERBUKA [ WINR ]"
+      "ticker": "PTBA",
+      "title": "Transaksi Material Tanpa Persetujuan RUPS [ PTBA ]"
     }
   ],
   "schema_version": "BLOCK_IDX_DISCLOSURE_CACHE_V5_1",
