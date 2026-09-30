@@ -1,304 +1,227 @@
 {
   "rows": [
     {
-      "announcement_id": "BLOCKIDX-ef8750d1f09fe6fe3d1efc74994d5a46",
+      "announcement_id": "BLOCKIDX-f8b3895b4a1b7ca20812d0d194f076d3",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "38a84eff87_3d51d0dc5f.pdf",
+          "file_name": "2ee24d3a59_558c3f0191.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/38a84eff87_3d51d0dc5f.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/2ee24d3a59_558c3f0191.pdf"
+        },
+        {
+          "file_name": "20260930_UNTR_Laporan Informasi dan Fakta Material_32162308_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/757601dddf_af9ad2e06d.pdf"
         }
       ],
-      "content_hash": "e7c82c72def8cb52f245507877c134a312f335ce2fb62a50c32b2f55177d553f",
-      "disclosure_type": "VOLATILITY_EXPLANATION",
+      "content_hash": "ce9cbaade0c069cde746a066e88494f00db331941637117d54c0ce6dddb2b939",
+      "disclosure_type": "CAPITAL_ACTION",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/38a84eff87_3d51d0dc5f.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/2ee24d3a59_558c3f0191.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-09-30T09:10:24+07:00",
+      "published_at": "2026-09-30T23:58:44+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "ESIP",
-      "title": "Penjelasan atas Volatilitas Transaksi [ ESIP ]"
+      "ticker": "UNTR",
+      "title": "PERUBAHAN JADWAL RENCANA PEMBAGIAN DIVIDEN INTERIM/ [ UNTR ]"
     },
     {
-      "announcement_id": "BLOCKIDX-b81156880e5970ba9260c30365ed6ab5",
+      "announcement_id": "BLOCKIDX-6853b635aa426c53531296260cd84be1",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "da5f967d3b_dbf1a248bc.pdf",
+          "file_name": "1a58ad7f29_0d0e43baf6.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/da5f967d3b_dbf1a248bc.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/1a58ad7f29_0d0e43baf6.pdf"
         },
         {
-          "file_name": "20260930_SFAN_Laporan Informasi dan Fakta Material_32161940_lamp6.pdf",
+          "file_name": "20260930_GIAA_Laporan Informasi dan Fakta Material_32162296_lamp2.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/42319287b3_81ff87c69e.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/65145e6dab_d22c2988c9.pdf"
         },
         {
-          "file_name": "20260930_SFAN_Laporan Informasi dan Fakta Material_32161940_lamp3.pdf",
+          "file_name": "20260930_GIAA_Laporan Informasi dan Fakta Material_32162296_lamp1.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/736f2d3883_5575c069d3.pdf"
-        },
-        {
-          "file_name": "20260930_SFAN_Laporan Informasi dan Fakta Material_32161940_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/7c2d2967b8_9f0c9b3bda.pdf"
-        },
-        {
-          "file_name": "20260930_SFAN_Laporan Informasi dan Fakta Material_32161940_lamp5.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/a58dd3a365_19c6ca90ea.pdf"
-        },
-        {
-          "file_name": "20260930_SFAN_Laporan Informasi dan Fakta Material_32161940_lamp4.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/ab12f3a68f_ef9f1b2473.pdf"
-        },
-        {
-          "file_name": "20260930_SFAN_Laporan Informasi dan Fakta Material_32161940_lamp2.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/c0dd3bdb11_f8b05265ad.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/e561ad0b8e_fa3b935102.pdf"
         }
       ],
-      "content_hash": "56b40c2476fe63498f12eed840ad9038de41ce261ed67b15312c6d75d1db909b",
-      "disclosure_type": "OTHER_DISCLOSURE",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/da5f967d3b_dbf1a248bc.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-30T08:59:59+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "SFAN",
-      "title": "Keterbukaan Informasi Sehubungan Dengan Transaksi Material Dan Transaksi Afiliasi [ SFAN ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-7de88a7623d0d595ab99d5f970e1bff5",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "70bdb13940_c3de85d9f6.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/70bdb13940_c3de85d9f6.pdf"
-        },
-        {
-          "file_name": "20260930_BBTN_Penyampaian Prospektus/Informasi Tambahan_32161939_lamp2.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/5061420458_a7a2134864.pdf"
-        },
-        {
-          "file_name": "20260930_BBTN_Penyampaian Prospektus/Informasi Tambahan_32161939_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/9709197c5e_d0e0288de1.pdf"
-        }
-      ],
-      "content_hash": "5631c2a6f06a9a0b8be963d95b9a83bd6dfb10ca938ea57a8c85892a2b0328e8",
-      "disclosure_type": "OTHER_DISCLOSURE",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/70bdb13940_c3de85d9f6.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-30T08:44:06+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "BBTN",
-      "title": "Penyampaian Prospektus [ BBTN ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-c7fc4b0794992489e88b4ffe27ee8d92",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "LK-30092026-9725-00.pdf-0.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_KSEI/LK-30092026-9725-00.pdf-0.pdf"
-        }
-      ],
-      "content_hash": "891ff162e052be60baecee41408a3198d9a5725850ab2ef7a5ca76419d28d6fd",
+      "content_hash": "366d6726bf3f9f0fbbe00005b8483f590d7a6d54a6d2b15d3a93a47e9a579467",
       "disclosure_type": "OWNERSHIP",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_KSEI/LK-30092026-9725-00.pdf-0.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/1a58ad7f29_0d0e43baf6.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-09-30T08:43:31+07:00",
+      "published_at": "2026-09-30T23:54:58+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "DGIK",
-      "title": "LAPORAN KEPEMILIKAN ATAU SETIAP PERUBAHAN KEPEMILIKAN SAHAM PERUSAHAAN TERBUKA [ DGIK ]"
+      "ticker": "GIAA",
+      "title": "KETERBUKAAN INFORMASI KEPADA PEMEGANG SAHAM PT GARUDA INDONESIA (PERSERO) TBK SEHUBUNGAN DENGAN RENCANA PENAMBAHAN MODAL DENGAN HAK MEMESAN EFEK TERLEBIH DAHULU III (\"KETERBUKAAN INFORMASI\") [ GIAA ]"
     },
     {
-      "announcement_id": "BLOCKIDX-cdde94e5b4192a528b8b8cbbb097efe8",
+      "announcement_id": "BLOCKIDX-d73d2efaa0756d701dfa4c5eecfdcc54",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "e6090298c2_aa7e3a6f32.pdf",
+          "file_name": "93c66f99ec_1a5a4fd0f6.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/e6090298c2_aa7e3a6f32.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/93c66f99ec_1a5a4fd0f6.pdf"
         },
         {
-          "file_name": "20260929_MITI_Laporan Informasi dan Fakta Material_32161819_lamp1.pdf",
+          "file_name": "20260930_ASGR_Laporan Informasi dan Fakta Material_32162305_lamp1.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/91cf424858_52b164a3bf.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/de598c43fe_365aff5356.pdf"
         }
       ],
-      "content_hash": "f4625defd7601d1b6091ef60501e3bb4b9d45a1b99cac4b6fb54e52c40147eb1",
-      "disclosure_type": "OTHER_DISCLOSURE",
+      "content_hash": "b17cf58a1f128279921d061af13182bffefca17bc99ac21de6f22b6e38e2a385",
+      "disclosure_type": "CAPITAL_ACTION",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/e6090298c2_aa7e3a6f32.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/93c66f99ec_1a5a4fd0f6.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-09-30T08:31:51+07:00",
+      "published_at": "2026-09-30T23:52:09+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "MITI",
-      "title": "Keterbukaan Informasi sehubungan dengan Penandatangan Memorandum of Understanding (MOU) antara PT Mitra Investindo Tbk dan PT CNEC Engineering Indonesia [ MITI ]"
+      "ticker": "ASGR",
+      "title": "PERUBAHAN RENCANA PEMBAGIAN DIVIDEN [ ASGR ]"
     },
     {
-      "announcement_id": "BLOCKIDX-f85c07f056612247146b1e38dc34abdd",
+      "announcement_id": "BLOCKIDX-4662bec3abd76dc2e36bfbd9473be1c0",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "351ecd96ab_b85ff752f1.pdf",
+          "file_name": "FinancialStatement-2026-II-LCKM.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/351ecd96ab_b85ff752f1.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260930235836-64457-0/FinancialStatement-2026-II-LCKM.pdf"
         },
         {
-          "file_name": "20260929_INDS_Informasi Transaksi Afiliasi_32161565_lamp1.pdf",
+          "file_name": "FinancialStatement-2026-II-LCKM.xlsx",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/d51d1e8408_8b1387ec75.pdf"
-        }
-      ],
-      "content_hash": "90513793ef97017d4274f82a558919180919fe7f93e1aaed30cd9ff852d193a9",
-      "disclosure_type": "OTHER_DISCLOSURE",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/351ecd96ab_b85ff752f1.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-30T08:12:24+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "INDS",
-      "title": "Transaksi Afiliasi [ INDS ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-3fbc42fc892282073c1bcf013bb812a4",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "f5630699cb_9a0e014946.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/f5630699cb_9a0e014946.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260930235836-64457-0/FinancialStatement-2026-II-LCKM.xlsx"
         },
         {
-          "file_name": "20260929_SRSN_Laporan Informasi dan Fakta Material_32161600_lamp1.pdf",
+          "file_name": "inlineXBRL.zip",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/25345c2af4_b0b03a12c8.pdf"
-        }
-      ],
-      "content_hash": "f361c6d522d78f8497c3839d0842cd8e5bc4aa84fa5d7718bc7991565cba76c2",
-      "disclosure_type": "OTHER_DISCLOSURE",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/f5630699cb_9a0e014946.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-09-30T08:11:45+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "SRSN",
-      "title": "Pengunduran Diri Direktur Independen PT. Indo Acidatama Tbk [ SRSN ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-19d2d603ef1ba41f336329c8e394eebf",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "6e54d33ea6_debb7e1d56.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/6e54d33ea6_debb7e1d56.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260930235836-64457-0/inlineXBRL.zip"
         },
         {
-          "file_name": "20260929_BTPN_Rencana Penyampaian Laporan Keuangan_32161651_lamp1.pdf",
+          "file_name": "instance.zip",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/f634783342_b4ef484b46.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260930235836-64457-0/instance.zip"
+        },
+        {
+          "file_name": "LK LCKM Q2 2026.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260930235836-64457-0/LK LCKM Q2 2026.pdf"
+        },
+        {
+          "file_name": "SPD LK Q2 2026.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260930235836-64457-0/SPD LK Q2 2026.pdf"
         }
       ],
-      "content_hash": "a45ceac432cba7e884f58308e15c958edce8433a4d9642423fde598c188cb547",
+      "content_hash": "c4172afcfbb860a501e648bef0cd4fa4fc4140b6f2a5d3893a3b356fd1cb352d",
       "disclosure_type": "FINANCIAL_REPORT",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/6e54d33ea6_debb7e1d56.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260930235836-64457-0/FinancialStatement-2026-II-LCKM.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-09-30T00:19:33+07:00",
+      "published_at": "2026-09-30T23:51:24+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "BTPN",
-      "title": "Rencana Penyampaian Laporan Keuangan Kuartal III 2026 Diaudit [ BTPN ]"
+      "ticker": "LCKM",
+      "title": "Penyampaian Laporan Keuangan Interim Yang Tidak Diaudit [ LCKM ]"
     },
     {
-      "announcement_id": "BLOCKIDX-e43d799807ab1fdee6834f12c0d6dff2",
+      "announcement_id": "BLOCKIDX-0d361d4e391f1ec7e468492e32e0bebf",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "41c14cfa03_3cb6367851.pdf",
+          "file_name": "FinancialStatement-2026-II-BRIF.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/41c14cfa03_3cb6367851.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260930235328-64462-0/FinancialStatement-2026-II-BRIF.pdf"
         },
         {
-          "file_name": "20260929_APIA_Laporan Informasi dan Fakta Material_32161935_lamp1.pdf",
+          "file_name": "brif_billingual_30 juni 2026_released.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/d7bc2c4888_57a69d1406.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260930235328-64462-0/brif_billingual_30 juni 2026_released.pdf"
+        },
+        {
+          "file_name": "FinancialStatement-2026-II-BRIF.xlsx",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260930235328-64462-0/FinancialStatement-2026-II-BRIF.xlsx"
+        },
+        {
+          "file_name": "inlineXBRL.zip",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260930235328-64462-0/inlineXBRL.zip"
+        },
+        {
+          "file_name": "instance.zip",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260930235328-64462-0/instance.zip"
+        },
+        {
+          "file_name": "P.001_PenjelasanAsetLiabilitas2026.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260930235328-64462-0/P.001_PenjelasanAsetLiabilitas2026.pdf"
+        },
+        {
+          "file_name": "P.002_Surat Pengantar LK Jun 26.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260930235328-64462-0/P.002_Surat Pengantar LK Jun 26.pdf"
+        },
+        {
+          "file_name": "SPD LK Juni 2026_signed.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260930235328-64462-0/SPD LK Juni 2026_signed.pdf"
         }
       ],
-      "content_hash": "9b376630b1c1ad00481ac4b46472886677a6f1cbd86eb752e89b382c52cce330",
-      "disclosure_type": "OTHER_DISCLOSURE",
+      "content_hash": "2f976b298d5c88eef5e6398f07d7629350575ce242af13dc294173f82b1c7ef6",
+      "disclosure_type": "FINANCIAL_REPORT",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/41c14cfa03_3cb6367851.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/20260930235328-64462-0/FinancialStatement-2026-II-BRIF.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-09-29T22:53:23+07:00",
+      "published_at": "2026-09-30T23:48:39+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "APIA",
-      "title": "Perubahan Bandar Udara yang Dikelola oleh PT Angkasa Pura Indonesia (Persero) [ APIA ]"
+      "ticker": "BRIF",
+      "title": "Penyampaian Laporan Keuangan Interim Auditan [ BRIF ]"
     },
     {
-      "announcement_id": "BLOCKIDX-e2bed216c213f7e0ba262f4e242ba96f",
+      "announcement_id": "BLOCKIDX-490c31cd190f2ff4bba4e72b2e93c27e",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "449df71bb1_1236728aed.pdf",
+          "file_name": "9a79761abf_a8240bc456.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/449df71bb1_1236728aed.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/9a79761abf_a8240bc456.pdf"
         },
         {
-          "file_name": "20260929_ISAT_Ringkasan Risalah/Risalah RUPS_32161919_lamp1.pdf",
+          "file_name": "20260930_GIAA_Pengumuman RUPS_32162112_lamp1.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/adf6af5feb_438e335628.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/a72dadff3a_fbca15a84e.pdf"
         }
       ],
-      "content_hash": "5deb5f125d977faa2dca12a3b44e2bf927c01254e4933e9cc1fae07bc2978679",
+      "content_hash": "c3dd49754cd36af5814ce3c7fbea38e5e562f650b05679dfe85e4b8955b8c452",
       "disclosure_type": "OWNERSHIP",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/449df71bb1_1236728aed.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/9a79761abf_a8240bc456.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-09-29T22:10:20+07:00",
+      "published_at": "2026-09-30T23:47:19+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "ISAT",
-      "title": "Ringkasan Risalah Rapat Umum Para Pemegang Saham Luar Biasa [ ISAT ]"
+      "ticker": "GIAA",
+      "title": "Pemberitahuan Rencana Rapat Umum Pemegang Saham Luar Biasa [ GIAA ]"
     }
   ],
   "schema_version": "BLOCK_IDX_DISCLOSURE_CACHE_V5_1",
