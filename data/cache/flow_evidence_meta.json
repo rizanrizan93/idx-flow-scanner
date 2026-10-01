@@ -5,50 +5,331 @@
     "providers": [],
     "status": "RETIRED"
   },
-  "generated_at": "2026-09-30T18:09:29.232767+00:00",
-  "target_trade_date": "2026-09-30",
+  "generated_at": "2026-10-01T18:37:44.373687+00:00",
+  "target_trade_date": "2026-10-01",
   "universe_count": 700,
   "zapi_capital_actions": {
-    "days": 72,
-    "details": {},
-    "freshest": "2026-09-03",
-    "rows": 126,
-    "status": "QUOTA_EXHAUSTED: Zapi rate/monthly quota exhausted",
-    "tickers": 95,
+    "days": 85,
+    "details": {
+      "feeds": {
+        "additional-listings": {
+          "api_calls": 4,
+          "rows": 13,
+          "status": "UPDATED"
+        },
+        "issued-history": {
+          "api_calls": 4,
+          "rows": 1796,
+          "status": "UPDATED"
+        },
+        "rights-offerings": {
+          "api_calls": 4,
+          "rows": 1,
+          "status": "UPDATED"
+        },
+        "stock-splits": {
+          "api_calls": 4,
+          "rows": 0,
+          "status": "UPDATED"
+        }
+      },
+      "status": "UPDATED"
+    },
+    "freshest": "2026-10-01",
+    "rows": 161,
+    "status": "UPDATED",
+    "tickers": 111,
     "token_present": true,
-    "upcoming_events": 0
+    "upcoming_events": 8
   },
   "zapi_idx_foreign": {
-    "days": 24,
+    "days": 44,
     "flow_unit": "SHARES",
-    "freshest": "2026-09-02",
+    "freshest": "2026-10-01",
     "refresh_mode": "INCREMENTAL_AFTER_BOOTSTRAP",
-    "rows": 9600,
-    "status": "QUOTA_EXHAUSTED: Zapi rate/monthly quota exhausted",
+    "rows": 23600,
+    "status": "PRESERVED",
     "target_history_days": 20,
-    "tickers": 400,
+    "tickers": 700,
     "token_present": true
   },
   "zapi_ownership": {
-    "days": 1,
-    "details": {},
-    "freshest": "2026-09-02",
-    "latest_report_date": "2026-09-02",
+    "days": 2,
+    "details": {
+      "fallback": {
+        "per_ticker": {
+          "AADI": {
+            "rows": 12,
+            "status": "UPDATED"
+          },
+          "AALI": {
+            "rows": 16,
+            "status": "UPDATED"
+          },
+          "ANTM": {
+            "rows": 16,
+            "status": "UPDATED"
+          },
+          "APEX": {
+            "rows": 7,
+            "status": "UPDATED"
+          },
+          "ARCI": {
+            "rows": 10,
+            "status": "UPDATED"
+          },
+          "BACH": {
+            "rows": 8,
+            "status": "UPDATED"
+          },
+          "BAIK": {
+            "rows": 7,
+            "status": "UPDATED"
+          },
+          "BEST": {
+            "rows": 12,
+            "status": "UPDATED"
+          },
+          "BIPP": {
+            "rows": 6,
+            "status": "UPDATED"
+          },
+          "BMBL": {
+            "rows": 7,
+            "status": "UPDATED"
+          },
+          "CBRE": {
+            "rows": 11,
+            "status": "UPDATED"
+          },
+          "COCO": {
+            "rows": 9,
+            "status": "UPDATED"
+          },
+          "COIN": {
+            "rows": 7,
+            "status": "UPDATED"
+          },
+          "CTTH": {
+            "rows": 11,
+            "status": "UPDATED"
+          },
+          "DFAM": {
+            "rows": 8,
+            "status": "UPDATED"
+          },
+          "DMAS": {
+            "rows": 5,
+            "status": "UPDATED"
+          },
+          "EKAD": {
+            "rows": 8,
+            "status": "UPDATED"
+          },
+          "EMAS": {
+            "rows": 9,
+            "status": "UPDATED"
+          },
+          "ENRG": {
+            "rows": 19,
+            "status": "UPDATED"
+          },
+          "ERAA": {
+            "rows": 14,
+            "status": "UPDATED"
+          },
+          "ESIP": {
+            "rows": 8,
+            "status": "UPDATED"
+          },
+          "GRPM": {
+            "rows": 5,
+            "status": "UPDATED"
+          },
+          "GULA": {
+            "rows": 10,
+            "status": "UPDATED"
+          },
+          "HOPE": {
+            "rows": 14,
+            "status": "UPDATED"
+          },
+          "ICON": {
+            "rows": 10,
+            "status": "UPDATED"
+          },
+          "IKAN": {
+            "rows": 5,
+            "status": "UPDATED"
+          },
+          "INDO": {
+            "rows": 8,
+            "status": "UPDATED"
+          },
+          "IRSX": {
+            "rows": 9,
+            "status": "UPDATED"
+          },
+          "ISAP": {
+            "rows": 5,
+            "status": "UPDATED"
+          },
+          "JGLE": {
+            "rows": 13,
+            "status": "UPDATED"
+          },
+          "KKES": {
+            "rows": 10,
+            "status": "UPDATED"
+          },
+          "KOCI": {
+            "rows": 9,
+            "status": "UPDATED"
+          },
+          "LABA": {
+            "rows": 11,
+            "status": "UPDATED"
+          },
+          "LSIP": {
+            "rows": 5,
+            "status": "UPDATED"
+          },
+          "LUCK": {
+            "rows": 7,
+            "status": "UPDATED"
+          },
+          "MEDS": {
+            "rows": 9,
+            "status": "UPDATED"
+          },
+          "MOLI": {
+            "rows": 10,
+            "status": "UPDATED"
+          },
+          "MPIX": {
+            "rows": 10,
+            "status": "UPDATED"
+          },
+          "NASI": {
+            "rows": 7,
+            "status": "UPDATED"
+          },
+          "NZIA": {
+            "rows": 6,
+            "status": "UPDATED"
+          },
+          "OBAT": {
+            "rows": 11,
+            "status": "UPDATED"
+          },
+          "OILS": {
+            "rows": 9,
+            "status": "UPDATED"
+          },
+          "PADA": {
+            "rows": 6,
+            "status": "UPDATED"
+          },
+          "PADI": {
+            "rows": 4,
+            "status": "UPDATED"
+          },
+          "PCAR": {
+            "rows": 6,
+            "status": "UPDATED"
+          },
+          "PEGE": {
+            "rows": 7,
+            "status": "UPDATED"
+          },
+          "PRDL": {
+            "rows": 14,
+            "status": "UPDATED"
+          },
+          "PTBA": {
+            "rows": 16,
+            "status": "UPDATED"
+          },
+          "RGAS": {
+            "rows": 8,
+            "status": "UPDATED"
+          },
+          "SMDR": {
+            "rows": 15,
+            "status": "UPDATED"
+          },
+          "SOCI": {
+            "rows": 5,
+            "status": "UPDATED"
+          },
+          "SRSN": {
+            "rows": 11,
+            "status": "UPDATED"
+          },
+          "TAPG": {
+            "rows": 13,
+            "status": "UPDATED"
+          },
+          "TEBE": {
+            "rows": 5,
+            "status": "UPDATED"
+          },
+          "TINS": {
+            "rows": 4,
+            "status": "UPDATED"
+          },
+          "TOSK": {
+            "rows": 8,
+            "status": "UPDATED"
+          },
+          "TRUE": {
+            "rows": 11,
+            "status": "UPDATED"
+          },
+          "VTNY": {
+            "rows": 9,
+            "status": "UPDATED"
+          },
+          "WAPO": {
+            "rows": 7,
+            "status": "UPDATED"
+          },
+          "ZATA": {
+            "rows": 7,
+            "status": "UPDATED"
+          }
+        },
+        "requests_attempted": 60,
+        "requests_succeeded": 60,
+        "rows": 548,
+        "snapshot_date": "2026-10-01",
+        "source": "ZAPI_COMPANY_PROFILE_SHAREHOLDERS",
+        "status": "UPDATED",
+        "tickers_requested": 60,
+        "tickers_with_rows": 60
+      },
+      "primary": {
+        "source": "ZAPI_OWNERSHIP_FILES",
+        "status": "UNAVAILABLE: ownership file HTTP 403"
+      }
+    },
+    "freshest": "2026-10-01",
+    "latest_report_date": "2026-10-01",
     "refresh_policy": "WEEKLY_WEEKDAY_0_OR_MISSING",
-    "report_periods": 1,
-    "rows": 344,
-    "status": "QUOTA_EXHAUSTED: Zapi rate/monthly quota exhausted",
-    "tickers": 40,
+    "report_periods": 2,
+    "rows": 892,
+    "status": "UPDATED_PROFILE_FALLBACK",
+    "tickers": 100,
     "token_present": true
   },
   "zapi_stock_summary": {
     "days": 1,
-    "free_float_structure_rows": 400,
-    "freshest": "2026-09-02",
-    "rows": 400,
-    "selected_trade_date": null,
-    "status": "QUOTA_EXHAUSTED: Zapi rate/monthly quota exhausted",
-    "tickers": 400,
+    "free_float_structure_rows": 700,
+    "freshest": "2026-10-01",
+    "rows": 700,
+    "selected_trade_date": "2026-10-01",
+    "status": "UPDATED",
+    "tickers": 700,
     "token_present": true
   }
 }
