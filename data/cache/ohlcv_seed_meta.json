@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-01T18:35:12.259555+00:00",
+  "generated_at": "2026-10-02T18:02:04.640526+00:00",
   "latest_trade_date": "2026-10-01",
   "minimum_bars": 80,
   "period": "1y",
@@ -23,20 +23,20 @@
       "ticker": "BACH"
     },
     {
-      "bars": 60,
-      "ticker": "EMMI"
-    },
-    {
       "bars": 61,
-      "ticker": "JECX"
+      "ticker": "JELI"
     },
     {
       "bars": 59,
       "ticker": "PRDL"
     },
     {
+      "bars": 60,
+      "ticker": "EMMI"
+    },
+    {
       "bars": 61,
-      "ticker": "JELI"
+      "ticker": "JECX"
     }
   ],
   "sector_coverage_count": 700,
