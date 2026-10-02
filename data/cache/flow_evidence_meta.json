@@ -5,11 +5,11 @@
     "providers": [],
     "status": "RETIRED"
   },
-  "generated_at": "2026-10-01T18:37:44.373687+00:00",
-  "target_trade_date": "2026-10-01",
+  "generated_at": "2026-10-02T18:05:19.915380+00:00",
+  "target_trade_date": "2026-10-02",
   "universe_count": 700,
   "zapi_capital_actions": {
-    "days": 85,
+    "days": 86,
     "details": {
       "feeds": {
         "additional-listings": {
@@ -35,274 +35,274 @@
       },
       "status": "UPDATED"
     },
-    "freshest": "2026-10-01",
-    "rows": 161,
+    "freshest": "2026-10-02",
+    "rows": 169,
     "status": "UPDATED",
     "tickers": 111,
     "token_present": true,
-    "upcoming_events": 8
+    "upcoming_events": 9
   },
   "zapi_idx_foreign": {
-    "days": 44,
+    "days": 45,
     "flow_unit": "SHARES",
-    "freshest": "2026-10-01",
+    "freshest": "2026-10-02",
     "refresh_mode": "INCREMENTAL_AFTER_BOOTSTRAP",
-    "rows": 23600,
+    "rows": 24277,
     "status": "PRESERVED",
     "target_history_days": 20,
     "tickers": 700,
     "token_present": true
   },
   "zapi_ownership": {
-    "days": 2,
+    "days": 3,
     "details": {
       "fallback": {
         "per_ticker": {
-          "AADI": {
-            "rows": 12,
+          "APLN": {
+            "rows": 11,
             "status": "UPDATED"
           },
-          "AALI": {
-            "rows": 16,
-            "status": "UPDATED"
-          },
-          "ANTM": {
-            "rows": 16,
-            "status": "UPDATED"
-          },
-          "APEX": {
-            "rows": 7,
-            "status": "UPDATED"
-          },
-          "ARCI": {
+          "BAJA": {
             "rows": 10,
             "status": "UPDATED"
           },
-          "BACH": {
-            "rows": 8,
-            "status": "UPDATED"
-          },
-          "BAIK": {
-            "rows": 7,
-            "status": "UPDATED"
-          },
-          "BEST": {
-            "rows": 12,
-            "status": "UPDATED"
-          },
-          "BIPP": {
-            "rows": 6,
-            "status": "UPDATED"
-          },
-          "BMBL": {
-            "rows": 7,
-            "status": "UPDATED"
-          },
-          "CBRE": {
+          "BAPA": {
             "rows": 11,
             "status": "UPDATED"
           },
-          "COCO": {
-            "rows": 9,
-            "status": "UPDATED"
-          },
-          "COIN": {
+          "BDKR": {
             "rows": 7,
             "status": "UPDATED"
           },
-          "CTTH": {
-            "rows": 11,
+          "BEER": {
+            "rows": 10,
             "status": "UPDATED"
           },
-          "DFAM": {
-            "rows": 8,
+          "BOAT": {
+            "rows": 7,
             "status": "UPDATED"
           },
-          "DMAS": {
-            "rows": 5,
-            "status": "UPDATED"
-          },
-          "EKAD": {
-            "rows": 8,
-            "status": "UPDATED"
-          },
-          "EMAS": {
-            "rows": 9,
-            "status": "UPDATED"
-          },
-          "ENRG": {
+          "BRMS": {
             "rows": 19,
             "status": "UPDATED"
           },
-          "ERAA": {
-            "rows": 14,
+          "BRRC": {
+            "rows": 9,
             "status": "UPDATED"
           },
-          "ESIP": {
+          "BWPT": {
             "rows": 8,
             "status": "UPDATED"
           },
-          "GRPM": {
-            "rows": 5,
-            "status": "UPDATED"
-          },
-          "GULA": {
-            "rows": 10,
-            "status": "UPDATED"
-          },
-          "HOPE": {
-            "rows": 14,
-            "status": "UPDATED"
-          },
-          "ICON": {
-            "rows": 10,
-            "status": "UPDATED"
-          },
-          "IKAN": {
-            "rows": 5,
-            "status": "UPDATED"
-          },
-          "INDO": {
+          "CSMI": {
             "rows": 8,
             "status": "UPDATED"
           },
-          "IRSX": {
-            "rows": 9,
+          "CYBR": {
+            "rows": 12,
             "status": "UPDATED"
           },
-          "ISAP": {
+          "DPUM": {
             "rows": 5,
             "status": "UPDATED"
           },
-          "JGLE": {
-            "rows": 13,
-            "status": "UPDATED"
-          },
-          "KKES": {
-            "rows": 10,
-            "status": "UPDATED"
-          },
-          "KOCI": {
-            "rows": 9,
-            "status": "UPDATED"
-          },
-          "LABA": {
-            "rows": 11,
-            "status": "UPDATED"
-          },
-          "LSIP": {
-            "rows": 5,
-            "status": "UPDATED"
-          },
-          "LUCK": {
-            "rows": 7,
-            "status": "UPDATED"
-          },
-          "MEDS": {
-            "rows": 9,
-            "status": "UPDATED"
-          },
-          "MOLI": {
-            "rows": 10,
-            "status": "UPDATED"
-          },
-          "MPIX": {
-            "rows": 10,
-            "status": "UPDATED"
-          },
-          "NASI": {
-            "rows": 7,
-            "status": "UPDATED"
-          },
-          "NZIA": {
-            "rows": 6,
-            "status": "UPDATED"
-          },
-          "OBAT": {
-            "rows": 11,
-            "status": "UPDATED"
-          },
-          "OILS": {
-            "rows": 9,
-            "status": "UPDATED"
-          },
-          "PADA": {
-            "rows": 6,
-            "status": "UPDATED"
-          },
-          "PADI": {
-            "rows": 4,
-            "status": "UPDATED"
-          },
-          "PCAR": {
-            "rows": 6,
-            "status": "UPDATED"
-          },
-          "PEGE": {
-            "rows": 7,
-            "status": "UPDATED"
-          },
-          "PRDL": {
+          "DSFI": {
             "rows": 14,
             "status": "UPDATED"
           },
-          "PTBA": {
+          "ENZO": {
+            "rows": 8,
+            "status": "UPDATED"
+          },
+          "ERAL": {
+            "rows": 6,
+            "status": "UPDATED"
+          },
+          "ESTI": {
+            "rows": 11,
+            "status": "UPDATED"
+          },
+          "FIRE": {
+            "rows": 9,
+            "status": "UPDATED"
+          },
+          "FLMC": {
+            "rows": 7,
+            "status": "UPDATED"
+          },
+          "GPRA": {
+            "rows": 9,
+            "status": "UPDATED"
+          },
+          "GRPH": {
+            "rows": 5,
+            "status": "UPDATED"
+          },
+          "HAJJ": {
+            "rows": 6,
+            "status": "UPDATED"
+          },
+          "HDIT": {
+            "rows": 5,
+            "status": "UPDATED"
+          },
+          "INCO": {
+            "rows": 9,
+            "status": "UPDATED"
+          },
+          "INKP": {
+            "rows": 5,
+            "status": "UPDATED"
+          },
+          "JELI": {
+            "rows": 5,
+            "status": "UPDATED"
+          },
+          "KBLV": {
+            "rows": 5,
+            "status": "UPDATED"
+          },
+          "KOKA": {
+            "rows": 6,
+            "status": "UPDATED"
+          },
+          "KRYA": {
+            "rows": 10,
+            "status": "UPDATED"
+          },
+          "LAPD": {
+            "rows": 7,
+            "status": "UPDATED"
+          },
+          "MANG": {
+            "rows": 7,
+            "status": "UPDATED"
+          },
+          "MAPI": {
+            "rows": 6,
+            "status": "UPDATED"
+          },
+          "MEJA": {
+            "rows": 6,
+            "status": "UPDATED"
+          },
+          "MGRO": {
+            "rows": 11,
+            "status": "UPDATED"
+          },
+          "MIRA": {
+            "rows": 10,
+            "status": "UPDATED"
+          },
+          "MLPL": {
+            "rows": 10,
+            "status": "UPDATED"
+          },
+          "MPXL": {
+            "rows": 7,
+            "status": "UPDATED"
+          },
+          "MSIE": {
+            "rows": 8,
+            "status": "UPDATED"
+          },
+          "MSJA": {
+            "rows": 8,
+            "status": "UPDATED"
+          },
+          "NANO": {
+            "rows": 10,
+            "status": "UPDATED"
+          },
+          "NEST": {
+            "rows": 8,
+            "status": "UPDATED"
+          },
+          "NTBK": {
+            "rows": 9,
+            "status": "UPDATED"
+          },
+          "PART": {
+            "rows": 7,
+            "status": "UPDATED"
+          },
+          "PIPA": {
+            "rows": 5,
+            "status": "UPDATED"
+          },
+          "SBMA": {
+            "rows": 8,
+            "status": "UPDATED"
+          },
+          "SEMA": {
+            "rows": 7,
+            "status": "UPDATED"
+          },
+          "SINI": {
+            "rows": 10,
+            "status": "UPDATED"
+          },
+          "SOFA": {
+            "rows": 12,
+            "status": "UPDATED"
+          },
+          "SUNI": {
+            "rows": 6,
+            "status": "UPDATED"
+          },
+          "SUPA": {
             "rows": 16,
             "status": "UPDATED"
           },
-          "RGAS": {
-            "rows": 8,
+          "TOOL": {
+            "rows": 6,
             "status": "UPDATED"
           },
-          "SMDR": {
+          "UCID": {
             "rows": 15,
             "status": "UPDATED"
           },
-          "SOCI": {
-            "rows": 5,
+          "UDNG": {
+            "rows": 7,
             "status": "UPDATED"
           },
-          "SRSN": {
-            "rows": 11,
+          "ULTJ": {
+            "rows": 7,
             "status": "UPDATED"
           },
-          "TAPG": {
-            "rows": 13,
+          "UNTR": {
+            "rows": 19,
             "status": "UPDATED"
           },
-          "TEBE": {
-            "rows": 5,
-            "status": "UPDATED"
-          },
-          "TINS": {
-            "rows": 4,
-            "status": "UPDATED"
-          },
-          "TOSK": {
-            "rows": 8,
-            "status": "UPDATED"
-          },
-          "TRUE": {
-            "rows": 11,
-            "status": "UPDATED"
-          },
-          "VTNY": {
+          "VICI": {
             "rows": 9,
             "status": "UPDATED"
           },
-          "WAPO": {
+          "VISI": {
             "rows": 7,
             "status": "UPDATED"
           },
-          "ZATA": {
-            "rows": 7,
+          "VIVA": {
+            "rows": 6,
+            "status": "UPDATED"
+          },
+          "VKTR": {
+            "rows": 17,
+            "status": "UPDATED"
+          },
+          "WEGE": {
+            "rows": 13,
+            "status": "UPDATED"
+          },
+          "WOWS": {
+            "rows": 8,
             "status": "UPDATED"
           }
         },
         "requests_attempted": 60,
         "requests_succeeded": 60,
-        "rows": 548,
-        "snapshot_date": "2026-10-01",
+        "rows": 529,
+        "snapshot_date": "2026-10-02",
         "source": "ZAPI_COMPANY_PROFILE_SHAREHOLDERS",
         "status": "UPDATED",
         "tickers_requested": 60,
@@ -313,21 +313,21 @@
         "status": "UNAVAILABLE: ownership file HTTP 403"
       }
     },
-    "freshest": "2026-10-01",
-    "latest_report_date": "2026-10-01",
+    "freshest": "2026-10-02",
+    "latest_report_date": "2026-10-02",
     "refresh_policy": "WEEKLY_WEEKDAY_0_OR_MISSING",
-    "report_periods": 2,
-    "rows": 892,
+    "report_periods": 3,
+    "rows": 1414,
     "status": "UPDATED_PROFILE_FALLBACK",
-    "tickers": 100,
+    "tickers": 159,
     "token_present": true
   },
   "zapi_stock_summary": {
     "days": 1,
     "free_float_structure_rows": 700,
-    "freshest": "2026-10-01",
+    "freshest": "2026-10-02",
     "rows": 700,
-    "selected_trade_date": "2026-10-01",
+    "selected_trade_date": "2026-10-02",
     "status": "UPDATED",
     "tickers": 700,
     "token_present": true
