@@ -23,8 +23,8 @@
       "tickers": 650
     },
     "ohlcv": {
-      "pct": 94.43,
-      "tickers": 661
+      "pct": 98.71,
+      "tickers": 691
     },
     "ownership": {
       "pct": 97.0,
@@ -39,7 +39,7 @@
       "tickers": 669
     }
   },
-  "generated_at": "2026-10-05T20:56:39.227941+00:00",
+  "generated_at": "2026-10-06T18:38:11.682622+00:00",
   "missing_core_sample": [
     "AGRS",
     "ALII",
@@ -48,13 +48,13 @@
     "BIKE",
     "BMBL",
     "BNBA",
+    "BNII",
     "CENT",
     "DOSS",
     "ECII",
     "EMMI",
     "IDEA",
     "IMJS",
-    "INAI",
     "INDS",
     "INPC",
     "ISEA",
@@ -92,6 +92,7 @@
     "BIKE",
     "BMBL",
     "BNBA",
+    "BNII",
     "CENT",
     "DOOH",
     "DOSS",
@@ -102,7 +103,6 @@
     "GTRA",
     "IDEA",
     "IMJS",
-    "INAI",
     "INDS",
     "INPC",
     "ISEA",
