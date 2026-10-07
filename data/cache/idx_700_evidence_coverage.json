@@ -1,16 +1,16 @@
 {
   "coverage": {
     "core_complete": {
-      "pct": 94.43,
-      "tickers": 661
+      "pct": 94.29,
+      "tickers": 660
     },
     "corporate_action_events": {
       "semantics": "EVENT_DRIVEN_MARKET_WIDE_FEED_NOT_EXPECTED_FOR_EVERY_TICKER",
       "tickers_with_events": 97
     },
     "foreign_flow": {
-      "pct": 95.57,
-      "tickers": 669
+      "pct": 95.71,
+      "tickers": 670
     },
     "free_float": {
       "pct": 0.0,
@@ -23,23 +23,23 @@
       "tickers": 650
     },
     "ohlcv": {
-      "pct": 98.71,
-      "tickers": 691
+      "pct": 98.57,
+      "tickers": 690
     },
     "ownership": {
-      "pct": 97.0,
-      "tickers": 679
+      "pct": 97.14,
+      "tickers": 680
     },
     "sector": {
       "pct": 100.0,
       "tickers": 700
     },
     "stock_summary": {
-      "pct": 95.57,
-      "tickers": 669
+      "pct": 95.71,
+      "tickers": 670
     }
   },
-  "generated_at": "2026-10-06T18:38:11.682622+00:00",
+  "generated_at": "2026-10-07T19:07:35.548352+00:00",
   "missing_core_sample": [
     "AGRS",
     "ALII",
@@ -70,14 +70,15 @@
     "MSKY",
     "NATO",
     "OPMS",
+    "PBRX",
     "PJHB",
     "PLAN",
-    "POLU",
     "PRDL",
     "RANS",
     "SCPI",
     "SILO",
     "SPRE",
+    "TAMU",
     "TBIG",
     "YOII"
   ],
@@ -112,16 +113,15 @@
     "KICI",
     "KLAS",
     "LOPI",
-    "MAYA",
     "MDIY",
     "META",
     "MLBI",
     "MSKY",
     "NATO",
     "OPMS",
+    "PBRX",
     "PJHB",
     "PLAN",
-    "POLU",
     "PRDL",
     "RANS",
     "SAFE",
@@ -129,6 +129,7 @@
     "SCPI",
     "SILO",
     "SPRE",
+    "TAMU",
     "TBIG",
     "TRIM",
     "YOII"
