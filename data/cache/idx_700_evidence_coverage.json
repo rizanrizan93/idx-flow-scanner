@@ -1,16 +1,16 @@
 {
   "coverage": {
     "core_complete": {
-      "pct": 94.29,
-      "tickers": 660
+      "pct": 94.57,
+      "tickers": 662
     },
     "corporate_action_events": {
       "semantics": "EVENT_DRIVEN_MARKET_WIDE_FEED_NOT_EXPECTED_FOR_EVERY_TICKER",
-      "tickers_with_events": 97
+      "tickers_with_events": 98
     },
     "foreign_flow": {
-      "pct": 95.71,
-      "tickers": 670
+      "pct": 96.14,
+      "tickers": 673
     },
     "free_float": {
       "pct": 0.0,
@@ -19,39 +19,38 @@
       "tickers": 0
     },
     "full_complete_including_ownership": {
-      "pct": 92.86,
-      "tickers": 650
+      "pct": 93.0,
+      "tickers": 651
     },
     "ohlcv": {
-      "pct": 98.57,
-      "tickers": 690
+      "pct": 98.43,
+      "tickers": 689
     },
     "ownership": {
-      "pct": 97.14,
-      "tickers": 680
+      "pct": 96.86,
+      "tickers": 678
     },
     "sector": {
       "pct": 100.0,
       "tickers": 700
     },
     "stock_summary": {
-      "pct": 95.71,
-      "tickers": 670
+      "pct": 96.14,
+      "tickers": 673
     }
   },
-  "generated_at": "2026-10-07T19:07:35.548352+00:00",
+  "generated_at": "2026-10-08T19:03:38.807815+00:00",
   "missing_core_sample": [
-    "AGRS",
     "ALII",
     "BACH",
     "BBHI",
+    "BEKS",
     "BIKE",
     "BMBL",
     "BNBA",
     "BNII",
     "CENT",
     "DOSS",
-    "ECII",
     "EMMI",
     "IDEA",
     "IMJS",
@@ -66,30 +65,29 @@
     "LOPI",
     "MDIY",
     "META",
-    "MLBI",
     "MSKY",
     "NATO",
     "OPMS",
-    "PBRX",
     "PJHB",
     "PLAN",
     "PRDL",
+    "PURA",
     "RANS",
     "SCPI",
     "SILO",
     "SPRE",
-    "TAMU",
     "TBIG",
+    "UNSP",
     "YOII"
   ],
   "missing_full_sample": [
-    "AGRS",
     "AIMS",
     "AKSI",
     "ALII",
     "ANDI",
     "BACH",
     "BBHI",
+    "BEKS",
     "BIKE",
     "BMBL",
     "BNBA",
@@ -97,7 +95,6 @@
     "CENT",
     "DOOH",
     "DOSS",
-    "ECII",
     "EMMI",
     "ESTA",
     "FITT",
@@ -115,7 +112,6 @@
     "LOPI",
     "MDIY",
     "META",
-    "MLBI",
     "MSKY",
     "NATO",
     "OPMS",
@@ -123,15 +119,16 @@
     "PJHB",
     "PLAN",
     "PRDL",
+    "PURA",
     "RANS",
     "SAFE",
     "SAPX",
     "SCPI",
     "SILO",
     "SPRE",
-    "TAMU",
     "TBIG",
     "TRIM",
+    "UNSP",
     "YOII"
   ],
   "provider_status": {
