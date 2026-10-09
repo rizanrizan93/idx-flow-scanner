@@ -1,16 +1,16 @@
 {
   "coverage": {
     "core_complete": {
-      "pct": 94.57,
-      "tickers": 662
+      "pct": 95.0,
+      "tickers": 665
     },
     "corporate_action_events": {
       "semantics": "EVENT_DRIVEN_MARKET_WIDE_FEED_NOT_EXPECTED_FOR_EVERY_TICKER",
-      "tickers_with_events": 98
+      "tickers_with_events": 97
     },
     "foreign_flow": {
-      "pct": 96.14,
-      "tickers": 673
+      "pct": 96.29,
+      "tickers": 674
     },
     "free_float": {
       "pct": 0.0,
@@ -35,22 +35,20 @@
       "tickers": 700
     },
     "stock_summary": {
-      "pct": 96.14,
-      "tickers": 673
+      "pct": 96.29,
+      "tickers": 674
     }
   },
-  "generated_at": "2026-10-08T19:03:38.807815+00:00",
+  "generated_at": "2026-10-09T18:33:21.553677+00:00",
   "missing_core_sample": [
     "ALII",
     "BACH",
+    "BAUT",
     "BBHI",
-    "BEKS",
     "BIKE",
     "BMBL",
-    "BNBA",
     "BNII",
     "CENT",
-    "DOSS",
     "EMMI",
     "IDEA",
     "IMJS",
@@ -65,19 +63,18 @@
     "LOPI",
     "MDIY",
     "META",
+    "MIRA",
+    "MLBI",
     "MSKY",
     "NATO",
     "OPMS",
-    "PJHB",
     "PLAN",
     "PRDL",
-    "PURA",
     "RANS",
     "SCPI",
     "SILO",
     "SPRE",
     "TBIG",
-    "UNSP",
     "YOII"
   ],
   "missing_full_sample": [
@@ -86,15 +83,14 @@
     "ALII",
     "ANDI",
     "BACH",
+    "BAUT",
     "BBHI",
     "BEKS",
     "BIKE",
     "BMBL",
-    "BNBA",
     "BNII",
     "CENT",
     "DOOH",
-    "DOSS",
     "EMMI",
     "ESTA",
     "FITT",
@@ -112,11 +108,12 @@
     "LOPI",
     "MDIY",
     "META",
+    "MIRA",
+    "MLBI",
     "MSKY",
     "NATO",
     "OPMS",
     "PBRX",
-    "PJHB",
     "PLAN",
     "PRDL",
     "PURA",
