@@ -1,16 +1,16 @@
 {
   "coverage": {
     "core_complete": {
-      "pct": 95.0,
-      "tickers": 665
+      "pct": 95.14,
+      "tickers": 666
     },
     "corporate_action_events": {
       "semantics": "EVENT_DRIVEN_MARKET_WIDE_FEED_NOT_EXPECTED_FOR_EVERY_TICKER",
       "tickers_with_events": 97
     },
     "foreign_flow": {
-      "pct": 96.29,
-      "tickers": 674
+      "pct": 96.71,
+      "tickers": 677
     },
     "free_float": {
       "pct": 0.0,
@@ -19,53 +19,53 @@
       "tickers": 0
     },
     "full_complete_including_ownership": {
-      "pct": 93.0,
-      "tickers": 651
+      "pct": 93.14,
+      "tickers": 652
     },
     "ohlcv": {
-      "pct": 98.43,
-      "tickers": 689
+      "pct": 98.29,
+      "tickers": 688
     },
     "ownership": {
-      "pct": 96.86,
-      "tickers": 678
+      "pct": 96.57,
+      "tickers": 676
     },
     "sector": {
       "pct": 100.0,
       "tickers": 700
     },
     "stock_summary": {
-      "pct": 96.29,
-      "tickers": 674
+      "pct": 96.71,
+      "tickers": 677
     }
   },
-  "generated_at": "2026-10-09T18:33:21.553677+00:00",
+  "generated_at": "2026-10-12T21:26:53.191428+00:00",
   "missing_core_sample": [
     "ALII",
     "BACH",
-    "BAUT",
     "BBHI",
     "BIKE",
+    "BLTA",
     "BMBL",
     "BNII",
     "CENT",
     "EMMI",
+    "GWSA",
     "IDEA",
     "IMJS",
     "INDS",
     "INPC",
-    "ISEA",
     "JAYA",
     "JECX",
     "JELI",
     "KICI",
     "KLAS",
     "LOPI",
+    "MAYA",
     "MDIY",
     "META",
-    "MIRA",
-    "MLBI",
     "MSKY",
+    "NASA",
     "NATO",
     "OPMS",
     "PLAN",
@@ -74,7 +74,6 @@
     "SCPI",
     "SILO",
     "SPRE",
-    "TBIG",
     "YOII"
   ],
   "missing_full_sample": [
@@ -83,10 +82,10 @@
     "ALII",
     "ANDI",
     "BACH",
-    "BAUT",
     "BBHI",
     "BEKS",
     "BIKE",
+    "BLTA",
     "BMBL",
     "BNII",
     "CENT",
@@ -95,22 +94,22 @@
     "ESTA",
     "FITT",
     "GTRA",
+    "GWSA",
     "IDEA",
     "IMJS",
     "INDS",
     "INPC",
-    "ISEA",
     "JAYA",
     "JECX",
     "JELI",
     "KICI",
     "KLAS",
     "LOPI",
+    "MAYA",
     "MDIY",
     "META",
-    "MIRA",
-    "MLBI",
     "MSKY",
+    "NASA",
     "NATO",
     "OPMS",
     "PBRX",
@@ -123,7 +122,6 @@
     "SCPI",
     "SILO",
     "SPRE",
-    "TBIG",
     "TRIM",
     "UNSP",
     "YOII"
