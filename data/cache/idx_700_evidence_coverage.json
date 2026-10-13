@@ -1,16 +1,16 @@
 {
   "coverage": {
     "core_complete": {
-      "pct": 95.14,
-      "tickers": 666
+      "pct": 95.43,
+      "tickers": 668
     },
     "corporate_action_events": {
       "semantics": "EVENT_DRIVEN_MARKET_WIDE_FEED_NOT_EXPECTED_FOR_EVERY_TICKER",
-      "tickers_with_events": 97
+      "tickers_with_events": 96
     },
     "foreign_flow": {
-      "pct": 96.71,
-      "tickers": 677
+      "pct": 96.86,
+      "tickers": 678
     },
     "free_float": {
       "pct": 0.0,
@@ -35,17 +35,18 @@
       "tickers": 700
     },
     "stock_summary": {
-      "pct": 96.71,
-      "tickers": 677
+      "pct": 96.86,
+      "tickers": 678
     }
   },
-  "generated_at": "2026-10-12T21:26:53.191428+00:00",
+  "generated_at": "2026-10-13T19:33:06.766963+00:00",
   "missing_core_sample": [
+    "AKKU",
     "ALII",
     "BACH",
+    "BAUT",
     "BBHI",
     "BIKE",
-    "BLTA",
     "BMBL",
     "BNII",
     "CENT",
@@ -61,12 +62,9 @@
     "KICI",
     "KLAS",
     "LOPI",
-    "MAYA",
-    "MDIY",
     "META",
+    "MLBI",
     "MSKY",
-    "NASA",
-    "NATO",
     "OPMS",
     "PLAN",
     "PRDL",
@@ -74,14 +72,16 @@
     "SCPI",
     "SILO",
     "SPRE",
-    "YOII"
+    "WMUU"
   ],
   "missing_full_sample": [
     "AIMS",
+    "AKKU",
     "AKSI",
     "ALII",
     "ANDI",
     "BACH",
+    "BAUT",
     "BBHI",
     "BEKS",
     "BIKE",
@@ -105,12 +105,10 @@
     "KICI",
     "KLAS",
     "LOPI",
-    "MAYA",
-    "MDIY",
     "META",
+    "MLBI",
     "MSKY",
     "NASA",
-    "NATO",
     "OPMS",
     "PBRX",
     "PLAN",
@@ -124,7 +122,7 @@
     "SPRE",
     "TRIM",
     "UNSP",
-    "YOII"
+    "WMUU"
   ],
   "provider_status": {
     "capital_actions": "QUOTA_EXHAUSTED: Zapi rate/monthly quota exhausted",
