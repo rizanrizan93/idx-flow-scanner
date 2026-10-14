@@ -1,8 +1,8 @@
 {
   "coverage": {
     "core_complete": {
-      "pct": 95.43,
-      "tickers": 668
+      "pct": 95.71,
+      "tickers": 670
     },
     "corporate_action_events": {
       "semantics": "EVENT_DRIVEN_MARKET_WIDE_FEED_NOT_EXPECTED_FOR_EVERY_TICKER",
@@ -19,12 +19,12 @@
       "tickers": 0
     },
     "full_complete_including_ownership": {
-      "pct": 93.14,
-      "tickers": 652
+      "pct": 93.29,
+      "tickers": 653
     },
     "ohlcv": {
-      "pct": 98.29,
-      "tickers": 688
+      "pct": 98.86,
+      "tickers": 692
     },
     "ownership": {
       "pct": 96.57,
@@ -39,9 +39,8 @@
       "tickers": 678
     }
   },
-  "generated_at": "2026-10-13T19:33:06.766963+00:00",
+  "generated_at": "2026-10-14T17:36:30.435485+00:00",
   "missing_core_sample": [
-    "AKKU",
     "ALII",
     "BACH",
     "BAUT",
@@ -71,8 +70,7 @@
     "RANS",
     "SCPI",
     "SILO",
-    "SPRE",
-    "WMUU"
+    "SPRE"
   ],
   "missing_full_sample": [
     "AIMS",
@@ -121,8 +119,7 @@
     "SILO",
     "SPRE",
     "TRIM",
-    "UNSP",
-    "WMUU"
+    "UNSP"
   ],
   "provider_status": {
     "capital_actions": "QUOTA_EXHAUSTED: Zapi rate/monthly quota exhausted",
