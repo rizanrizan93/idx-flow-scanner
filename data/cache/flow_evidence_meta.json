@@ -5,8 +5,8 @@
     "providers": [],
     "status": "RETIRED"
   },
-  "generated_at": "2026-10-14T17:36:26.906086+00:00",
-  "target_trade_date": "2026-10-14",
+  "generated_at": "2026-10-15T17:21:58.509894+00:00",
+  "target_trade_date": "2026-10-15",
   "universe_count": 700,
   "zapi_capital_actions": {
     "days": 78,
@@ -23,10 +23,10 @@
     "flow_unit": "SHARES",
     "freshest": "2026-10-02",
     "refresh_mode": "INCREMENTAL_AFTER_BOOTSTRAP",
-    "rows": 23827,
+    "rows": 23847,
     "status": "QUOTA_EXHAUSTED: Zapi rate/monthly quota exhausted",
     "target_history_days": 20,
-    "tickers": 678,
+    "tickers": 679,
     "token_present": true
   },
   "zapi_ownership": {
@@ -43,12 +43,12 @@
   },
   "zapi_stock_summary": {
     "days": 1,
-    "free_float_structure_rows": 678,
+    "free_float_structure_rows": 679,
     "freshest": "2026-10-02",
-    "rows": 678,
+    "rows": 679,
     "selected_trade_date": null,
     "status": "QUOTA_EXHAUSTED: Zapi rate/monthly quota exhausted",
-    "tickers": 678,
+    "tickers": 679,
     "token_present": true
   }
 }
