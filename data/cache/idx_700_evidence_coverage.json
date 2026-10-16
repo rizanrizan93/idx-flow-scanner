@@ -1,8 +1,8 @@
 {
   "coverage": {
     "core_complete": {
-      "pct": 95.43,
-      "tickers": 668
+      "pct": 95.71,
+      "tickers": 670
     },
     "corporate_action_events": {
       "semantics": "EVENT_DRIVEN_MARKET_WIDE_FEED_NOT_EXPECTED_FOR_EVERY_TICKER",
@@ -23,8 +23,8 @@
       "tickers": 653
     },
     "ohlcv": {
-      "pct": 98.43,
-      "tickers": 689
+      "pct": 98.29,
+      "tickers": 688
     },
     "ownership": {
       "pct": 96.57,
@@ -39,23 +39,23 @@
       "tickers": 679
     }
   },
-  "generated_at": "2026-10-15T17:22:04.224600+00:00",
+  "generated_at": "2026-10-16T16:58:15.794026+00:00",
   "missing_core_sample": [
     "ALII",
-    "BABP",
     "BACH",
     "BAUT",
     "BBHI",
+    "BCAP",
     "BIKE",
     "BMBL",
-    "BNII",
+    "BNBA",
     "CENT",
     "EMMI",
+    "GWSA",
     "IDEA",
     "IMJS",
     "INDS",
     "INPC",
-    "JAYA",
     "JECX",
     "JELI",
     "KICI",
@@ -64,15 +64,13 @@
     "META",
     "MLBI",
     "MSKY",
-    "NETV",
     "OPMS",
-    "PGLI",
     "PLAN",
     "PRDL",
     "RANS",
     "SCPI",
     "SILO",
-    "SPRE"
+    "TARA"
   ],
   "missing_full_sample": [
     "AKKU",
@@ -83,21 +81,22 @@
     "BACH",
     "BAUT",
     "BBHI",
+    "BCAP",
     "BEKS",
     "BIKE",
     "BLTA",
     "BMBL",
-    "BNII",
+    "BNBA",
     "CENT",
     "DOOH",
     "EMMI",
     "ESTA",
     "FITT",
+    "GWSA",
     "IDEA",
     "IMJS",
     "INDS",
     "INPC",
-    "JAYA",
     "JECX",
     "JELI",
     "KICI",
@@ -107,7 +106,6 @@
     "MLBI",
     "MSKY",
     "NASA",
-    "NETV",
     "OPMS",
     "PBRX",
     "PGLI",
@@ -119,7 +117,7 @@
     "SAPX",
     "SCPI",
     "SILO",
-    "SPRE",
+    "TARA",
     "TRIM",
     "UNSP"
   ],
