@@ -1,16 +1,16 @@
 {
   "coverage": {
     "core_complete": {
-      "pct": 95.71,
-      "tickers": 670
+      "pct": 95.43,
+      "tickers": 668
     },
     "corporate_action_events": {
       "semantics": "EVENT_DRIVEN_MARKET_WIDE_FEED_NOT_EXPECTED_FOR_EVERY_TICKER",
-      "tickers_with_events": 96
+      "tickers_with_events": 95
     },
     "foreign_flow": {
-      "pct": 97.0,
-      "tickers": 679
+      "pct": 97.14,
+      "tickers": 680
     },
     "free_float": {
       "pct": 0.0,
@@ -19,62 +19,63 @@
       "tickers": 0
     },
     "full_complete_including_ownership": {
-      "pct": 93.29,
-      "tickers": 653
+      "pct": 93.0,
+      "tickers": 651
     },
     "ohlcv": {
-      "pct": 98.29,
-      "tickers": 688
+      "pct": 98.14,
+      "tickers": 687
     },
     "ownership": {
-      "pct": 96.57,
-      "tickers": 676
+      "pct": 96.29,
+      "tickers": 674
     },
     "sector": {
       "pct": 100.0,
       "tickers": 700
     },
     "stock_summary": {
-      "pct": 97.0,
-      "tickers": 679
+      "pct": 97.14,
+      "tickers": 680
     }
   },
-  "generated_at": "2026-10-16T16:58:15.794026+00:00",
+  "generated_at": "2026-10-19T18:53:09.209983+00:00",
   "missing_core_sample": [
     "ALII",
     "BACH",
     "BAUT",
     "BBHI",
-    "BCAP",
     "BIKE",
     "BMBL",
     "BNBA",
+    "BPTR",
     "CENT",
     "EMMI",
     "GWSA",
-    "IDEA",
+    "IBOS",
     "IMJS",
     "INDS",
     "INPC",
+    "IPTV",
     "JECX",
     "JELI",
     "KICI",
     "KLAS",
     "LOPI",
+    "MAYA",
     "META",
     "MLBI",
-    "MSKY",
     "OPMS",
     "PLAN",
     "PRDL",
     "RANS",
     "SCPI",
     "SILO",
+    "SOTS",
     "TARA"
   ],
   "missing_full_sample": [
     "AKKU",
-    "AKSI",
     "ALII",
     "ANDI",
     "BABP",
@@ -87,24 +88,26 @@
     "BLTA",
     "BMBL",
     "BNBA",
+    "BPTR",
     "CENT",
     "DOOH",
     "EMMI",
     "ESTA",
     "FITT",
     "GWSA",
-    "IDEA",
+    "IBOS",
     "IMJS",
     "INDS",
     "INPC",
+    "IPTV",
     "JECX",
     "JELI",
     "KICI",
     "KLAS",
     "LOPI",
+    "MAYA",
     "META",
     "MLBI",
-    "MSKY",
     "NASA",
     "OPMS",
     "PBRX",
@@ -117,6 +120,7 @@
     "SAPX",
     "SCPI",
     "SILO",
+    "SOTS",
     "TARA",
     "TRIM",
     "UNSP"
