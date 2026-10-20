@@ -1,8 +1,8 @@
 {
   "coverage": {
     "core_complete": {
-      "pct": 95.43,
-      "tickers": 668
+      "pct": 96.0,
+      "tickers": 672
     },
     "corporate_action_events": {
       "semantics": "EVENT_DRIVEN_MARKET_WIDE_FEED_NOT_EXPECTED_FOR_EVERY_TICKER",
@@ -19,12 +19,12 @@
       "tickers": 0
     },
     "full_complete_including_ownership": {
-      "pct": 93.0,
-      "tickers": 651
+      "pct": 93.14,
+      "tickers": 652
     },
     "ohlcv": {
-      "pct": 98.14,
-      "tickers": 687
+      "pct": 98.86,
+      "tickers": 692
     },
     "ownership": {
       "pct": 96.29,
@@ -39,7 +39,7 @@
       "tickers": 680
     }
   },
-  "generated_at": "2026-10-19T18:53:09.209983+00:00",
+  "generated_at": "2026-10-20T17:31:34.402181+00:00",
   "missing_core_sample": [
     "ALII",
     "BACH",
@@ -48,21 +48,17 @@
     "BIKE",
     "BMBL",
     "BNBA",
-    "BPTR",
     "CENT",
     "EMMI",
     "GWSA",
-    "IBOS",
     "IMJS",
     "INDS",
     "INPC",
-    "IPTV",
     "JECX",
     "JELI",
     "KICI",
     "KLAS",
     "LOPI",
-    "MAYA",
     "META",
     "MLBI",
     "OPMS",
@@ -95,7 +91,6 @@
     "ESTA",
     "FITT",
     "GWSA",
-    "IBOS",
     "IMJS",
     "INDS",
     "INPC",
