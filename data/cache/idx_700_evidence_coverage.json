@@ -1,12 +1,12 @@
 {
   "coverage": {
     "core_complete": {
-      "pct": 96.0,
-      "tickers": 672
+      "pct": 95.86,
+      "tickers": 671
     },
     "corporate_action_events": {
       "semantics": "EVENT_DRIVEN_MARKET_WIDE_FEED_NOT_EXPECTED_FOR_EVERY_TICKER",
-      "tickers_with_events": 95
+      "tickers_with_events": 96
     },
     "foreign_flow": {
       "pct": 97.14,
@@ -23,12 +23,12 @@
       "tickers": 652
     },
     "ohlcv": {
-      "pct": 98.86,
-      "tickers": 692
+      "pct": 98.43,
+      "tickers": 689
     },
     "ownership": {
-      "pct": 96.29,
-      "tickers": 674
+      "pct": 96.43,
+      "tickers": 675
     },
     "sector": {
       "pct": 100.0,
@@ -39,7 +39,7 @@
       "tickers": 680
     }
   },
-  "generated_at": "2026-10-20T17:31:34.402181+00:00",
+  "generated_at": "2026-10-21T17:39:57.235647+00:00",
   "missing_core_sample": [
     "ALII",
     "BACH",
@@ -50,7 +50,8 @@
     "BNBA",
     "CENT",
     "EMMI",
-    "GWSA",
+    "GSMF",
+    "IDEA",
     "IMJS",
     "INDS",
     "INPC",
@@ -61,14 +62,14 @@
     "LOPI",
     "META",
     "MLBI",
-    "OPMS",
     "PLAN",
     "PRDL",
     "RANS",
     "SCPI",
     "SILO",
     "SOTS",
-    "TARA"
+    "TARA",
+    "TBIG"
   ],
   "missing_full_sample": [
     "AKKU",
@@ -84,13 +85,13 @@
     "BLTA",
     "BMBL",
     "BNBA",
-    "BPTR",
     "CENT",
     "DOOH",
     "EMMI",
     "ESTA",
     "FITT",
-    "GWSA",
+    "GSMF",
+    "IDEA",
     "IMJS",
     "INDS",
     "INPC",
@@ -104,7 +105,6 @@
     "META",
     "MLBI",
     "NASA",
-    "OPMS",
     "PBRX",
     "PGLI",
     "PLAN",
@@ -117,6 +117,7 @@
     "SILO",
     "SOTS",
     "TARA",
+    "TBIG",
     "TRIM",
     "UNSP"
   ],
