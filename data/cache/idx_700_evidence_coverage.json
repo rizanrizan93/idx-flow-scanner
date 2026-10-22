@@ -6,11 +6,11 @@
     },
     "corporate_action_events": {
       "semantics": "EVENT_DRIVEN_MARKET_WIDE_FEED_NOT_EXPECTED_FOR_EVERY_TICKER",
-      "tickers_with_events": 96
+      "tickers_with_events": 95
     },
     "foreign_flow": {
-      "pct": 97.14,
-      "tickers": 680
+      "pct": 97.0,
+      "tickers": 679
     },
     "free_float": {
       "pct": 0.0,
@@ -19,12 +19,12 @@
       "tickers": 0
     },
     "full_complete_including_ownership": {
-      "pct": 93.14,
-      "tickers": 652
+      "pct": 93.29,
+      "tickers": 653
     },
     "ohlcv": {
-      "pct": 98.43,
-      "tickers": 689
+      "pct": 98.86,
+      "tickers": 692
     },
     "ownership": {
       "pct": 96.43,
@@ -35,11 +35,11 @@
       "tickers": 700
     },
     "stock_summary": {
-      "pct": 97.14,
-      "tickers": 680
+      "pct": 97.0,
+      "tickers": 679
     }
   },
-  "generated_at": "2026-10-21T17:39:57.235647+00:00",
+  "generated_at": "2026-10-22T17:38:23.113834+00:00",
   "missing_core_sample": [
     "ALII",
     "BACH",
@@ -48,9 +48,9 @@
     "BIKE",
     "BMBL",
     "BNBA",
+    "BNII",
     "CENT",
     "EMMI",
-    "GSMF",
     "IDEA",
     "IMJS",
     "INDS",
@@ -85,12 +85,12 @@
     "BLTA",
     "BMBL",
     "BNBA",
+    "BNII",
     "CENT",
     "DOOH",
     "EMMI",
     "ESTA",
     "FITT",
-    "GSMF",
     "IDEA",
     "IMJS",
     "INDS",
@@ -118,7 +118,6 @@
     "SOTS",
     "TARA",
     "TBIG",
-    "TRIM",
     "UNSP"
   ],
   "provider_status": {
