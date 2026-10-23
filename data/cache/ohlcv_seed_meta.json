@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-22T17:34:13.260088+00:00",
-  "latest_trade_date": "2026-10-21",
+  "generated_at": "2026-10-23T17:26:35.634439+00:00",
+  "latest_trade_date": "2026-10-22",
   "minimum_bars": 80,
   "period": "1y",
   "recent_mirror_bars_per_ticker": 10,
@@ -15,27 +15,27 @@
       "ticker": "META"
     },
     {
-      "bars": 72,
+      "bars": 73,
       "ticker": "RANS"
     },
     {
-      "bars": 74,
+      "bars": 75,
       "ticker": "BACH"
     },
     {
-      "bars": 75,
+      "bars": 76,
       "ticker": "JECX"
     },
     {
-      "bars": 73,
-      "ticker": "PRDL"
-    },
-    {
-      "bars": 74,
+      "bars": 75,
       "ticker": "EMMI"
     },
     {
-      "bars": 75,
+      "bars": 74,
+      "ticker": "PRDL"
+    },
+    {
+      "bars": 76,
       "ticker": "JELI"
     }
   ],
@@ -44,8 +44,8 @@
   "sector_enrichment": {
     "coverage_pct": 100.0,
     "known": 700,
-    "requests": 2,
-    "resolved": 2,
+    "requests": 1,
+    "resolved": 1,
     "source": "STOCKANALYSIS_PROFILE_FALLBACK_ONLY_FOR_UNKNOWN",
     "status": "UPDATED",
     "unknown": 0
