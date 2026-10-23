@@ -1,8 +1,8 @@
 {
   "coverage": {
     "core_complete": {
-      "pct": 95.86,
-      "tickers": 671
+      "pct": 95.71,
+      "tickers": 670
     },
     "corporate_action_events": {
       "semantics": "EVENT_DRIVEN_MARKET_WIDE_FEED_NOT_EXPECTED_FOR_EVERY_TICKER",
@@ -19,12 +19,12 @@
       "tickers": 0
     },
     "full_complete_including_ownership": {
-      "pct": 93.29,
-      "tickers": 653
+      "pct": 93.14,
+      "tickers": 652
     },
     "ohlcv": {
-      "pct": 98.86,
-      "tickers": 692
+      "pct": 98.71,
+      "tickers": 691
     },
     "ownership": {
       "pct": 96.43,
@@ -39,9 +39,10 @@
       "tickers": 679
     }
   },
-  "generated_at": "2026-10-22T17:38:23.113834+00:00",
+  "generated_at": "2026-10-23T17:29:06.874541+00:00",
   "missing_core_sample": [
     "ALII",
+    "ARGO",
     "BACH",
     "BAUT",
     "BBHI",
@@ -75,6 +76,7 @@
     "AKKU",
     "ALII",
     "ANDI",
+    "ARGO",
     "BABP",
     "BACH",
     "BAUT",
