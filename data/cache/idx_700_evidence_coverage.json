@@ -1,16 +1,16 @@
 {
   "coverage": {
     "core_complete": {
-      "pct": 95.71,
-      "tickers": 670
+      "pct": 95.57,
+      "tickers": 669
     },
     "corporate_action_events": {
       "semantics": "EVENT_DRIVEN_MARKET_WIDE_FEED_NOT_EXPECTED_FOR_EVERY_TICKER",
       "tickers_with_events": 95
     },
     "foreign_flow": {
-      "pct": 97.0,
-      "tickers": 679
+      "pct": 97.14,
+      "tickers": 680
     },
     "free_float": {
       "pct": 0.0,
@@ -19,39 +19,39 @@
       "tickers": 0
     },
     "full_complete_including_ownership": {
-      "pct": 93.14,
-      "tickers": 652
+      "pct": 93.29,
+      "tickers": 653
     },
     "ohlcv": {
-      "pct": 98.71,
-      "tickers": 691
+      "pct": 98.29,
+      "tickers": 688
     },
     "ownership": {
-      "pct": 96.43,
-      "tickers": 675
+      "pct": 96.57,
+      "tickers": 676
     },
     "sector": {
       "pct": 100.0,
       "tickers": 700
     },
     "stock_summary": {
-      "pct": 97.0,
-      "tickers": 679
+      "pct": 97.14,
+      "tickers": 680
     }
   },
-  "generated_at": "2026-10-23T17:29:06.874541+00:00",
+  "generated_at": "2026-10-26T18:55:01.937984+00:00",
   "missing_core_sample": [
     "ALII",
-    "ARGO",
     "BACH",
     "BAUT",
     "BBHI",
-    "BIKE",
     "BMBL",
-    "BNBA",
     "BNII",
+    "CASS",
     "CENT",
     "EMMI",
+    "GTRA",
+    "HRME",
     "IDEA",
     "IMJS",
     "INDS",
@@ -61,6 +61,7 @@
     "KICI",
     "KLAS",
     "LOPI",
+    "MDLN",
     "META",
     "MLBI",
     "PLAN",
@@ -76,23 +77,22 @@
     "AKKU",
     "ALII",
     "ANDI",
-    "ARGO",
     "BABP",
     "BACH",
     "BAUT",
     "BBHI",
     "BCAP",
     "BEKS",
-    "BIKE",
     "BLTA",
     "BMBL",
-    "BNBA",
     "BNII",
+    "CASS",
     "CENT",
     "DOOH",
     "EMMI",
-    "ESTA",
     "FITT",
+    "GTRA",
+    "HRME",
     "IDEA",
     "IMJS",
     "INDS",
@@ -103,7 +103,7 @@
     "KICI",
     "KLAS",
     "LOPI",
-    "MAYA",
+    "MDLN",
     "META",
     "MLBI",
     "NASA",
