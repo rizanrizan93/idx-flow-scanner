@@ -1,8 +1,8 @@
 {
   "coverage": {
     "core_complete": {
-      "pct": 95.57,
-      "tickers": 669
+      "pct": 96.0,
+      "tickers": 672
     },
     "corporate_action_events": {
       "semantics": "EVENT_DRIVEN_MARKET_WIDE_FEED_NOT_EXPECTED_FOR_EVERY_TICKER",
@@ -23,8 +23,8 @@
       "tickers": 653
     },
     "ohlcv": {
-      "pct": 98.29,
-      "tickers": 688
+      "pct": 98.86,
+      "tickers": 692
     },
     "ownership": {
       "pct": 96.57,
@@ -39,7 +39,7 @@
       "tickers": 680
     }
   },
-  "generated_at": "2026-10-26T18:55:01.937984+00:00",
+  "generated_at": "2026-10-27T18:16:00.474235+00:00",
   "missing_core_sample": [
     "ALII",
     "BACH",
@@ -50,8 +50,6 @@
     "CASS",
     "CENT",
     "EMMI",
-    "GTRA",
-    "HRME",
     "IDEA",
     "IMJS",
     "INDS",
@@ -61,7 +59,6 @@
     "KICI",
     "KLAS",
     "LOPI",
-    "MDLN",
     "META",
     "MLBI",
     "PLAN",
