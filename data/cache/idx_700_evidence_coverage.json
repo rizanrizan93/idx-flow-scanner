@@ -1,8 +1,8 @@
 {
   "coverage": {
     "core_complete": {
-      "pct": 96.0,
-      "tickers": 672
+      "pct": 95.86,
+      "tickers": 671
     },
     "corporate_action_events": {
       "semantics": "EVENT_DRIVEN_MARKET_WIDE_FEED_NOT_EXPECTED_FOR_EVERY_TICKER",
@@ -19,16 +19,16 @@
       "tickers": 0
     },
     "full_complete_including_ownership": {
-      "pct": 93.29,
-      "tickers": 653
+      "pct": 93.14,
+      "tickers": 652
     },
     "ohlcv": {
-      "pct": 98.86,
-      "tickers": 692
+      "pct": 98.57,
+      "tickers": 690
     },
     "ownership": {
-      "pct": 96.57,
-      "tickers": 676
+      "pct": 96.29,
+      "tickers": 674
     },
     "sector": {
       "pct": 100.0,
@@ -39,7 +39,7 @@
       "tickers": 680
     }
   },
-  "generated_at": "2026-10-27T18:16:00.474235+00:00",
+  "generated_at": "2026-10-29T18:42:07.989542+00:00",
   "missing_core_sample": [
     "ALII",
     "BACH",
@@ -47,9 +47,9 @@
     "BBHI",
     "BMBL",
     "BNII",
-    "CASS",
     "CENT",
     "EMMI",
+    "ESTA",
     "IDEA",
     "IMJS",
     "INDS",
@@ -63,6 +63,7 @@
     "MLBI",
     "PLAN",
     "PRDL",
+    "PTSP",
     "RANS",
     "SCPI",
     "SILO",
@@ -83,10 +84,10 @@
     "BLTA",
     "BMBL",
     "BNII",
-    "CASS",
     "CENT",
     "DOOH",
     "EMMI",
+    "ESTA",
     "FITT",
     "GTRA",
     "HRME",
@@ -108,6 +109,7 @@
     "PGLI",
     "PLAN",
     "PRDL",
+    "PTSP",
     "PURA",
     "RANS",
     "SAFE",
