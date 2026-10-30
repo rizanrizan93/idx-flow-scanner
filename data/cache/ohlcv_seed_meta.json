@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-10-29T18:40:26.181751+00:00",
-  "latest_trade_date": "2026-10-28",
+  "generated_at": "2026-10-30T18:11:54.749717+00:00",
+  "latest_trade_date": "2026-10-29",
   "minimum_bars": 80,
   "period": "1y",
   "recent_mirror_bars_per_ticker": 10,
-  "recent_mirror_rows": 6940,
+  "recent_mirror_rows": 6960,
   "rejected": [
     {
       "bars": 0,
@@ -15,19 +15,11 @@
       "ticker": "META"
     },
     {
-      "bars": 77,
+      "bars": 78,
       "ticker": "RANS"
     },
     {
       "bars": 79,
-      "ticker": "BACH"
-    },
-    {
-      "bars": 79,
-      "ticker": "EMMI"
-    },
-    {
-      "bars": 78,
       "ticker": "PRDL"
     }
   ],
@@ -36,14 +28,14 @@
   "sector_enrichment": {
     "coverage_pct": 100.0,
     "known": 700,
-    "requests": 2,
-    "resolved": 2,
+    "requests": 1,
+    "resolved": 1,
     "source": "STOCKANALYSIS_PROFILE_FALLBACK_ONLY_FOR_UNKNOWN",
     "status": "UPDATED",
     "unknown": 0
   },
   "source": "Yahoo Finance public chart/download endpoints",
   "universe_count": 700,
-  "valid_ratio": 0.9914285714285714,
-  "valid_tickers": 694
+  "valid_ratio": 0.9942857142857143,
+  "valid_tickers": 696
 }
