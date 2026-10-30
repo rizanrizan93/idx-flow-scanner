@@ -1,16 +1,16 @@
 {
   "coverage": {
     "core_complete": {
-      "pct": 95.86,
-      "tickers": 671
+      "pct": 96.14,
+      "tickers": 673
     },
     "corporate_action_events": {
       "semantics": "EVENT_DRIVEN_MARKET_WIDE_FEED_NOT_EXPECTED_FOR_EVERY_TICKER",
       "tickers_with_events": 95
     },
     "foreign_flow": {
-      "pct": 97.14,
-      "tickers": 680
+      "pct": 97.0,
+      "tickers": 679
     },
     "free_float": {
       "pct": 0.0,
@@ -19,12 +19,12 @@
       "tickers": 0
     },
     "full_complete_including_ownership": {
-      "pct": 93.14,
-      "tickers": 652
+      "pct": 93.43,
+      "tickers": 654
     },
     "ohlcv": {
-      "pct": 98.57,
-      "tickers": 690
+      "pct": 99.0,
+      "tickers": 693
     },
     "ownership": {
       "pct": 96.29,
@@ -35,11 +35,11 @@
       "tickers": 700
     },
     "stock_summary": {
-      "pct": 97.14,
-      "tickers": 680
+      "pct": 97.0,
+      "tickers": 679
     }
   },
-  "generated_at": "2026-10-29T18:42:07.989542+00:00",
+  "generated_at": "2026-10-30T18:13:46.543704+00:00",
   "missing_core_sample": [
     "ALII",
     "BACH",
@@ -49,13 +49,11 @@
     "BNII",
     "CENT",
     "EMMI",
-    "ESTA",
+    "ENAK",
     "IDEA",
     "IMJS",
     "INDS",
     "INPC",
-    "JECX",
-    "JELI",
     "KICI",
     "KLAS",
     "LOPI",
@@ -87,17 +85,15 @@
     "CENT",
     "DOOH",
     "EMMI",
+    "ENAK",
     "ESTA",
     "FITT",
     "GTRA",
-    "HRME",
     "IDEA",
     "IMJS",
     "INDS",
     "INPC",
     "IPTV",
-    "JECX",
-    "JELI",
     "KICI",
     "KLAS",
     "LOPI",
