@@ -1,16 +1,16 @@
 {
   "coverage": {
     "core_complete": {
-      "pct": 96.14,
-      "tickers": 673
+      "pct": 95.86,
+      "tickers": 671
     },
     "corporate_action_events": {
       "semantics": "EVENT_DRIVEN_MARKET_WIDE_FEED_NOT_EXPECTED_FOR_EVERY_TICKER",
-      "tickers_with_events": 95
+      "tickers_with_events": 96
     },
     "foreign_flow": {
-      "pct": 97.0,
-      "tickers": 679
+      "pct": 96.71,
+      "tickers": 677
     },
     "free_float": {
       "pct": 0.0,
@@ -23,33 +23,34 @@
       "tickers": 654
     },
     "ohlcv": {
-      "pct": 99.0,
-      "tickers": 693
+      "pct": 98.86,
+      "tickers": 692
     },
     "ownership": {
-      "pct": 96.29,
-      "tickers": 674
+      "pct": 96.14,
+      "tickers": 673
     },
     "sector": {
       "pct": 100.0,
       "tickers": 700
     },
     "stock_summary": {
-      "pct": 97.0,
-      "tickers": 679
+      "pct": 96.71,
+      "tickers": 677
     }
   },
-  "generated_at": "2026-10-30T18:13:46.543704+00:00",
+  "generated_at": "2026-11-02T21:58:02.941140+00:00",
   "missing_core_sample": [
+    "AIMS",
     "ALII",
-    "BACH",
     "BAUT",
     "BBHI",
     "BMBL",
+    "BNBA",
     "BNII",
     "CENT",
-    "EMMI",
     "ENAK",
+    "HRME",
     "IDEA",
     "IMJS",
     "INDS",
@@ -67,28 +68,29 @@
     "SILO",
     "SOTS",
     "TARA",
-    "TBIG"
+    "TBIG",
+    "YOII"
   ],
   "missing_full_sample": [
+    "AIMS",
     "AKKU",
     "ALII",
     "ANDI",
     "BABP",
-    "BACH",
     "BAUT",
     "BBHI",
     "BCAP",
     "BEKS",
     "BLTA",
     "BMBL",
+    "BNBA",
     "BNII",
     "CENT",
     "DOOH",
-    "EMMI",
     "ENAK",
-    "ESTA",
     "FITT",
     "GTRA",
+    "HRME",
     "IDEA",
     "IMJS",
     "INDS",
@@ -97,7 +99,6 @@
     "KICI",
     "KLAS",
     "LOPI",
-    "MDLN",
     "META",
     "MLBI",
     "NASA",
@@ -115,7 +116,8 @@
     "SOTS",
     "TARA",
     "TBIG",
-    "UNSP"
+    "UNSP",
+    "YOII"
   ],
   "provider_status": {
     "capital_actions": "QUOTA_EXHAUSTED: Zapi rate/monthly quota exhausted",
