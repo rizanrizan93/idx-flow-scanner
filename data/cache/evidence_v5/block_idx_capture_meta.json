@@ -1,30 +1,30 @@
 {
-  "announcement_rows": 6,
-  "captured_at": "2026-10-01T03:56:22.204084+07:00",
+  "announcement_rows": 10,
+  "captured_at": "2026-11-02T09:40:45.410189+07:00",
   "download_smoke": [
     {
-      "announcement_id": "BLOCKIDX-f8b3895b4a1b7ca20812d0d194f076d3",
+      "announcement_id": "BLOCKIDX-2a3a301022ac9ade63267e104e3e5393",
       "binary_persisted": false,
-      "bytes": 8344,
+      "bytes": 6337,
       "content_type": "application/pdf",
-      "sha256": "6fcf2183c403de5ccf508b3804c931a609cc67166c5a10bb8447608a12197c72",
-      "ticker": "UNTR",
-      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/2ee24d3a59_558c3f0191.pdf"
+      "sha256": "1f770dabbbb6051810d799873c185094045f29a4422774c03e79ee30f46b5330",
+      "ticker": "DGWG",
+      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/fe0a28515a_d643116a2f.pdf"
     },
     {
-      "announcement_id": "BLOCKIDX-f8b3895b4a1b7ca20812d0d194f076d3",
+      "announcement_id": "BLOCKIDX-2a3a301022ac9ade63267e104e3e5393",
       "binary_persisted": false,
-      "bytes": 944617,
+      "bytes": 417758,
       "content_type": "application/pdf",
-      "sha256": "f2e522918f91485d9d0dac743f144446c25a95f7d46490ecb7b7ef3a580edc49",
-      "ticker": "UNTR",
-      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202609/757601dddf_af9ad2e06d.pdf"
+      "sha256": "45b3ee4c24deae6fd89d2c4d95421af4256721a9a41e29770704f29cc4a8c22d",
+      "ticker": "DGWG",
+      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/77a85240ea_957bb2a2e1.pdf"
     }
   ],
-  "financial_filing_rows": 2,
+  "financial_filing_rows": 3,
   "no_fabricated_evidence": true,
-  "ownership_rows_on_current_page": 2,
-  "point_in_time_eligible_rows": 6,
+  "ownership_rows_on_current_page": 0,
+  "point_in_time_eligible_rows": 10,
   "production_scoring_changed": false,
   "source_page": "https://block.idx.id/id/berita/pengumuman"
 }
