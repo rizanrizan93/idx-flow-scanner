@@ -1,8 +1,8 @@
 {
   "coverage": {
     "core_complete": {
-      "pct": 95.86,
-      "tickers": 671
+      "pct": 96.43,
+      "tickers": 675
     },
     "corporate_action_events": {
       "semantics": "EVENT_DRIVEN_MARKET_WIDE_FEED_NOT_EXPECTED_FOR_EVERY_TICKER",
@@ -19,16 +19,16 @@
       "tickers": 0
     },
     "full_complete_including_ownership": {
-      "pct": 93.43,
-      "tickers": 654
+      "pct": 93.86,
+      "tickers": 657
     },
     "ohlcv": {
-      "pct": 98.86,
-      "tickers": 692
+      "pct": 99.71,
+      "tickers": 698
     },
     "ownership": {
-      "pct": 96.14,
-      "tickers": 673
+      "pct": 96.29,
+      "tickers": 674
     },
     "sector": {
       "pct": 100.0,
@@ -39,9 +39,8 @@
       "tickers": 677
     }
   },
-  "generated_at": "2026-11-02T21:58:02.941140+00:00",
+  "generated_at": "2026-11-03T19:49:11.259988+00:00",
   "missing_core_sample": [
-    "AIMS",
     "ALII",
     "BAUT",
     "BBHI",
@@ -50,7 +49,6 @@
     "BNII",
     "CENT",
     "ENAK",
-    "HRME",
     "IDEA",
     "IMJS",
     "INDS",
@@ -61,9 +59,7 @@
     "META",
     "MLBI",
     "PLAN",
-    "PRDL",
     "PTSP",
-    "RANS",
     "SCPI",
     "SILO",
     "SOTS",
@@ -72,7 +68,6 @@
     "YOII"
   ],
   "missing_full_sample": [
-    "AIMS",
     "AKKU",
     "ALII",
     "ANDI",
@@ -105,10 +100,8 @@
     "PBRX",
     "PGLI",
     "PLAN",
-    "PRDL",
     "PTSP",
     "PURA",
-    "RANS",
     "SAFE",
     "SAPX",
     "SCPI",
