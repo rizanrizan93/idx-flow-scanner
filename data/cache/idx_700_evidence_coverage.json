@@ -1,16 +1,16 @@
 {
   "coverage": {
     "core_complete": {
-      "pct": 96.43,
-      "tickers": 675
+      "pct": 96.14,
+      "tickers": 673
     },
     "corporate_action_events": {
       "semantics": "EVENT_DRIVEN_MARKET_WIDE_FEED_NOT_EXPECTED_FOR_EVERY_TICKER",
-      "tickers_with_events": 96
+      "tickers_with_events": 94
     },
     "foreign_flow": {
-      "pct": 96.71,
-      "tickers": 677
+      "pct": 96.57,
+      "tickers": 676
     },
     "free_float": {
       "pct": 0.0,
@@ -19,34 +19,36 @@
       "tickers": 0
     },
     "full_complete_including_ownership": {
-      "pct": 93.86,
-      "tickers": 657
+      "pct": 93.57,
+      "tickers": 655
     },
     "ohlcv": {
-      "pct": 99.71,
-      "tickers": 698
+      "pct": 99.29,
+      "tickers": 695
     },
     "ownership": {
-      "pct": 96.29,
-      "tickers": 674
+      "pct": 96.0,
+      "tickers": 672
     },
     "sector": {
       "pct": 100.0,
       "tickers": 700
     },
     "stock_summary": {
-      "pct": 96.71,
-      "tickers": 677
+      "pct": 96.57,
+      "tickers": 676
     }
   },
-  "generated_at": "2026-11-03T19:49:11.259988+00:00",
+  "generated_at": "2026-11-04T20:03:28.461876+00:00",
   "missing_core_sample": [
+    "AIMS",
     "ALII",
     "BAUT",
     "BBHI",
     "BMBL",
     "BNBA",
     "BNII",
+    "CASS",
     "CENT",
     "ENAK",
     "IDEA",
@@ -58,16 +60,17 @@
     "LOPI",
     "META",
     "MLBI",
+    "NATO",
     "PLAN",
     "PTSP",
     "SCPI",
     "SILO",
     "SOTS",
     "TARA",
-    "TBIG",
-    "YOII"
+    "TBIG"
   ],
   "missing_full_sample": [
+    "AIMS",
     "AKKU",
     "ALII",
     "ANDI",
@@ -80,6 +83,7 @@
     "BMBL",
     "BNBA",
     "BNII",
+    "CASS",
     "CENT",
     "DOOH",
     "ENAK",
@@ -97,6 +101,7 @@
     "META",
     "MLBI",
     "NASA",
+    "NATO",
     "PBRX",
     "PGLI",
     "PLAN",
@@ -109,8 +114,7 @@
     "SOTS",
     "TARA",
     "TBIG",
-    "UNSP",
-    "YOII"
+    "UNSP"
   ],
   "provider_status": {
     "capital_actions": "QUOTA_EXHAUSTED: Zapi rate/monthly quota exhausted",
