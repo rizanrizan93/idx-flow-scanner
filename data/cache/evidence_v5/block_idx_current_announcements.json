@@ -1,294 +1,324 @@
 {
   "rows": [
     {
-      "announcement_id": "BLOCKIDX-f1d93cca8e503e09664851fc6b0c3f19",
+      "announcement_id": "BLOCKIDX-ede8e060c56ffc8da86cede07af3d417",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "fc131c97c5_be1e2277c9.pdf",
+          "file_name": "d790fb06d1_cc22d677bf.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/fc131c97c5_be1e2277c9.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/d790fb06d1_cc22d677bf.pdf"
         },
         {
-          "file_name": "20261105_ATAP_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32182226_lamp1.pdf",
+          "file_name": "20261105_YOII_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32182578_lamp1.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/69f1420d5f_d401756f7e.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/162f7cdff4_2670958931.pdf"
         }
       ],
-      "content_hash": "0af2bb588cb36d4972e8142ddc9d7f67e833558c8458cb574da36c502db59989",
+      "content_hash": "cd4af291d41f780e8bd7f3f4faee1986ffecd067a7bc342aa1dab9ad3a79bcb4",
       "disclosure_type": "OWNERSHIP",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/fc131c97c5_be1e2277c9.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/d790fb06d1_cc22d677bf.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-11-05T10:32:18+07:00",
+      "published_at": "2026-11-06T03:13:56+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "ATAP",
-      "title": "Laporan Bulanan Registrasi Pemegang Efek [ ATAP ]"
+      "ticker": "YOII",
+      "title": "Laporan Bulanan Registrasi Pemegang Efek [ YOII ]"
     },
     {
-      "announcement_id": "BLOCKIDX-ca0194f8002c2bbd77c931e4b20e418b",
+      "announcement_id": "BLOCKIDX-70e0dea380ef78b6fb44cfc08250ac22",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "e0bbf52533_3336c8784f.pdf",
+          "file_name": "4bba973446_c715b6b2f9.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/e0bbf52533_3336c8784f.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/4bba973446_c715b6b2f9.pdf"
         },
         {
-          "file_name": "20261105_ISEA_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32182201_lamp1.pdf",
+          "file_name": "20261105_META_Penyampaian Bukti Iklan_32182704_lamp1.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/19cb83d418_b0dd919db5.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/005f1025b5_8e21192721.pdf"
         }
       ],
-      "content_hash": "6558411d43bc94dc69145ab9986dfeb792b59b94d35b07934948b3b681f98163",
-      "disclosure_type": "OWNERSHIP",
+      "content_hash": "c9bfafa678ab702e045e23cad07cf09525a610224a2d30b8b9cfc2440d5674c0",
+      "disclosure_type": "CAPITAL_ACTION",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/e0bbf52533_3336c8784f.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/4bba973446_c715b6b2f9.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-11-05T10:22:48+07:00",
+      "published_at": "2026-11-05T23:45:12+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "ISEA",
-      "title": "Laporan Bulanan Registrasi Pemegang Efek [ ISEA ]"
+      "ticker": "META",
+      "title": "Penyampaian Bukti Iklan Jadwal Pembagian dividen interim [ META ]"
     },
     {
-      "announcement_id": "BLOCKIDX-8f2f08dc3c042b5e5f5fc5fbbfcceb98",
+      "announcement_id": "BLOCKIDX-a986a9fc05d064f325580a6689687e3a",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "a86f598821_918f06e7b8.pdf",
+          "file_name": "231a76cc1e_373ac7748e.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/a86f598821_918f06e7b8.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/231a76cc1e_373ac7748e.pdf"
+        },
+        {
+          "file_name": "20261105_MENN_Public Expose_32182817_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/acde56e1ad_f9a8d7938e.pdf"
         }
       ],
-      "content_hash": "921f4623f19ef391ee6b16800a565c2f77527cc008fc31d45d3b0d7efa57b966",
-      "disclosure_type": "OWNERSHIP",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/a86f598821_918f06e7b8.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-11-05T10:21:31+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "CNKO",
-      "title": "Laporan Bulanan Registrasi Pemegang Efek [ CNKO ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-6ca706ba0e4d09d6564f213e684287c8",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "2edfd2cced_f727073c19.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/2edfd2cced_f727073c19.pdf"
-        },
-        {
-          "file_name": "20261105_LPIN_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32182212_lamp2.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/40cde8b1be_1af0bf6b7e.pdf"
-        },
-        {
-          "file_name": "20261105_LPIN_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32182212_lamp3.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/5d9a66b111_9286f154d8.pdf"
-        },
-        {
-          "file_name": "20261105_LPIN_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32182212_lamp4.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/858b7a666f_9925c7d109.pdf"
-        },
-        {
-          "file_name": "20261105_LPIN_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32182212_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/8f1088b868_ff21fc3e7e.pdf"
-        }
-      ],
-      "content_hash": "e3aa4101699476e1edf78fed89f718a45ccd2b6bb4da10701633e809ca94f4fb",
-      "disclosure_type": "OWNERSHIP",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/2edfd2cced_f727073c19.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-11-05T10:15:47+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "LPIN",
-      "title": "Laporan Bulanan Registrasi Pemegang Efek (KOREKSI) [ LPIN ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-e255eb75b854a46884e175d9dfa243c6",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "b3d45edcfc_494d4b8102.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/b3d45edcfc_494d4b8102.pdf"
-        },
-        {
-          "file_name": "20261105_CASH_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32182168_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/2d4a5397c2_7c3c247002.pdf"
-        }
-      ],
-      "content_hash": "3ae03fef3badceed924c200c3b487abeeedd2a24beb30f5b813d4ffbb1349416",
-      "disclosure_type": "OWNERSHIP",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/b3d45edcfc_494d4b8102.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-11-05T10:12:50+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "CASH",
-      "title": "Laporan Bulanan Registrasi Pemegang Efek [ CASH ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-c4f1d7e7624f172c257dfb888e4dd55e",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "3459b47edd_69d6e07fed.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/3459b47edd_69d6e07fed.pdf"
-        },
-        {
-          "file_name": "20261105_CUAN_Public Expose_32182164_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/7a8a92a545_883eb59f8a.pdf"
-        }
-      ],
-      "content_hash": "1567da4023473e150b149a659fa584f8788e79b4761900934f9d0027c165a855",
+      "content_hash": "3c4f4a39c36769803f2aa15084bc7ae2c58e423f9f7cd49865b12488abfc080b",
       "disclosure_type": "PUBLIC_EXPOSE",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/3459b47edd_69d6e07fed.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/231a76cc1e_373ac7748e.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-11-05T10:07:13+07:00",
+      "published_at": "2026-11-05T23:29:46+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "CUAN",
-      "title": "Rencana Penyelenggaraan Public Expose - Tahunan [ CUAN ]"
+      "ticker": "MENN",
+      "title": "Penyampaian Materi Public Expose - Tahunan [ MENN ]"
     },
     {
-      "announcement_id": "BLOCKIDX-0bf1954330a1989bb7fd7911ca8f0c15",
+      "announcement_id": "BLOCKIDX-be642a6d586f188528129dc7fc5b9b64",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "1d1f0d23bf_6f7c535cfd.pdf",
+          "file_name": "98aec628df_7828bf994a.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/1d1f0d23bf_6f7c535cfd.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/98aec628df_7828bf994a.pdf"
         },
         {
-          "file_name": "20261105_ITIC_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32182157_lamp2.pdf",
+          "file_name": "20261105_FUTR_Rencana Transaksi Perubahan Kegiatan Usaha_32182815_lamp3.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/2ebab3d201_184afa3f46.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/2f1331d8b1_80aaf96e4a.pdf"
         },
         {
-          "file_name": "20261105_ITIC_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32182157_lamp1.pdf",
+          "file_name": "20261105_FUTR_Rencana Transaksi Perubahan Kegiatan Usaha_32182815_lamp1.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/4a011e277d_9ffd0ca3c4.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/d4c58ab7ef_347d3055fd.pdf"
+        },
+        {
+          "file_name": "20261105_FUTR_Rencana Transaksi Perubahan Kegiatan Usaha_32182815_lamp2.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/f81fd70507_8dde423745.pdf"
         }
       ],
-      "content_hash": "8ec9c2078902aaf3d8f511e4637267d7560a39f45845cb648dfe33257a7ec6a1",
-      "disclosure_type": "OWNERSHIP",
+      "content_hash": "afd4969e7d1577c43a642b30436265cd07df3e76aec251f29c8daab2bc90621f",
+      "disclosure_type": "OTHER_DISCLOSURE",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/1d1f0d23bf_6f7c535cfd.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/98aec628df_7828bf994a.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-11-05T10:02:31+07:00",
+      "published_at": "2026-11-05T23:19:19+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "ITIC",
-      "title": "Laporan Bulanan Registrasi Pemegang Efek [ ITIC ]"
+      "ticker": "FUTR",
+      "title": "Rencana Transaksi Perubahan Kegiatan Usaha [ FUTR ]"
     },
     {
-      "announcement_id": "BLOCKIDX-84e1ee96a08cafdbb31e981a8f32d699",
+      "announcement_id": "BLOCKIDX-b3762e22d4779464cac370f65abcab61",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "e89bb82642_4fe75d3498.pdf",
+          "file_name": "abcf02cd77_26ffc3e799.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/e89bb82642_4fe75d3498.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/abcf02cd77_26ffc3e799.pdf"
         },
         {
-          "file_name": "20261105_VICO_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32182126_lamp1.pdf",
+          "file_name": "20261105_DOOH_Laporan Informasi dan Fakta Material_32182813_lamp2.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/c2bbee0c19_d284854dfb.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/0d2d2f2b6e_e790eb9036.pdf"
+        },
+        {
+          "file_name": "20261105_DOOH_Laporan Informasi dan Fakta Material_32182813_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/c05c44fd14_a8f67bd949.pdf"
+        },
+        {
+          "file_name": "20261105_DOOH_Laporan Informasi dan Fakta Material_32182813_lamp3.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/dfe90a730b_486738f2c6.pdf"
         }
       ],
-      "content_hash": "cdcecf56fa224bbf07b250f0e91ebffe44c2313279635dd905ef1989f5d4c5bc",
+      "content_hash": "1038ce0f1cc6ae6671f8526ec1bccbf81937be3c8b968a1d20df1ea243f46ce3",
       "disclosure_type": "OWNERSHIP",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/e89bb82642_4fe75d3498.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/abcf02cd77_26ffc3e799.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-11-05T09:56:16+07:00",
+      "published_at": "2026-11-05T22:36:36+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "VICO",
-      "title": "Laporan Bulanan Registrasi Pemegang Efek [ VICO ]"
+      "ticker": "DOOH",
+      "title": "Informasi Tambahan dan/ atau Perubahan atas keterbukaan Informasi Peminjaman Pemegang Saham [ DOOH ]"
     },
     {
-      "announcement_id": "BLOCKIDX-deb33b9b5dde65604d0580e4ebf2c87e",
+      "announcement_id": "BLOCKIDX-4829045dfdb47d9c67b434a5842d9472",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "f10c0d436d_fec4a7cd90.pdf",
+          "file_name": "f407c51518_8fe1ea60f7.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/f10c0d436d_fec4a7cd90.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/f407c51518_8fe1ea60f7.pdf"
+        },
+        {
+          "file_name": "20261105_DOOH_Laporan Informasi dan Fakta Material_32182812_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/3c7077080b_feb17b7cb1.pdf"
+        },
+        {
+          "file_name": "20261105_DOOH_Laporan Informasi dan Fakta Material_32182812_lamp2.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/be3a250414_7d3add92dc.pdf"
+        },
+        {
+          "file_name": "20261105_DOOH_Laporan Informasi dan Fakta Material_32182812_lamp3.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/d1f1c2aa8f_3923dd33a6.pdf"
         }
       ],
-      "content_hash": "f55938e2dcf9496beba708a7cf7807ee3718fe21c8f5a5446e45cac4de054d5b",
-      "disclosure_type": "OWNERSHIP",
+      "content_hash": "239a84aa29a2ebfd94caa90b2064c6f3f3d8e8e3ecf0d867cdfe9edd5d06a622",
+      "disclosure_type": "OTHER_DISCLOSURE",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/f10c0d436d_fec4a7cd90.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/f407c51518_8fe1ea60f7.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-11-05T09:52:33+07:00",
+      "published_at": "2026-11-05T22:28:20+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "DWGL",
-      "title": "Laporan Bulanan Registrasi Pemegang Efek [ DWGL ]"
+      "ticker": "DOOH",
+      "title": "Informasi Tambahan dan/ atau Perubahan atas keterbukaan Informasi Pengambilalihan Saham PT Sinergi Inti Andalan Prima Tbk oleh PT Cakrawala Nexus Investama [ DOOH ]"
     },
     {
-      "announcement_id": "BLOCKIDX-c45db152c4050ab4c5540a5cfdd0b42a",
+      "announcement_id": "BLOCKIDX-a72a136177dcd23d9e0d7221d37540b1",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "4c9fa82428_0de7846b4b.pdf",
+          "file_name": "80d152d2df_77935d13ab.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/4c9fa82428_0de7846b4b.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/80d152d2df_77935d13ab.pdf"
         },
         {
-          "file_name": "20261105_MKPI_Penyampaian Bukti Iklan_32182187_lamp1.pdf",
+          "file_name": "20261105_DOOH_Laporan Informasi dan Fakta Material_32182811_lamp1.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/b7e504d6e4_fe466b60e3.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/21fde67fe7_37931a27c8.pdf"
         }
       ],
-      "content_hash": "578052079e051e4b26297217e4d420bb0bf92817a51f76fcb85bd279f494cbf8",
-      "disclosure_type": "OWNERSHIP",
+      "content_hash": "29edfa6cd4d99f32fc35a5155f6fafc2e1c0d353349c21d18db3fe9ae2d9367d",
+      "disclosure_type": "OTHER_DISCLOSURE",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/4c9fa82428_0de7846b4b.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/80d152d2df_77935d13ab.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-11-05T09:51:48+07:00",
+      "published_at": "2026-11-05T22:22:57+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "MKPI",
-      "title": "Penyampaian Bukti Iklan Pengumuman Dematerialisasi Efek Bersifat Ekuitas (\"EBE\") dalam bentuk warkat saham kepada Pemegang Saham PT Metropolitan Kentjana Tbk [ MKPI ]"
+      "ticker": "DOOH",
+      "title": "Informasi Tambahan dan/ atau Perubahan atas keterbukaan Informasi Perubahan Penggunaan Dana [ DOOH ]"
+    },
+    {
+      "announcement_id": "BLOCKIDX-b9a346ed62315bf5a0abed4af569b0a9",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "443dfe22eb_32f1bbc930.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/443dfe22eb_32f1bbc930.pdf"
+        },
+        {
+          "file_name": "20261105_DOOH_Laporan Informasi dan Fakta Material_32182810_lamp3.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/32016515eb_a0db28c402.pdf"
+        },
+        {
+          "file_name": "20261105_DOOH_Laporan Informasi dan Fakta Material_32182810_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/38500593e6_5292946704.pdf"
+        },
+        {
+          "file_name": "20261105_DOOH_Laporan Informasi dan Fakta Material_32182810_lamp2.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/e44f8090c8_7405af47ef.pdf"
+        }
+      ],
+      "content_hash": "0cac6e31c9141e2f4d865ade57c27743a98f72d9d6b678d22695e5cafa160baf",
+      "disclosure_type": "OTHER_DISCLOSURE",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/443dfe22eb_32f1bbc930.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-11-05T22:19:35+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "DOOH",
+      "title": "Informasi Tambahan dan/ atau Perubahan atas keterbukaan Informasi Penambahan Kegiatan Usaha [ DOOH ]"
+    },
+    {
+      "announcement_id": "BLOCKIDX-82396d05770aa83b115a8ad4461919ee",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "e3e0f5adbc_f402220840.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/e3e0f5adbc_f402220840.pdf"
+        },
+        {
+          "file_name": "20261105_DOOH_Laporan Informasi dan Fakta Material_32182809_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/68542e624c_c4d08024de.pdf"
+        }
+      ],
+      "content_hash": "d3b4358084cbb7503e19bb8d392362262830c18f3ec2b07142621a7c54017095",
+      "disclosure_type": "OTHER_DISCLOSURE",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/e3e0f5adbc_f402220840.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-11-05T22:17:42+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "DOOH",
+      "title": "Informasi Tambahan dan/ atau Perubahan atas keterbukaan Informasi Penambahan Modal dengan Memberikan Hak Memesan Efek Terlebih Dahulu [ DOOH ]"
+    },
+    {
+      "announcement_id": "BLOCKIDX-e6d1f99735f99dbe601a5d9cff936d0c",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "7a6c697149_1f96b3b66b.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/7a6c697149_1f96b3b66b.pdf"
+        },
+        {
+          "file_name": "20261105_FUTR_Pengumuman RUPS_32182695_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/e671e75f99_8d1a5a8783.pdf"
+        }
+      ],
+      "content_hash": "796960a975c9c2579fe83868be59907b613277fbb9af9070d5a7a7dc15ef96f1",
+      "disclosure_type": "OWNERSHIP",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/7a6c697149_1f96b3b66b.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-11-05T21:55:40+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "FUTR",
+      "title": "Pemberitahuan Rencana Rapat Umum Pemegang Saham Luar Biasa [ FUTR ]"
     }
   ],
   "schema_version": "BLOCK_IDX_DISCLOSURE_CACHE_V5_1",
