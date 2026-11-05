@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-11-04T20:01:55.496063+00:00",
-  "latest_trade_date": "2026-11-03",
+  "generated_at": "2026-11-05T20:15:55.013998+00:00",
+  "latest_trade_date": "2026-11-04",
   "minimum_bars": 80,
   "period": "1y",
   "recent_mirror_bars_per_ticker": 10,
@@ -20,8 +20,8 @@
   "sector_enrichment": {
     "coverage_pct": 100.0,
     "known": 700,
-    "requests": 3,
-    "resolved": 3,
+    "requests": 1,
+    "resolved": 1,
     "source": "STOCKANALYSIS_PROFILE_FALLBACK_ONLY_FOR_UNKNOWN",
     "status": "UPDATED",
     "unknown": 0
