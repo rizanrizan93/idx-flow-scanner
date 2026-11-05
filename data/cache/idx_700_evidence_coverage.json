@@ -1,8 +1,8 @@
 {
   "coverage": {
     "core_complete": {
-      "pct": 96.14,
-      "tickers": 673
+      "pct": 96.29,
+      "tickers": 674
     },
     "corporate_action_events": {
       "semantics": "EVENT_DRIVEN_MARKET_WIDE_FEED_NOT_EXPECTED_FOR_EVERY_TICKER",
@@ -23,12 +23,12 @@
       "tickers": 655
     },
     "ohlcv": {
-      "pct": 99.29,
-      "tickers": 695
+      "pct": 99.57,
+      "tickers": 697
     },
     "ownership": {
-      "pct": 96.0,
-      "tickers": 672
+      "pct": 96.14,
+      "tickers": 673
     },
     "sector": {
       "pct": 100.0,
@@ -39,9 +39,8 @@
       "tickers": 676
     }
   },
-  "generated_at": "2026-11-04T20:03:28.461876+00:00",
+  "generated_at": "2026-11-05T20:17:28.301574+00:00",
   "missing_core_sample": [
-    "AIMS",
     "ALII",
     "BAUT",
     "BBHI",
@@ -54,13 +53,13 @@
     "IDEA",
     "IMJS",
     "INDS",
+    "INOV",
     "INPC",
     "KICI",
     "KLAS",
     "LOPI",
     "META",
     "MLBI",
-    "NATO",
     "PLAN",
     "PTSP",
     "SCPI",
@@ -93,6 +92,7 @@
     "IDEA",
     "IMJS",
     "INDS",
+    "INOV",
     "INPC",
     "IPTV",
     "KICI",
@@ -101,7 +101,6 @@
     "META",
     "MLBI",
     "NASA",
-    "NATO",
     "PBRX",
     "PGLI",
     "PLAN",
