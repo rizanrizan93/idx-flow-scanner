@@ -1,12 +1,12 @@
 {
   "coverage": {
     "core_complete": {
-      "pct": 96.29,
-      "tickers": 674
+      "pct": 96.14,
+      "tickers": 673
     },
     "corporate_action_events": {
       "semantics": "EVENT_DRIVEN_MARKET_WIDE_FEED_NOT_EXPECTED_FOR_EVERY_TICKER",
-      "tickers_with_events": 94
+      "tickers_with_events": 95
     },
     "foreign_flow": {
       "pct": 96.57,
@@ -27,8 +27,8 @@
       "tickers": 697
     },
     "ownership": {
-      "pct": 96.14,
-      "tickers": 673
+      "pct": 96.29,
+      "tickers": 674
     },
     "sector": {
       "pct": 100.0,
@@ -39,8 +39,9 @@
       "tickers": 676
     }
   },
-  "generated_at": "2026-11-05T20:17:28.301574+00:00",
+  "generated_at": "2026-11-06T19:42:56.020347+00:00",
   "missing_core_sample": [
+    "ACRO",
     "ALII",
     "BAUT",
     "BBHI",
@@ -69,6 +70,7 @@
     "TBIG"
   ],
   "missing_full_sample": [
+    "ACRO",
     "AIMS",
     "AKKU",
     "ALII",
@@ -102,7 +104,6 @@
     "MLBI",
     "NASA",
     "PBRX",
-    "PGLI",
     "PLAN",
     "PTSP",
     "PURA",
