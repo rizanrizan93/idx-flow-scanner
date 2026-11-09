@@ -1,16 +1,16 @@
 {
   "coverage": {
     "core_complete": {
-      "pct": 96.14,
-      "tickers": 673
+      "pct": 95.86,
+      "tickers": 671
     },
     "corporate_action_events": {
       "semantics": "EVENT_DRIVEN_MARKET_WIDE_FEED_NOT_EXPECTED_FOR_EVERY_TICKER",
-      "tickers_with_events": 95
+      "tickers_with_events": 94
     },
     "foreign_flow": {
-      "pct": 96.57,
-      "tickers": 676
+      "pct": 96.43,
+      "tickers": 675
     },
     "free_float": {
       "pct": 0.0,
@@ -19,29 +19,28 @@
       "tickers": 0
     },
     "full_complete_including_ownership": {
-      "pct": 93.57,
-      "tickers": 655
+      "pct": 93.43,
+      "tickers": 654
     },
     "ohlcv": {
-      "pct": 99.57,
-      "tickers": 697
+      "pct": 99.14,
+      "tickers": 694
     },
     "ownership": {
-      "pct": 96.29,
-      "tickers": 674
+      "pct": 96.14,
+      "tickers": 673
     },
     "sector": {
       "pct": 100.0,
       "tickers": 700
     },
     "stock_summary": {
-      "pct": 96.57,
-      "tickers": 676
+      "pct": 96.43,
+      "tickers": 675
     }
   },
-  "generated_at": "2026-11-06T19:42:56.020347+00:00",
+  "generated_at": "2026-11-09T22:43:20.483625+00:00",
   "missing_core_sample": [
-    "ACRO",
     "ALII",
     "BAUT",
     "BBHI",
@@ -61,16 +60,18 @@
     "LOPI",
     "META",
     "MLBI",
+    "NATO",
+    "NICK",
     "PLAN",
+    "PNIN",
     "PTSP",
     "SCPI",
     "SILO",
     "SOTS",
-    "TARA",
-    "TBIG"
+    "TBIG",
+    "WOOD"
   ],
   "missing_full_sample": [
-    "ACRO",
     "AIMS",
     "AKKU",
     "ALII",
@@ -90,7 +91,6 @@
     "ENAK",
     "FITT",
     "GTRA",
-    "HRME",
     "IDEA",
     "IMJS",
     "INDS",
@@ -103,8 +103,11 @@
     "META",
     "MLBI",
     "NASA",
+    "NATO",
+    "NICK",
     "PBRX",
     "PLAN",
+    "PNIN",
     "PTSP",
     "PURA",
     "SAFE",
@@ -112,9 +115,9 @@
     "SCPI",
     "SILO",
     "SOTS",
-    "TARA",
     "TBIG",
-    "UNSP"
+    "UNSP",
+    "WOOD"
   ],
   "provider_status": {
     "capital_actions": "QUOTA_EXHAUSTED: Zapi rate/monthly quota exhausted",
