@@ -1,29 +1,29 @@
 {
   "announcement_rows": 10,
-  "captured_at": "2026-11-10T07:21:52.484945+07:00",
+  "captured_at": "2026-11-10T11:43:26.440096+07:00",
   "download_smoke": [
     {
-      "announcement_id": "BLOCKIDX-e5ab97266d4f565f37dd2d9d7d95bd0e",
+      "announcement_id": "BLOCKIDX-c81929ccb0a008e9eb169230e68fe1e9",
       "binary_persisted": false,
-      "bytes": 5396,
+      "bytes": 37976,
       "content_type": "application/pdf",
-      "sha256": "f462164eb724475b214e53ac5715f07300dc9318595294ea4ceab94fea2fd8b5",
-      "ticker": "SRIL",
-      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/3456c61142_27d261efb9.pdf"
+      "sha256": "d66626420d02d2fa6339d27695d064d4f89efb46875d9acf34cd5eab33d60c3c",
+      "ticker": "PSGO",
+      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/03ac8dc3e9_feebf7b4a2.pdf"
     },
     {
-      "announcement_id": "BLOCKIDX-e5ab97266d4f565f37dd2d9d7d95bd0e",
+      "announcement_id": "BLOCKIDX-c81929ccb0a008e9eb169230e68fe1e9",
       "binary_persisted": false,
-      "bytes": 1500753,
+      "bytes": 46332,
       "content_type": "application/pdf",
-      "sha256": "6fa5ab0935b671d4e885760fb298af479c5db8e7896f2e0575dfd02f5185aa7c",
-      "ticker": "SRIL",
-      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/9903c119e5_c80c8c3963.pdf"
+      "sha256": "0c5e24b176c7ad29157037130e6d0f49fb0e0ed18b30caa3f24b1bba970dadd6",
+      "ticker": "PSGO",
+      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/63450e142e_2cd5ce1135.pdf"
     }
   ],
   "financial_filing_rows": 0,
   "no_fabricated_evidence": true,
-  "ownership_rows_on_current_page": 2,
+  "ownership_rows_on_current_page": 9,
   "point_in_time_eligible_rows": 10,
   "production_scoring_changed": false,
   "source_page": "https://block.idx.id/id/berita/pengumuman"
