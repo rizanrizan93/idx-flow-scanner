@@ -1,309 +1,284 @@
 {
   "rows": [
     {
-      "announcement_id": "BLOCKIDX-b8f11325a89aab9e0507e4408411d1ed",
+      "announcement_id": "BLOCKIDX-e5ab97266d4f565f37dd2d9d7d95bd0e",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "1874f23fe5_800bee1428.pdf",
+          "file_name": "3456c61142_27d261efb9.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/1874f23fe5_800bee1428.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/3456c61142_27d261efb9.pdf"
         },
         {
-          "file_name": "20261106_MAHA_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32183097_lamp6.pdf",
+          "file_name": "20261109_SRIL_Delisting Saham dan SPEI_32184072_lamp1.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/3174fd3058_79a6036c53.pdf"
-        },
-        {
-          "file_name": "20261106_MAHA_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32183097_lamp4.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/3e554a19a6_4d65d2ff4a.pdf"
-        },
-        {
-          "file_name": "20261106_MAHA_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32183097_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/4ca7303a7b_74c6e05b49.pdf"
-        },
-        {
-          "file_name": "20261106_MAHA_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32183097_lamp5.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/72d7ea99dd_e8b1f76ff0.pdf"
-        },
-        {
-          "file_name": "20261106_MAHA_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32183097_lamp3.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/a5a4835256_37339f7f40.pdf"
-        },
-        {
-          "file_name": "20261106_MAHA_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32183097_lamp2.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/ce08abfec7_d7b8ebcfac.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/9903c119e5_c80c8c3963.pdf"
         }
       ],
-      "content_hash": "191e0e7d3b20a0ea071375c50c5a4731cd117d5e818b6ce1f5de5aa23ff33f59",
-      "disclosure_type": "OWNERSHIP",
+      "content_hash": "1bfb123f01b2327c5cb4098c624eead4728b7cb7f2de22f2c8553a1d04b37acc",
+      "disclosure_type": "OTHER_DISCLOSURE",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/1874f23fe5_800bee1428.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/3456c61142_27d261efb9.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-11-09T09:49:18+07:00",
+      "published_at": "2026-11-09T23:18:07+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "MAHA",
-      "title": "Laporan Bulanan Registrasi Pemegang Efek [ MAHA ]"
+      "ticker": "SRIL",
+      "title": "Delisting saham [ SRIL ]"
     },
     {
-      "announcement_id": "BLOCKIDX-e1d1ef3234f8d581aeda75afc227face",
+      "announcement_id": "BLOCKIDX-ae0ba42574926ed1fff0b4826a48de33",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "8b56384ce5_66081568e7.pdf",
+          "file_name": "ba108abcd6_e35993ed32.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/8b56384ce5_66081568e7.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/ba108abcd6_e35993ed32.pdf"
         },
         {
-          "file_name": "20261105_SOCI_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32182568_lamp1.pdf",
+          "file_name": "20261109_COWL_Delisting Saham dan SPEI_32184078_lamp1.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/8bea2252d4_3b7d9e2050.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/afc8677d82_b865da3f61.pdf"
         }
       ],
-      "content_hash": "2cc0cdcc7f4dab43823a19435d690716f9a5023103c4f122919a0da6c5016a74",
-      "disclosure_type": "OWNERSHIP",
+      "content_hash": "3a0342e350e22af3081aeb08bcd5bf4224ee261dc37208b3462eaba6cbaff98a",
+      "disclosure_type": "OTHER_DISCLOSURE",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/8b56384ce5_66081568e7.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/ba108abcd6_e35993ed32.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-11-09T09:46:28+07:00",
+      "published_at": "2026-11-09T23:17:28+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "SOCI",
-      "title": "Laporan Bulanan Registrasi Pemegang Efek [ SOCI ]"
+      "ticker": "COWL",
+      "title": "Delisting saham [ COWL ]"
     },
     {
-      "announcement_id": "BLOCKIDX-0162f6584d5f2566ec0477e11c15383c",
+      "announcement_id": "BLOCKIDX-d1f874cafc66b396fa5c10892c362bc1",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "LK-09112026-7380-00.pdf-0.pdf",
+          "file_name": "80bc8cc31f_d1176fe971.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_KSEI/LK-09112026-7380-00.pdf-0.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/80bc8cc31f_d1176fe971.pdf"
+        },
+        {
+          "file_name": "20261109_LCGP_Delisting Saham dan SPEI_32184071_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/228f21ccfc_868ca12e82.pdf"
         }
       ],
-      "content_hash": "30d978f311deebd9cf4f053e0b30f42a60ffeb609d1a98c6a5aadf6efd491240",
-      "disclosure_type": "OWNERSHIP",
+      "content_hash": "5573eb8fa71a87120ba911fedc7a308de85681493c45f175cd71ddaffa962784",
+      "disclosure_type": "OTHER_DISCLOSURE",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_KSEI/LK-09112026-7380-00.pdf-0.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/80bc8cc31f_d1176fe971.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-11-09T09:41:37+07:00",
+      "published_at": "2026-11-09T23:09:41+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "ELIT",
-      "title": "LAPORAN KEPEMILIKAN ATAU SETIAP PERUBAHAN KEPEMILIKAN SAHAM PERUSAHAAN TERBUKA [ ELIT ]"
+      "ticker": "LCGP",
+      "title": "Delisting saham [ LCGP ]"
     },
     {
-      "announcement_id": "BLOCKIDX-6bd00b8405d280c9e4b03ed6ed2e0931",
+      "announcement_id": "BLOCKIDX-54bda7d367e0c7e5c8fca965eb2425c0",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "aba5a5494f_d08caaf7f3.pdf",
+          "file_name": "940147867a_5af41f7e9a.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/aba5a5494f_d08caaf7f3.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/940147867a_5af41f7e9a.pdf"
         },
         {
-          "file_name": "20261104_TRGU_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32171978_lamp1.pdf",
+          "file_name": "20261106_LION_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32182859_lamp1.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/9d3dac5caa_48b31ffcda.pdf"
-        },
-        {
-          "file_name": "20261104_TRGU_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32171978_lamp2.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/d1b088e802_ea7a051594.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/89ad3e1e78_28ff3defcb.pdf"
         }
       ],
-      "content_hash": "5612182c5ddd9516398a7fc9393a758e6549b19c5b8e0220a54eceaf9d77c9e1",
+      "content_hash": "b07e6c43e17354a5d728488055f008c7c7a79f78d6444d15b3984dfc9244977f",
       "disclosure_type": "OWNERSHIP",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/aba5a5494f_d08caaf7f3.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/940147867a_5af41f7e9a.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-11-09T09:36:28+07:00",
+      "published_at": "2026-11-09T23:07:55+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "TRGU",
-      "title": "Laporan Bulanan Registrasi Pemegang Efek [ TRGU ]"
+      "ticker": "LION",
+      "title": "Laporan Bulanan Registrasi Pemegang Efek (KOREKSI) [ LION ]"
     },
     {
-      "announcement_id": "BLOCKIDX-36c5f063f8354ce9dc9ec83512c1f968",
+      "announcement_id": "BLOCKIDX-2cbf0e9d06885754f47a271a12852143",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "cc10d6a437_3ccc698700.pdf",
+          "file_name": "0cf8abd348_07c7eeffa6.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/cc10d6a437_3ccc698700.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/0cf8abd348_07c7eeffa6.pdf"
         },
         {
-          "file_name": "20261109_ULTJ_Laporan Informasi dan Fakta Material_32183435_lamp1.pdf",
+          "file_name": "20261106_ADMR_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32182851_lamp1.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/9f8ae3281b_8b546f03a0.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/44bd9c8186_e68692240f.pdf"
         }
       ],
-      "content_hash": "766dc20970a8421841a29ba6a50f5e694ef2ca889a52dd89af686b70be404d26",
-      "disclosure_type": "MANAGEMENT_GOVERNANCE",
-      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/cc10d6a437_3ccc698700.pdf",
-      "point_in_time_eligible": true,
-      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
-      "publication_time_verified": true,
-      "published_at": "2026-11-09T09:32:36+07:00",
-      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
-      "source_verified": true,
-      "ticker": "ULTJ",
-      "title": "Pengunduran Diri Salah Satu Anggota Dewan Komisaris Perseroan [ ULTJ ]"
-    },
-    {
-      "announcement_id": "BLOCKIDX-8e007270083cad75d27506cba5d31a1c",
-      "announcement_no": null,
-      "attachment_urls": [
-        {
-          "file_name": "LK-09112026-1467-00.pdf-0.pdf",
-          "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_KSEI/LK-09112026-1467-00.pdf-0.pdf"
-        }
-      ],
-      "content_hash": "de834baa92c71a6c0e51e514447bcf5ef5ab163755bee60584dfe262dfb2ba70",
+      "content_hash": "7af262b7be2ebb5c7c69f106e656a28ad94bb7049039a1e533da2c7eac2586f1",
       "disclosure_type": "OWNERSHIP",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_KSEI/LK-09112026-1467-00.pdf-0.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/0cf8abd348_07c7eeffa6.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-11-09T09:32:14+07:00",
+      "published_at": "2026-11-09T23:01:40+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "MDLA",
-      "title": "LAPORAN KEPEMILIKAN ATAU SETIAP PERUBAHAN KEPEMILIKAN SAHAM PERUSAHAAN TERBUKA [ MDLA ]"
+      "ticker": "ADMR",
+      "title": "Laporan Bulanan Registrasi Pemegang Efek [ ADMR ]"
     },
     {
-      "announcement_id": "BLOCKIDX-74193830d294d85e55b783b77c65984b",
+      "announcement_id": "BLOCKIDX-df2cf69cf942f3f80b8caf44a73e4123",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "2c0be32b16_2dafad60ee.pdf",
+          "file_name": "913d831c50_17870684c5.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/2c0be32b16_2dafad60ee.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/913d831c50_17870684c5.pdf"
         },
         {
-          "file_name": "20261109_HOME_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32183431_lamp1.pdf",
+          "file_name": "20261109_PLAS_Delisting Saham dan SPEI_32184067_lamp1.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/0250d502f4_4898ab0697.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/abc30dfb19_52a7a96aa9.pdf"
         }
       ],
-      "content_hash": "f6b33a733dc880d8de2c37111240f100fa59ae72e7cc1b1d7a2f13eebede3225",
-      "disclosure_type": "OWNERSHIP",
+      "content_hash": "6959c4ba4f5ae1e0f1cb2de4435a9a023d777d4fca737014851245fea8718e5c",
+      "disclosure_type": "OTHER_DISCLOSURE",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/2c0be32b16_2dafad60ee.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/913d831c50_17870684c5.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-11-09T09:28:19+07:00",
+      "published_at": "2026-11-09T23:00:54+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "HOME",
-      "title": "Laporan Bulanan Registrasi Pemegang Efek [ HOME ]"
+      "ticker": "PLAS",
+      "title": "Delisting saham [ PLAS ]"
     },
     {
-      "announcement_id": "BLOCKIDX-aa5ec4d973183b27916916ff2e6a03c6",
+      "announcement_id": "BLOCKIDX-13fbd278180342a9c5af36d031791bc9",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "6b84870731_cadd34b780.pdf",
+          "file_name": "2f8586cd52_a9fc19b056.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/6b84870731_cadd34b780.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/2f8586cd52_a9fc19b056.pdf"
         },
         {
-          "file_name": "20261106_GTSI_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32182895_lamp2.pdf",
+          "file_name": "20261109_TOYS_Delisting Saham dan SPEI_32184066_lamp1.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/3ea7c3a3da_b0d2a59727.pdf"
-        },
-        {
-          "file_name": "20261106_GTSI_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32182895_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/c03fbd62f9_6a499c4b78.pdf"
-        },
-        {
-          "file_name": "20261106_GTSI_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32182895_lamp3.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/d8b2ed72c8_a4cd321670.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/7e6fdccb65_224f5221a1.pdf"
         }
       ],
-      "content_hash": "e47937a629ed5080048f6c74db678052843a2b3951b4ef935df6b520cc73812a",
-      "disclosure_type": "OWNERSHIP",
+      "content_hash": "df5f026a742949dccfa21dbf7d47a1754a894919fa5de7e64177df4c6e8433b3",
+      "disclosure_type": "OTHER_DISCLOSURE",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/6b84870731_cadd34b780.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/2f8586cd52_a9fc19b056.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-11-09T09:23:10+07:00",
+      "published_at": "2026-11-09T23:00:01+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "GTSI",
-      "title": "Laporan Bulanan Registrasi Pemegang Efek [ GTSI ]"
+      "ticker": "TOYS",
+      "title": "Delisting saham [ TOYS ]"
     },
     {
-      "announcement_id": "BLOCKIDX-cd8bc720a3cac40feb8c4936ab87ee1e",
+      "announcement_id": "BLOCKIDX-7fc252c7f247c1368a892ec531edc85b",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "19d5411743_d1c424a44e.pdf",
+          "file_name": "033391f130_4c2c82add7.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/19d5411743_d1c424a44e.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/033391f130_4c2c82add7.pdf"
         },
         {
-          "file_name": "20261104_FITT_Laporan Bulanan Registrasi Pemegang Efek/Perubahan Struktur Pemegang Saham_32171775_lamp1.pdf",
+          "file_name": "20261109_UNIT_Delisting Saham dan SPEI_32184077_lamp1.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/0dc062f8de_e9f040e700.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/e9a344f21b_a531266996.pdf"
         }
       ],
-      "content_hash": "7ff4f4e78681019f1a0b3fa5f99327f37abc06a199cf4adefe95823a68ec1bd2",
-      "disclosure_type": "OWNERSHIP",
+      "content_hash": "0cdc832c25950cf2b4095e62d16f455d8be5be1db270bf31e5d31669209fe6fb",
+      "disclosure_type": "OTHER_DISCLOSURE",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/19d5411743_d1c424a44e.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/033391f130_4c2c82add7.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-11-09T09:18:47+07:00",
+      "published_at": "2026-11-09T22:58:42+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "FITT",
-      "title": "Laporan Bulanan Registrasi Pemegang Efek [ FITT ]"
+      "ticker": "UNIT",
+      "title": "Delisting saham [ UNIT ]"
     },
     {
-      "announcement_id": "BLOCKIDX-0bd109393b5f51d2511d37326a056fdc",
+      "announcement_id": "BLOCKIDX-f12448899390b549e1a27d6cfeb16825",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "5973c60e28_66edcded24.pdf",
+          "file_name": "9bab99186e_cd4c8e15bd.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/5973c60e28_66edcded24.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/9bab99186e_cd4c8e15bd.pdf"
+        },
+        {
+          "file_name": "20261109_LMAS_Delisting Saham dan SPEI_32184080_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/5cc2b7bd8e_cd1b0773f9.pdf"
         }
       ],
-      "content_hash": "c9450c1719c67e2250e5a0167cb7b7c24ceec17f40a178568755e985d943d47d",
-      "disclosure_type": "OWNERSHIP",
+      "content_hash": "460f89036ae8a30b4b7407586bfa95264cd99c11c6a9990a27e4b691f243b2fc",
+      "disclosure_type": "OTHER_DISCLOSURE",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/5973c60e28_66edcded24.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/9bab99186e_cd4c8e15bd.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-11-09T09:17:11+07:00",
+      "published_at": "2026-11-09T22:58:02+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "TNCA",
-      "title": "Laporan Bulanan Registrasi Pemegang Efek [ TNCA ]"
+      "ticker": "LMAS",
+      "title": "Delisting saham [ LMAS ]"
+    },
+    {
+      "announcement_id": "BLOCKIDX-253b6c243ce37e3dd8da0e409417d81a",
+      "announcement_no": null,
+      "attachment_urls": [
+        {
+          "file_name": "b693f70da1_e4cc622b76.pdf",
+          "role": "PRIMARY",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/b693f70da1_e4cc622b76.pdf"
+        },
+        {
+          "file_name": "20261109_TRIL_Delisting Saham dan SPEI_32184029_lamp1.pdf",
+          "role": "ATTACHMENT",
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/952cab1bf0_2c3605cc77.pdf"
+        }
+      ],
+      "content_hash": "9934b0d9ae16add4acb81e0aaca1991eafb1a82bcf63b87ab4e5642530641678",
+      "disclosure_type": "OTHER_DISCLOSURE",
+      "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/b693f70da1_e4cc622b76.pdf",
+      "point_in_time_eligible": true,
+      "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
+      "publication_time_verified": true,
+      "published_at": "2026-11-09T22:55:46+07:00",
+      "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
+      "source_verified": true,
+      "ticker": "TRIL",
+      "title": "Delisting saham [ TRIL ]"
     }
   ],
   "schema_version": "BLOCK_IDX_DISCLOSURE_CACHE_V5_1",
