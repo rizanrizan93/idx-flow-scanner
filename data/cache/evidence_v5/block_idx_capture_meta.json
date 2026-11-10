@@ -1,24 +1,24 @@
 {
   "announcement_rows": 10,
-  "captured_at": "2026-11-10T11:43:26.440096+07:00",
+  "captured_at": "2026-11-11T04:53:27.895932+07:00",
   "download_smoke": [
     {
-      "announcement_id": "BLOCKIDX-c81929ccb0a008e9eb169230e68fe1e9",
+      "announcement_id": "BLOCKIDX-6247f858d8c84333d3f681e74d4548f8",
       "binary_persisted": false,
-      "bytes": 37976,
+      "bytes": 8657,
       "content_type": "application/pdf",
-      "sha256": "d66626420d02d2fa6339d27695d064d4f89efb46875d9acf34cd5eab33d60c3c",
-      "ticker": "PSGO",
-      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/03ac8dc3e9_feebf7b4a2.pdf"
+      "sha256": "8c2a0c0bdd9b3432545f918084c57cf09d2a1d06578e0e212170a1190931a070",
+      "ticker": "GIAA",
+      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/461692c59d_0fca098a2b.pdf"
     },
     {
-      "announcement_id": "BLOCKIDX-c81929ccb0a008e9eb169230e68fe1e9",
+      "announcement_id": "BLOCKIDX-6247f858d8c84333d3f681e74d4548f8",
       "binary_persisted": false,
-      "bytes": 46332,
+      "bytes": 822649,
       "content_type": "application/pdf",
-      "sha256": "0c5e24b176c7ad29157037130e6d0f49fb0e0ed18b30caa3f24b1bba970dadd6",
-      "ticker": "PSGO",
-      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/63450e142e_2cd5ce1135.pdf"
+      "sha256": "3c1706dbb7cf3c2b02a8a813a3b22db58ffc88722af70efea28a23de1aeb736f",
+      "ticker": "GIAA",
+      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/4611c6321b_200c191757.pdf"
     }
   ],
   "financial_filing_rows": 0,
