@@ -1,8 +1,8 @@
 {
   "coverage": {
     "core_complete": {
-      "pct": 96.0,
-      "tickers": 672
+      "pct": 96.14,
+      "tickers": 673
     },
     "corporate_action_events": {
       "semantics": "EVENT_DRIVEN_MARKET_WIDE_FEED_NOT_EXPECTED_FOR_EVERY_TICKER",
@@ -19,12 +19,12 @@
       "tickers": 0
     },
     "full_complete_including_ownership": {
-      "pct": 93.43,
-      "tickers": 654
+      "pct": 93.57,
+      "tickers": 655
     },
     "ohlcv": {
-      "pct": 99.57,
-      "tickers": 697
+      "pct": 99.71,
+      "tickers": 698
     },
     "ownership": {
       "pct": 96.14,
@@ -39,7 +39,7 @@
       "tickers": 675
     }
   },
-  "generated_at": "2026-11-10T20:01:16.431594+00:00",
+  "generated_at": "2026-11-11T19:53:20.050222+00:00",
   "missing_core_sample": [
     "ALII",
     "BAUT",
@@ -67,7 +67,6 @@
     "SCPI",
     "SILO",
     "SOTS",
-    "SWID",
     "TBIG"
   ],
   "missing_full_sample": [
@@ -114,7 +113,6 @@
     "SCPI",
     "SILO",
     "SOTS",
-    "SWID",
     "TBIG",
     "UNSP"
   ],
