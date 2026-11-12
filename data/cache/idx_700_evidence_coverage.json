@@ -6,7 +6,7 @@
     },
     "corporate_action_events": {
       "semantics": "EVENT_DRIVEN_MARKET_WIDE_FEED_NOT_EXPECTED_FOR_EVERY_TICKER",
-      "tickers_with_events": 94
+      "tickers_with_events": 95
     },
     "foreign_flow": {
       "pct": 96.43,
@@ -27,8 +27,8 @@
       "tickers": 698
     },
     "ownership": {
-      "pct": 96.14,
-      "tickers": 673
+      "pct": 96.29,
+      "tickers": 674
     },
     "sector": {
       "pct": 100.0,
@@ -39,13 +39,12 @@
       "tickers": 675
     }
   },
-  "generated_at": "2026-11-11T19:53:20.050222+00:00",
+  "generated_at": "2026-11-12T20:26:29.532861+00:00",
   "missing_core_sample": [
     "ALII",
     "BAUT",
     "BBHI",
     "BMBL",
-    "BNBA",
     "BNII",
     "CASS",
     "CENT",
@@ -62,6 +61,7 @@
     "MLBI",
     "NATO",
     "NICK",
+    "PJHB",
     "PLAN",
     "PTSP",
     "SCPI",
@@ -81,7 +81,6 @@
     "BEKS",
     "BLTA",
     "BMBL",
-    "BNBA",
     "BNII",
     "CASS",
     "CENT",
@@ -104,6 +103,7 @@
     "NATO",
     "NICK",
     "PBRX",
+    "PJHB",
     "PLAN",
     "PNIN",
     "PTSP",
