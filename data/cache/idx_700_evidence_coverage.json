@@ -1,8 +1,8 @@
 {
   "coverage": {
     "core_complete": {
-      "pct": 96.14,
-      "tickers": 673
+      "pct": 95.86,
+      "tickers": 671
     },
     "corporate_action_events": {
       "semantics": "EVENT_DRIVEN_MARKET_WIDE_FEED_NOT_EXPECTED_FOR_EVERY_TICKER",
@@ -19,12 +19,12 @@
       "tickers": 0
     },
     "full_complete_including_ownership": {
-      "pct": 93.57,
-      "tickers": 655
+      "pct": 93.29,
+      "tickers": 653
     },
     "ohlcv": {
-      "pct": 99.71,
-      "tickers": 698
+      "pct": 99.29,
+      "tickers": 695
     },
     "ownership": {
       "pct": 96.29,
@@ -39,16 +39,16 @@
       "tickers": 675
     }
   },
-  "generated_at": "2026-11-12T20:26:29.532861+00:00",
+  "generated_at": "2026-11-13T20:01:54.577127+00:00",
   "missing_core_sample": [
     "ALII",
     "BAUT",
     "BBHI",
     "BMBL",
-    "BNII",
     "CASS",
     "CENT",
     "ENAK",
+    "HRME",
     "IDEA",
     "IMJS",
     "INDS",
@@ -57,10 +57,12 @@
     "KICI",
     "KLAS",
     "LOPI",
+    "MDIY",
     "META",
     "MLBI",
     "NATO",
     "NICK",
+    "OLIV",
     "PJHB",
     "PLAN",
     "PTSP",
@@ -81,13 +83,13 @@
     "BEKS",
     "BLTA",
     "BMBL",
-    "BNII",
     "CASS",
     "CENT",
     "DOOH",
     "ENAK",
     "FITT",
     "GTRA",
+    "HRME",
     "IDEA",
     "IMJS",
     "INDS",
@@ -97,11 +99,13 @@
     "KICI",
     "KLAS",
     "LOPI",
+    "MDIY",
     "META",
     "MLBI",
     "NASA",
     "NATO",
     "NICK",
+    "OLIV",
     "PBRX",
     "PJHB",
     "PLAN",
