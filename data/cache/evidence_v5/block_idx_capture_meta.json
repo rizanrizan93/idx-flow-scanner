@@ -1,29 +1,29 @@
 {
   "announcement_rows": 10,
-  "captured_at": "2026-11-13T05:23:30.826634+07:00",
+  "captured_at": "2026-11-13T10:30:40.739634+07:00",
   "download_smoke": [
     {
-      "announcement_id": "BLOCKIDX-d0732ae74627592395fc605fb0363795",
+      "announcement_id": "BLOCKIDX-51944560107a4bb1e14805259df5443a",
       "binary_persisted": false,
-      "bytes": 9958,
+      "bytes": 9719,
       "content_type": "application/pdf",
-      "sha256": "49abfd56abb9d10902bfff8e9d3ac87653ee8de87019583f42ba59193aaa5b78",
-      "ticker": "MMIX",
-      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/acba39552f_547417999c.pdf"
+      "sha256": "ee007733b6fff588e2508dba820d871d3990712b7c4bb960bd5d99779175c7ff",
+      "ticker": "BAJA",
+      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/695696a8b6_deab928b32.pdf"
     },
     {
-      "announcement_id": "BLOCKIDX-d0732ae74627592395fc605fb0363795",
+      "announcement_id": "BLOCKIDX-51944560107a4bb1e14805259df5443a",
       "binary_persisted": false,
-      "bytes": 718175,
+      "bytes": 985668,
       "content_type": "application/pdf",
-      "sha256": "4b20ba2cde65c8b51ad59bf43c9b13c3db8a1659cff39d557ff77a28c5a1fc09",
-      "ticker": "MMIX",
-      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/34dc534fa0_31ac903b8b.pdf"
+      "sha256": "1d0a96f4c962041ad786c05fbc241f3de06e47586f5800e37f8c7200ef0632f8",
+      "ticker": "BAJA",
+      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/8381e081fd_807d120731.pdf"
     }
   ],
   "financial_filing_rows": 0,
   "no_fabricated_evidence": true,
-  "ownership_rows_on_current_page": 4,
+  "ownership_rows_on_current_page": 7,
   "point_in_time_eligible_rows": 10,
   "production_scoring_changed": false,
   "source_page": "https://block.idx.id/id/berita/pengumuman"
