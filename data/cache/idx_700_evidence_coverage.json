@@ -1,8 +1,8 @@
 {
   "coverage": {
     "core_complete": {
-      "pct": 95.86,
-      "tickers": 671
+      "pct": 96.0,
+      "tickers": 672
     },
     "corporate_action_events": {
       "semantics": "EVENT_DRIVEN_MARKET_WIDE_FEED_NOT_EXPECTED_FOR_EVERY_TICKER",
@@ -27,8 +27,8 @@
       "tickers": 695
     },
     "ownership": {
-      "pct": 96.29,
-      "tickers": 674
+      "pct": 96.14,
+      "tickers": 673
     },
     "sector": {
       "pct": 100.0,
@@ -39,16 +39,16 @@
       "tickers": 675
     }
   },
-  "generated_at": "2026-11-13T20:01:54.577127+00:00",
+  "generated_at": "2026-11-16T22:31:42.335223+00:00",
   "missing_core_sample": [
+    "AEGS",
     "ALII",
-    "BAUT",
     "BBHI",
     "BMBL",
+    "BNII",
     "CASS",
     "CENT",
     "ENAK",
-    "HRME",
     "IDEA",
     "IMJS",
     "INDS",
@@ -59,30 +59,30 @@
     "LOPI",
     "MDIY",
     "META",
-    "MLBI",
     "NATO",
     "NICK",
-    "OLIV",
     "PJHB",
     "PLAN",
     "PTSP",
     "SCPI",
     "SILO",
     "SOTS",
-    "TBIG"
+    "TBIG",
+    "WOOD"
   ],
   "missing_full_sample": [
+    "AEGS",
     "AIMS",
     "AKKU",
     "ALII",
     "ANDI",
     "BABP",
-    "BAUT",
     "BBHI",
     "BCAP",
     "BEKS",
     "BLTA",
     "BMBL",
+    "BNII",
     "CASS",
     "CENT",
     "DOOH",
@@ -101,11 +101,9 @@
     "LOPI",
     "MDIY",
     "META",
-    "MLBI",
     "NASA",
     "NATO",
     "NICK",
-    "OLIV",
     "PBRX",
     "PJHB",
     "PLAN",
@@ -118,7 +116,8 @@
     "SILO",
     "SOTS",
     "TBIG",
-    "UNSP"
+    "UNSP",
+    "WOOD"
   ],
   "provider_status": {
     "capital_actions": "QUOTA_EXHAUSTED: Zapi rate/monthly quota exhausted",
