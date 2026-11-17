@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-16T22:30:14.164887+00:00",
+  "generated_at": "2026-11-17T21:18:20.901808+00:00",
   "latest_trade_date": "2026-11-16",
   "minimum_bars": 80,
   "period": "1y",
@@ -20,10 +20,10 @@
   "sector_enrichment": {
     "coverage_pct": 100.0,
     "known": 700,
-    "requests": 2,
-    "resolved": 2,
+    "requests": 0,
+    "resolved": 0,
     "source": "STOCKANALYSIS_PROFILE_FALLBACK_ONLY_FOR_UNKNOWN",
-    "status": "UPDATED",
+    "status": "PRESERVED",
     "unknown": 0
   },
   "source": "Yahoo Finance public chart/download endpoints",
