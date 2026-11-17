@@ -1,8 +1,8 @@
 {
   "coverage": {
     "core_complete": {
-      "pct": 96.0,
-      "tickers": 672
+      "pct": 96.14,
+      "tickers": 673
     },
     "corporate_action_events": {
       "semantics": "EVENT_DRIVEN_MARKET_WIDE_FEED_NOT_EXPECTED_FOR_EVERY_TICKER",
@@ -19,12 +19,12 @@
       "tickers": 0
     },
     "full_complete_including_ownership": {
-      "pct": 93.29,
-      "tickers": 653
+      "pct": 93.43,
+      "tickers": 654
     },
     "ohlcv": {
-      "pct": 99.29,
-      "tickers": 695
+      "pct": 99.71,
+      "tickers": 698
     },
     "ownership": {
       "pct": 96.14,
@@ -39,7 +39,7 @@
       "tickers": 675
     }
   },
-  "generated_at": "2026-11-16T22:31:42.335223+00:00",
+  "generated_at": "2026-11-17T21:19:50.690190+00:00",
   "missing_core_sample": [
     "AEGS",
     "ALII",
@@ -67,8 +67,7 @@
     "SCPI",
     "SILO",
     "SOTS",
-    "TBIG",
-    "WOOD"
+    "TBIG"
   ],
   "missing_full_sample": [
     "AEGS",
@@ -116,8 +115,7 @@
     "SILO",
     "SOTS",
     "TBIG",
-    "UNSP",
-    "WOOD"
+    "UNSP"
   ],
   "provider_status": {
     "capital_actions": "QUOTA_EXHAUSTED: Zapi rate/monthly quota exhausted",
