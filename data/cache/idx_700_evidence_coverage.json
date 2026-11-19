@@ -1,16 +1,16 @@
 {
   "coverage": {
     "core_complete": {
-      "pct": 96.14,
-      "tickers": 673
+      "pct": 95.86,
+      "tickers": 671
     },
     "corporate_action_events": {
       "semantics": "EVENT_DRIVEN_MARKET_WIDE_FEED_NOT_EXPECTED_FOR_EVERY_TICKER",
       "tickers_with_events": 95
     },
     "foreign_flow": {
-      "pct": 96.43,
-      "tickers": 675
+      "pct": 96.14,
+      "tickers": 673
     },
     "free_float": {
       "pct": 0.0,
@@ -19,33 +19,34 @@
       "tickers": 0
     },
     "full_complete_including_ownership": {
-      "pct": 93.43,
-      "tickers": 654
+      "pct": 93.29,
+      "tickers": 653
     },
     "ohlcv": {
-      "pct": 99.71,
-      "tickers": 698
+      "pct": 99.43,
+      "tickers": 696
     },
     "ownership": {
-      "pct": 96.14,
-      "tickers": 673
+      "pct": 96.0,
+      "tickers": 672
     },
     "sector": {
       "pct": 100.0,
       "tickers": 700
     },
     "stock_summary": {
-      "pct": 96.43,
-      "tickers": 675
+      "pct": 96.14,
+      "tickers": 673
     }
   },
-  "generated_at": "2026-11-17T21:19:50.690190+00:00",
+  "generated_at": "2026-11-19T20:58:46.999737+00:00",
   "missing_core_sample": [
     "AEGS",
     "ALII",
     "BBHI",
     "BMBL",
     "BNII",
+    "BTPN",
     "CASS",
     "CENT",
     "ENAK",
@@ -67,6 +68,7 @@
     "SCPI",
     "SILO",
     "SOTS",
+    "TARA",
     "TBIG"
   ],
   "missing_full_sample": [
@@ -82,6 +84,7 @@
     "BLTA",
     "BMBL",
     "BNII",
+    "BTPN",
     "CASS",
     "CENT",
     "DOOH",
@@ -100,7 +103,6 @@
     "LOPI",
     "MDIY",
     "META",
-    "NASA",
     "NATO",
     "NICK",
     "PBRX",
@@ -114,6 +116,7 @@
     "SCPI",
     "SILO",
     "SOTS",
+    "TARA",
     "TBIG",
     "UNSP"
   ],
