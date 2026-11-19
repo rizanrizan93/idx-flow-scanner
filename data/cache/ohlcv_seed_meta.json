@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-11-18T20:52:43.021765+00:00",
-  "latest_trade_date": "2026-11-17",
+  "generated_at": "2026-11-19T20:57:22.492446+00:00",
+  "latest_trade_date": "2026-11-18",
   "minimum_bars": 80,
   "period": "1y",
   "recent_mirror_bars_per_ticker": 10,
@@ -20,10 +20,10 @@
   "sector_enrichment": {
     "coverage_pct": 100.0,
     "known": 700,
-    "requests": 0,
-    "resolved": 0,
+    "requests": 2,
+    "resolved": 2,
     "source": "STOCKANALYSIS_PROFILE_FALLBACK_ONLY_FOR_UNKNOWN",
-    "status": "PRESERVED",
+    "status": "UPDATED",
     "unknown": 0
   },
   "source": "Yahoo Finance public chart/download endpoints",
