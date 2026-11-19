@@ -1,29 +1,29 @@
 {
   "announcement_rows": 10,
-  "captured_at": "2026-11-19T06:00:12.939339+07:00",
+  "captured_at": "2026-11-19T11:21:45.537157+07:00",
   "download_smoke": [
     {
-      "announcement_id": "BLOCKIDX-619faebb16b933a7e2811679a88fd678",
+      "announcement_id": "BLOCKIDX-14c95767f50f5da5b63c0e187d83bdd1",
       "binary_persisted": false,
-      "bytes": 5582,
+      "bytes": 8055,
       "content_type": "application/pdf",
-      "sha256": "58013787ada3da3bbf12828fbb19fa21008f42d21c096ea3b4b7137d205fee4b",
-      "ticker": "MINA",
-      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/890fd201dd_ef0f00d7ca.pdf"
+      "sha256": "8a32508a8454b5b56c282f4a19afd4f4e31324587b4a3cd298f2cde8ecbda6b7",
+      "ticker": "MEDP",
+      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/11c834f72f_947251f88f.pdf"
     },
     {
-      "announcement_id": "BLOCKIDX-619faebb16b933a7e2811679a88fd678",
+      "announcement_id": "BLOCKIDX-e86856159cbcc68daa3424602e547814",
       "binary_persisted": false,
-      "bytes": 641382,
+      "bytes": 8339,
       "content_type": "application/pdf",
-      "sha256": "f0572cfe0b7ec77fa555e62322c7a1aa247b4bfdc2e81d0ebea4a3ca6fa18962",
-      "ticker": "MINA",
-      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/371e0f27ee_4b38ec3938.pdf"
+      "sha256": "44002cfcefeaf765dd30c0067c0b89c49a33d539072af0e0b4908bd954f7769c",
+      "ticker": "PKPK",
+      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/d9be8edf85_36a9c1f32e.pdf"
     }
   ],
   "financial_filing_rows": 0,
   "no_fabricated_evidence": true,
-  "ownership_rows_on_current_page": 0,
+  "ownership_rows_on_current_page": 7,
   "point_in_time_eligible_rows": 10,
   "production_scoring_changed": false,
   "source_page": "https://block.idx.id/id/berita/pengumuman"
