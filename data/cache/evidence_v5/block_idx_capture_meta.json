@@ -1,29 +1,29 @@
 {
   "announcement_rows": 10,
-  "captured_at": "2026-11-20T06:09:31.870905+07:00",
+  "captured_at": "2026-11-20T11:09:16.704460+07:00",
   "download_smoke": [
     {
-      "announcement_id": "BLOCKIDX-40773dc5446d5eb4d9b0f016fefcbbf5",
+      "announcement_id": "BLOCKIDX-e3de822bb3d51c2cc99cce88561771dc",
       "binary_persisted": false,
-      "bytes": 5479,
+      "bytes": 10608,
       "content_type": "application/pdf",
-      "sha256": "0b7abd1b67c33c6caf220278c43fe763d9b563c17669b0f1a591ae5bb003e160",
-      "ticker": "PPGL",
-      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/f123774644_78d61a932f.pdf"
+      "sha256": "528034f7dfc6f6daf160f6fce77fb975b336b72a7f14bb0af670e961f258a6bc",
+      "ticker": "WIFI",
+      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_KSEI/LK-20112026-4437-00.pdf-0.pdf"
     },
     {
-      "announcement_id": "BLOCKIDX-40773dc5446d5eb4d9b0f016fefcbbf5",
+      "announcement_id": "BLOCKIDX-581435a8a4ccf3a735654274c09144da",
       "binary_persisted": false,
-      "bytes": 788042,
+      "bytes": 10588,
       "content_type": "application/pdf",
-      "sha256": "045f2a2f244c9b86a861ecbbe9f6553662a7674775cce0ebe6bfbba9e6b1ce0c",
-      "ticker": "PPGL",
-      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/12946afde3_4c5e4a816c.pdf"
+      "sha256": "095cc5ed7505dedc3ae5770262e6daa302e31c70c016026196aa2644a7824939",
+      "ticker": "WIFI",
+      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_KSEI/LK-20112026-6146-00.pdf-0.pdf"
     }
   ],
   "financial_filing_rows": 0,
   "no_fabricated_evidence": true,
-  "ownership_rows_on_current_page": 2,
+  "ownership_rows_on_current_page": 4,
   "point_in_time_eligible_rows": 10,
   "production_scoring_changed": false,
   "source_page": "https://block.idx.id/id/berita/pengumuman"
