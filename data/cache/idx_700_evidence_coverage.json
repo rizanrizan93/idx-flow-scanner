@@ -19,16 +19,16 @@
       "tickers": 0
     },
     "full_complete_including_ownership": {
-      "pct": 93.29,
-      "tickers": 653
+      "pct": 93.14,
+      "tickers": 652
     },
     "ohlcv": {
-      "pct": 99.57,
-      "tickers": 697
+      "pct": 99.71,
+      "tickers": 698
     },
     "ownership": {
-      "pct": 95.86,
-      "tickers": 671
+      "pct": 95.71,
+      "tickers": 670
     },
     "sector": {
       "pct": 100.0,
@@ -39,26 +39,26 @@
       "tickers": 673
     }
   },
-  "generated_at": "2026-11-20T20:45:49.408525+00:00",
+  "generated_at": "2026-11-24T00:21:17.377278+00:00",
   "missing_core_sample": [
     "AEGS",
     "ALII",
+    "BAUT",
     "BBHI",
     "BBSI",
     "BMBL",
-    "BNII",
     "BTPN",
     "CASS",
     "CENT",
     "ENAK",
     "IDEA",
-    "INDS",
     "INOV",
     "INPC",
     "KICI",
     "KLAS",
     "LOPI",
     "MDIY",
+    "MERI",
     "META",
     "NATO",
     "NICK",
@@ -75,16 +75,17 @@
     "AEGS",
     "AIMS",
     "AKKU",
+    "AKSI",
     "ALII",
     "ANDI",
     "BABP",
+    "BAUT",
     "BBHI",
     "BBSI",
     "BCAP",
     "BEKS",
     "BLTA",
     "BMBL",
-    "BNII",
     "BTPN",
     "CASS",
     "CENT",
@@ -94,7 +95,6 @@
     "GTRA",
     "HRME",
     "IDEA",
-    "INDS",
     "INOV",
     "INPC",
     "IPTV",
@@ -102,6 +102,7 @@
     "KLAS",
     "LOPI",
     "MDIY",
+    "MERI",
     "META",
     "NATO",
     "NICK",
