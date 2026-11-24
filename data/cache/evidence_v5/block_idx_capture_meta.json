@@ -1,29 +1,29 @@
 {
   "announcement_rows": 10,
-  "captured_at": "2026-11-24T09:59:21.820955+07:00",
+  "captured_at": "2026-11-24T14:01:36.678958+07:00",
   "download_smoke": [
     {
-      "announcement_id": "BLOCKIDX-e5990d5d1604768ee24ed2b70fb50a57",
+      "announcement_id": "BLOCKIDX-31b54a80b9d4ded32cc7d8f87d9b0592",
       "binary_persisted": false,
-      "bytes": 59964,
+      "bytes": 58490,
       "content_type": "application/pdf",
-      "sha256": "f843b17149438445fc078f2ba80fa0c1cbdebe3f891814568adc7875cacf231c",
-      "ticker": "IGAR",
-      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261124_IGAR_E019_7009198e-9427-44c8-87bc-2baf085f0fb4-20261124092633.pdf"
+      "sha256": "664125e53ba51a0b17986ceb615dadbc7c4c4af7686967747f71b5b7516d9c27",
+      "ticker": "CSIS",
+      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261124_CSIS_B002_6e42e7d9-157f-4bb4-b86a-985d8146077a-20261124135505.pdf"
     },
     {
-      "announcement_id": "BLOCKIDX-e5990d5d1604768ee24ed2b70fb50a57",
+      "announcement_id": "BLOCKIDX-31b54a80b9d4ded32cc7d8f87d9b0592",
       "binary_persisted": false,
-      "bytes": 925733,
+      "bytes": 2140297,
       "content_type": "application/pdf",
-      "sha256": "3b6ae65b9acac1ede486d260a6613dcc829377d896600118964d869aa376c341",
-      "ticker": "IGAR",
-      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261124_IGAR_E019_7009198e-9427-44c8-87bc-2baf085f0fb4_lamp1-20261124092634.pdf"
+      "sha256": "107a1692fe3032debd1d6fe0a29c2621c7c8b41f3f08bb9672f3b266e62acc6e",
+      "ticker": "CSIS",
+      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261124_CSIS_B002_6e42e7d9-157f-4bb4-b86a-985d8146077a_lamp1-20261124135506.pdf"
     }
   ],
   "financial_filing_rows": 0,
   "no_fabricated_evidence": true,
-  "ownership_rows_on_current_page": 2,
+  "ownership_rows_on_current_page": 0,
   "point_in_time_eligible_rows": 10,
   "production_scoring_changed": false,
   "source_page": "https://block.idx.id/id/berita/pengumuman"
