@@ -1,16 +1,16 @@
 {
   "coverage": {
     "core_complete": {
-      "pct": 96.14,
-      "tickers": 673
+      "pct": 95.86,
+      "tickers": 671
     },
     "corporate_action_events": {
       "semantics": "EVENT_DRIVEN_MARKET_WIDE_FEED_NOT_EXPECTED_FOR_EVERY_TICKER",
       "tickers_with_events": 94
     },
     "foreign_flow": {
-      "pct": 96.43,
-      "tickers": 675
+      "pct": 96.14,
+      "tickers": 673
     },
     "free_float": {
       "pct": 0.0,
@@ -19,39 +19,39 @@
       "tickers": 0
     },
     "full_complete_including_ownership": {
-      "pct": 93.29,
-      "tickers": 653
+      "pct": 93.0,
+      "tickers": 651
     },
     "ohlcv": {
-      "pct": 99.71,
-      "tickers": 698
+      "pct": 99.14,
+      "tickers": 694
     },
     "ownership": {
-      "pct": 95.86,
-      "tickers": 671
+      "pct": 95.71,
+      "tickers": 670
     },
     "sector": {
       "pct": 100.0,
       "tickers": 700
     },
     "stock_summary": {
-      "pct": 96.43,
-      "tickers": 675
+      "pct": 96.14,
+      "tickers": 673
     }
   },
-  "generated_at": "2026-11-24T22:45:30.295723+00:00",
+  "generated_at": "2026-11-25T22:00:55.403519+00:00",
   "missing_core_sample": [
     "AEGS",
     "ALII",
+    "BAUT",
     "BBHI",
     "BBSI",
-    "BNII",
+    "BMBL",
     "BTPN",
     "CASS",
     "CENT",
     "ENAK",
     "IDEA",
-    "INDS",
     "INOV",
     "INPC",
     "KICI",
@@ -59,7 +59,9 @@
     "LOPI",
     "MDIY",
     "META",
+    "MLBI",
     "NICK",
+    "OPMS",
     "PJHB",
     "PLAN",
     "PTSP",
@@ -77,12 +79,13 @@
     "ALII",
     "ANDI",
     "BABP",
+    "BAUT",
     "BBHI",
     "BBSI",
     "BCAP",
     "BEKS",
     "BLTA",
-    "BNII",
+    "BMBL",
     "BTPN",
     "CASS",
     "CENT",
@@ -92,7 +95,6 @@
     "GTRA",
     "HRME",
     "IDEA",
-    "INDS",
     "INOV",
     "INPC",
     "IPTV",
@@ -101,8 +103,10 @@
     "LOPI",
     "MDIY",
     "META",
+    "MLBI",
     "NASA",
     "NICK",
+    "OPMS",
     "PBRX",
     "PJHB",
     "PLAN",
