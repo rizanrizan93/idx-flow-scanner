@@ -1,29 +1,29 @@
 {
   "announcement_rows": 10,
-  "captured_at": "2026-11-24T14:01:36.678958+07:00",
+  "captured_at": "2026-11-25T07:58:56.331643+07:00",
   "download_smoke": [
     {
-      "announcement_id": "BLOCKIDX-31b54a80b9d4ded32cc7d8f87d9b0592",
+      "announcement_id": "BLOCKIDX-f5687dec2d01fa4b34b1f7b8427c67ea",
       "binary_persisted": false,
-      "bytes": 58490,
+      "bytes": 10546,
       "content_type": "application/pdf",
-      "sha256": "664125e53ba51a0b17986ceb615dadbc7c4c4af7686967747f71b5b7516d9c27",
-      "ticker": "CSIS",
-      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261124_CSIS_B002_6e42e7d9-157f-4bb4-b86a-985d8146077a-20261124135505.pdf"
+      "sha256": "3b722fedf4e09fee6a82e55ca06bc056e04cf9fb5bf7886cb43a10d059c353a5",
+      "ticker": "JECX",
+      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_KSEI/LK-25112026-9230-00.pdf-0.pdf"
     },
     {
-      "announcement_id": "BLOCKIDX-31b54a80b9d4ded32cc7d8f87d9b0592",
+      "announcement_id": "BLOCKIDX-ce2c4dd45ddc5201ea8446cc19c3325f",
       "binary_persisted": false,
-      "bytes": 2140297,
+      "bytes": 43782,
       "content_type": "application/pdf",
-      "sha256": "107a1692fe3032debd1d6fe0a29c2621c7c8b41f3f08bb9672f3b266e62acc6e",
-      "ticker": "CSIS",
-      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261124_CSIS_B002_6e42e7d9-157f-4bb4-b86a-985d8146077a_lamp1-20261124135506.pdf"
+      "sha256": "21941169b36aeb59df1ebb4694acfee36e4e15314bac03dc6dbbbfa027100b96",
+      "ticker": "XPIN",
+      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261124_XPIN_E043_8373aead-8253-4c24-92de-b06baecb9c30-20261124230952.pdf"
     }
   ],
   "financial_filing_rows": 0,
   "no_fabricated_evidence": true,
-  "ownership_rows_on_current_page": 0,
+  "ownership_rows_on_current_page": 3,
   "point_in_time_eligible_rows": 10,
   "production_scoring_changed": false,
   "source_page": "https://block.idx.id/id/berita/pengumuman"
