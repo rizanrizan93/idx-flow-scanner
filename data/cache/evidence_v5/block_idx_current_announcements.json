@@ -1,304 +1,264 @@
 {
   "rows": [
     {
-      "announcement_id": "BLOCKIDX-af158f5de825d8a7d3a271a732cb1849",
+      "announcement_id": "BLOCKIDX-57c62b05ecd6c155688c2dd5912c2223",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "20261125_XMSK_E043_b7450bba-b3e7-4893-8d2e-91c493ac0795-20261125234336.pdf",
+          "file_name": "20261126_BOLD_E019_01012b39-a43f-4f0c-b02e-0a975d49944d-20261126120600.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261125_XMSK_E043_b7450bba-b3e7-4893-8d2e-91c493ac0795-20261125234336.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261126_BOLD_E019_01012b39-a43f-4f0c-b02e-0a975d49944d-20261126120600.pdf"
         },
         {
-          "file_name": "20261125_XMSK_E043_b7450bba-b3e7-4893-8d2e-91c493ac0795_lamp1.pdf",
+          "file_name": "20261126_BOLD_E019_01012b39-a43f-4f0c-b02e-0a975d49944d_lamp1.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261125_XMSK_E043_b7450bba-b3e7-4893-8d2e-91c493ac0795_lamp1-20261125234337.pdf"
-        },
-        {
-          "file_name": "20261125_XMSK_E043_b7450bba-b3e7-4893-8d2e-91c493ac0795_lamp2.xlsx",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261125_XMSK_E043_b7450bba-b3e7-4893-8d2e-91c493ac0795_lamp2-20261125234337.xlsx"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261126_BOLD_E019_01012b39-a43f-4f0c-b02e-0a975d49944d_lamp1-20261126120602.pdf"
         }
       ],
-      "content_hash": "b46531072a0a9e5bf954eabf08d1e72ff8b5e105a8e87328c8ad8a2c7bbfde11",
+      "content_hash": "a0596f6c46114efd1ea80db8a8faf2053a86282ab0138816fc82aa4df153590b",
       "disclosure_type": "OTHER_DISCLOSURE",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261125_XMSK_E043_b7450bba-b3e7-4893-8d2e-91c493ac0795-20261125234336.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261126_BOLD_E019_01012b39-a43f-4f0c-b02e-0a975d49944d-20261126120600.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-11-25T23:43:35+07:00",
+      "published_at": "2026-11-26T12:05:58+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "XMSK",
-      "title": "Laporan Harian atas Nilai Aktiva Bersih dan Komposisi Portofolio [ XMSK ]"
+      "ticker": "BOLD",
+      "title": "Informasi atau Fakta Material lainnya [ BOLD ]"
     },
     {
-      "announcement_id": "BLOCKIDX-6ad34703d8ae7bfafb673213ee2bd952",
+      "announcement_id": "BLOCKIDX-b435f76e73bd5798b195f71492064b28",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "20261126_R-ABFII_B017_6722314e-db1a-4578-8f30-7b974d7af947-20261126000001.pdf",
+          "file_name": "20261126_BOLD_E019_1e84bb39-d218-4a96-91e0-346fc4880864-20261126120452.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261126_R-ABFII_B017_6722314e-db1a-4578-8f30-7b974d7af947-20261126000001.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261126_BOLD_E019_1e84bb39-d218-4a96-91e0-346fc4880864-20261126120452.pdf"
         },
         {
-          "file_name": "20261126_R-ABFII_B017_6722314e-db1a-4578-8f30-7b974d7af947_lamp1.pdf",
+          "file_name": "20261126_BOLD_E019_1e84bb39-d218-4a96-91e0-346fc4880864_lamp1.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261126_R-ABFII_B017_6722314e-db1a-4578-8f30-7b974d7af947_lamp1-20261126000005.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261126_BOLD_E019_1e84bb39-d218-4a96-91e0-346fc4880864_lamp1-20261126120453.pdf"
         }
       ],
-      "content_hash": "d948f329691c038056d402dec66fa933ff1cfd31073a549cd4fed4125f10a59a",
+      "content_hash": "14c557fa746a9f82a900144fbea469987e02e9c4720386476391a348a853f6d9",
       "disclosure_type": "OTHER_DISCLOSURE",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261126_R-ABFII_B017_6722314e-db1a-4578-8f30-7b974d7af947-20261126000001.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261126_BOLD_E019_1e84bb39-d218-4a96-91e0-346fc4880864-20261126120452.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-11-25T23:42:48+07:00",
+      "published_at": "2026-11-26T12:04:50+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "R-ABFII",
-      "title": "Pencatatan Tambahan ETF [ R-ABFII ]"
+      "ticker": "BOLD",
+      "title": "Informasi atau Fakta Material lainnya [ BOLD ]"
     },
     {
-      "announcement_id": "BLOCKIDX-b50e6a0b60d56ac13d31ec9bd9154396",
+      "announcement_id": "BLOCKIDX-67589af61cfa1bf3ff0c35df1bf15237",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "20261125_XMLF_E043_f20e7cdd-7768-4721-95c9-6d85ee3c2804-20261125234247.pdf",
+          "file_name": "20261126_BOLD_E019_a7be659d-262c-43bb-8bc5-7e5b9406822d-20261126120121.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261125_XMLF_E043_f20e7cdd-7768-4721-95c9-6d85ee3c2804-20261125234247.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261126_BOLD_E019_a7be659d-262c-43bb-8bc5-7e5b9406822d-20261126120121.pdf"
         },
         {
-          "file_name": "20261125_XMLF_E043_f20e7cdd-7768-4721-95c9-6d85ee3c2804_lamp1.pdf",
+          "file_name": "20261126_BOLD_E019_a7be659d-262c-43bb-8bc5-7e5b9406822d_lamp1.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261125_XMLF_E043_f20e7cdd-7768-4721-95c9-6d85ee3c2804_lamp1-20261125234248.pdf"
-        },
-        {
-          "file_name": "20261125_XMLF_E043_f20e7cdd-7768-4721-95c9-6d85ee3c2804_lamp2.xlsx",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261125_XMLF_E043_f20e7cdd-7768-4721-95c9-6d85ee3c2804_lamp2-20261125234248.xlsx"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261126_BOLD_E019_a7be659d-262c-43bb-8bc5-7e5b9406822d_lamp1-20261126120121.pdf"
         }
       ],
-      "content_hash": "07fdc81082cb164e3ad49d2282a9b81ca359164e6663e0711fe85c6a8ab35a8c",
+      "content_hash": "521a17a431a7d82dee43d1b5fbb4b1dc5db913a8cf2afa9727dd7fa36730537c",
       "disclosure_type": "OTHER_DISCLOSURE",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261125_XMLF_E043_f20e7cdd-7768-4721-95c9-6d85ee3c2804-20261125234247.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261126_BOLD_E019_a7be659d-262c-43bb-8bc5-7e5b9406822d-20261126120121.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-11-25T23:42:46+07:00",
+      "published_at": "2026-11-26T12:01:19+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "XMLF",
-      "title": "Laporan Harian atas Nilai Aktiva Bersih dan Komposisi Portofolio [ XMLF ]"
+      "ticker": "BOLD",
+      "title": "Informasi atau Fakta Material lainnya [ BOLD ]"
     },
     {
-      "announcement_id": "BLOCKIDX-11938db111af3e0afd515493a71e9c7d",
+      "announcement_id": "BLOCKIDX-e1f87bb438929cdccfb77200dad71cb6",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "20261126_XIPI_B017_ecf62af2-8981-4792-8b80-fc7211a47f20-20261126000004.pdf",
+          "file_name": "20261126_ASGR_E019_48febe68-cfb2-4e2d-8d5a-8041318cdec5-20261126115854.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261126_XIPI_B017_ecf62af2-8981-4792-8b80-fc7211a47f20-20261126000004.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261126_ASGR_E019_48febe68-cfb2-4e2d-8d5a-8041318cdec5-20261126115854.pdf"
         },
         {
-          "file_name": "20261126_XIPI_B017_ecf62af2-8981-4792-8b80-fc7211a47f20_lamp1.pdf",
+          "file_name": "20261126_ASGR_E019_48febe68-cfb2-4e2d-8d5a-8041318cdec5_lamp1.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261126_XIPI_B017_ecf62af2-8981-4792-8b80-fc7211a47f20_lamp1-20261126000005.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261126_ASGR_E019_48febe68-cfb2-4e2d-8d5a-8041318cdec5_lamp1-20261126115855.pdf"
         }
       ],
-      "content_hash": "8c2da8a9957e8801d4ae51a6753ab82cfa013b8713be2c96fb688d25c74acfca",
+      "content_hash": "ba17a7e9eb32ecc876b9bd960f304d276b824e28ce9bde2702fc6a7947e2f3e4",
       "disclosure_type": "OTHER_DISCLOSURE",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261126_XIPI_B017_ecf62af2-8981-4792-8b80-fc7211a47f20-20261126000004.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261126_ASGR_E019_48febe68-cfb2-4e2d-8d5a-8041318cdec5-20261126115854.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-11-25T23:42:32+07:00",
+      "published_at": "2026-11-26T11:58:52+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "XIPI",
-      "title": "Pencatatan Tambahan ETF [ XIPI ]"
+      "ticker": "ASGR",
+      "title": "Informasi atau Fakta Material lainnya [ ASGR ]"
     },
     {
-      "announcement_id": "BLOCKIDX-041654092affca2ba8a1c95901b54613",
+      "announcement_id": "BLOCKIDX-1d6cc1c7241390c2af85a23c35c750eb",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "20261125_MBMA_B011_korporasi_cd90a2be-648f-449f-bd41-dae0b51756e3-20261125234153.pdf",
+          "file_name": "20261126_INDY_E023A_065ae329-6bc0-49a5-8585-575e90aadb6d-20261126115533.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261125_MBMA_B011_korporasi_cd90a2be-648f-449f-bd41-dae0b51756e3-20261125234153.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261126_INDY_E023A_065ae329-6bc0-49a5-8585-575e90aadb6d-20261126115533.pdf"
         },
         {
-          "file_name": "20261125_MBMA_B011_korporasi_cd90a2be-648f-449f-bd41-dae0b51756e3_lamp1.pdf",
+          "file_name": "20261126_INDY_E023A_065ae329-6bc0-49a5-8585-575e90aadb6d_lamp1.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261125_MBMA_B011_korporasi_cd90a2be-648f-449f-bd41-dae0b51756e3_lamp1-20261125234154.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261126_INDY_E023A_065ae329-6bc0-49a5-8585-575e90aadb6d_lamp1-20261126115534.pdf"
         }
       ],
-      "content_hash": "0f270873e987d107d9fb6b0367bf91d6875fa299cbaf8cf842e76aee70decb1f",
-      "disclosure_type": "OTHER_DISCLOSURE",
+      "content_hash": "faec765064bd8760f7671437732987b01ff411480383d0f0705810d8b12427b5",
+      "disclosure_type": "VOLATILITY_EXPLANATION",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261125_MBMA_B011_korporasi_cd90a2be-648f-449f-bd41-dae0b51756e3-20261125234153.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261126_INDY_E023A_065ae329-6bc0-49a5-8585-575e90aadb6d-20261126115533.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-11-25T23:41:50+07:00",
+      "published_at": "2026-11-26T11:55:31+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "MBMA",
-      "title": "Pencatatan Awal Obligasi/Sukuk Korporasi [ MBMA ]"
+      "ticker": "INDY",
+      "title": "Penjelasan atas Permintaan Penjelasan Bursa (Publish) [ INDY ]"
     },
     {
-      "announcement_id": "BLOCKIDX-ae971829dd4e3ea2a3e73ebe956aac3a",
+      "announcement_id": "BLOCKIDX-82ce8108101645064a43aa68befdd31c",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "20261125_SMFP_B012_93379c9e-07cd-4350-9311-fb57047c1e80-20261125234109.pdf",
+          "file_name": "LK-26112026-4522-00.pdf-0.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261125_SMFP_B012_93379c9e-07cd-4350-9311-fb57047c1e80-20261125234109.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_KSEI/LK-26112026-4522-00.pdf-0.pdf"
         }
       ],
-      "content_hash": "a31fd0d14b592bbdbd417c65679acdbceaac32c229733f49e2b01481a83cf0fc",
-      "disclosure_type": "OTHER_DISCLOSURE",
+      "content_hash": "8f54f0c6b238de2fc81942fde7b3c46bb3639c05bdec3fbb6d1740f35be28874",
+      "disclosure_type": "OWNERSHIP",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261125_SMFP_B012_93379c9e-07cd-4350-9311-fb57047c1e80-20261125234109.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_KSEI/LK-26112026-4522-00.pdf-0.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-11-25T23:41:07+07:00",
+      "published_at": "2026-11-26T11:23:03+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "SMFP",
-      "title": "Pengumuman Jatuh Tempo Obligasi [ SMFP ]"
+      "ticker": "MRAT",
+      "title": "LAPORAN KEPEMILIKAN ATAU SETIAP PERUBAHAN KEPEMILIKAN SAHAM PERUSAHAAN TERBUKA [ MRAT ]"
     },
     {
-      "announcement_id": "BLOCKIDX-a96f3b7393b735e970a6f90272425039",
+      "announcement_id": "BLOCKIDX-89a7d8f4b1139a46912358d742e57116",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "20261126_XGLD_B017_10e6d0dc-ef50-4169-90fa-84d12df92fac-20261126000008.pdf",
+          "file_name": "20261126_XCIS_E062_74256d63-3ebe-42f9-a567-86f4128926ad-20261126110141.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261126_XGLD_B017_10e6d0dc-ef50-4169-90fa-84d12df92fac-20261126000008.pdf"
-        },
-        {
-          "file_name": "20261126_XGLD_B017_10e6d0dc-ef50-4169-90fa-84d12df92fac_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261126_XGLD_B017_10e6d0dc-ef50-4169-90fa-84d12df92fac_lamp1-20261126000009.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261126_XCIS_E062_74256d63-3ebe-42f9-a567-86f4128926ad-20261126110141.pdf"
         }
       ],
-      "content_hash": "a80ff3868c756f3adc5399a466d62493c1fe9c475fa0886da5396f767f230647",
-      "disclosure_type": "OTHER_DISCLOSURE",
+      "content_hash": "aafcfd3805d29abb728cc94a75d2ef4c7136e7d662a2637bab10ed06b681bac0",
+      "disclosure_type": "CAPITAL_ACTION",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261126_XGLD_B017_10e6d0dc-ef50-4169-90fa-84d12df92fac-20261126000008.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261126_XCIS_E062_74256d63-3ebe-42f9-a567-86f4128926ad-20261126110141.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-11-25T23:40:43+07:00",
+      "published_at": "2026-11-26T11:01:39+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "XGLD",
-      "title": "Pencatatan Tambahan ETF [ XGLD ]"
+      "ticker": "XCIS",
+      "title": "Penyampain Informasi Mengenai Distribusi Keuntungan (DIVIDEN) (KOREKSI) [ XCIS ]"
     },
     {
-      "announcement_id": "BLOCKIDX-0dd64b6a8190983c60557d1e5f67f8bc",
+      "announcement_id": "BLOCKIDX-cc56e6497c50739ff0749af3b9e0e3fc",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "20261125_BRIS_E019_aefefa5e-5f6c-4068-a1e0-8be014dd3696-20261125225433.pdf",
+          "file_name": "LK-26112026-7572-00.pdf-0.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261125_BRIS_E019_aefefa5e-5f6c-4068-a1e0-8be014dd3696-20261125225433.pdf"
-        },
-        {
-          "file_name": "20261125_BRIS_E019_aefefa5e-5f6c-4068-a1e0-8be014dd3696_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261125_BRIS_E019_aefefa5e-5f6c-4068-a1e0-8be014dd3696_lamp1-20261125225433.pdf"
-        },
-        {
-          "file_name": "20261125_BRIS_E019_aefefa5e-5f6c-4068-a1e0-8be014dd3696_lamp2.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261125_BRIS_E019_aefefa5e-5f6c-4068-a1e0-8be014dd3696_lamp2-20261125225434.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_KSEI/LK-26112026-7572-00.pdf-0.pdf"
         }
       ],
-      "content_hash": "aee9f4ed3d24b5d5d21a5c94e8c396d3076bea727605d47f1316f47e6f4dbe2c",
-      "disclosure_type": "OTHER_DISCLOSURE",
+      "content_hash": "6ee295d2fa2011f989cb993776bc71ce03ac193fcd91d351c24c2b9246e2cf33",
+      "disclosure_type": "OWNERSHIP",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261125_BRIS_E019_aefefa5e-5f6c-4068-a1e0-8be014dd3696-20261125225433.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_KSEI/LK-26112026-7572-00.pdf-0.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-11-25T22:54:31+07:00",
+      "published_at": "2026-11-26T10:58:56+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "BRIS",
-      "title": "Informasi atau Fakta Material lainnya [ BRIS ]"
+      "ticker": "AKPI",
+      "title": "LAPORAN KEPEMILIKAN ATAU SETIAP PERUBAHAN KEPEMILIKAN SAHAM PERUSAHAAN TERBUKA [ AKPI ]"
     },
     {
-      "announcement_id": "BLOCKIDX-d1fdc14a14c6ff40a7d00fed9ebd7c39",
+      "announcement_id": "BLOCKIDX-5b938c7611159abc626b68ebb4b55b51",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "20261125_TOBA_E019_1a444f1b-5879-4b7f-881a-93d340d1cb11-20261125224429.pdf",
+          "file_name": "LK-26112026-1569-00.pdf-0.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261125_TOBA_E019_1a444f1b-5879-4b7f-881a-93d340d1cb11-20261125224429.pdf"
-        },
-        {
-          "file_name": "20261125_TOBA_E019_1a444f1b-5879-4b7f-881a-93d340d1cb11_lamp1.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261125_TOBA_E019_1a444f1b-5879-4b7f-881a-93d340d1cb11_lamp1-20261125224429.pdf"
-        },
-        {
-          "file_name": "20261125_TOBA_E019_1a444f1b-5879-4b7f-881a-93d340d1cb11_lamp2.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261125_TOBA_E019_1a444f1b-5879-4b7f-881a-93d340d1cb11_lamp2-20261125224430.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_KSEI/LK-26112026-1569-00.pdf-0.pdf"
         }
       ],
-      "content_hash": "89e7de29d250ccf0ab13edd364912e5f6b61478a93645fe3a3a3ab94fa9e19cf",
-      "disclosure_type": "OTHER_DISCLOSURE",
+      "content_hash": "6ae55d95a5946991b26b76e87fcd75733e0c6ef52b085ca21397fddb124a952a",
+      "disclosure_type": "OWNERSHIP",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261125_TOBA_E019_1a444f1b-5879-4b7f-881a-93d340d1cb11-20261125224429.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_KSEI/LK-26112026-1569-00.pdf-0.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-11-25T22:44:27+07:00",
+      "published_at": "2026-11-26T10:58:22+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "TOBA",
-      "title": "Informasi atau Fakta Material lainnya [ TOBA ]"
+      "ticker": "GOOD",
+      "title": "LAPORAN KEPEMILIKAN ATAU SETIAP PERUBAHAN KEPEMILIKAN SAHAM PERUSAHAAN TERBUKA [ GOOD ]"
     },
     {
-      "announcement_id": "BLOCKIDX-a732f8eb44c7dd27103593c8b7ec752e",
+      "announcement_id": "BLOCKIDX-c729becc5f3fcceff62282a2a89575ed",
       "announcement_no": null,
       "attachment_urls": [
         {
-          "file_name": "20261125_GTRA_E001_8ed491aa-c800-4c9b-bced-47a4bb4fbc88-20261125222530.pdf",
+          "file_name": "20261126_PTPP_E019_60f7d85b-fe2f-4b26-b115-ed935c05c117-20261126105544.pdf",
           "role": "PRIMARY",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261125_GTRA_E001_8ed491aa-c800-4c9b-bced-47a4bb4fbc88-20261125222530.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261126_PTPP_E019_60f7d85b-fe2f-4b26-b115-ed935c05c117-20261126105544.pdf"
         },
         {
-          "file_name": "20261125_GTRA_E001_8ed491aa-c800-4c9b-bced-47a4bb4fbc88_lamp1.pdf",
+          "file_name": "20261126_PTPP_E019_60f7d85b-fe2f-4b26-b115-ed935c05c117_lamp1.pdf",
           "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261125_GTRA_E001_8ed491aa-c800-4c9b-bced-47a4bb4fbc88_lamp1-20261125222531.pdf"
-        },
-        {
-          "file_name": "20261125_GTRA_E001_8ed491aa-c800-4c9b-bced-47a4bb4fbc88_lamp2.pdf",
-          "role": "ATTACHMENT",
-          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261125_GTRA_E001_8ed491aa-c800-4c9b-bced-47a4bb4fbc88_lamp2-20261125222530.pdf"
+          "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261126_PTPP_E019_60f7d85b-fe2f-4b26-b115-ed935c05c117_lamp1-20261126105544.pdf"
         }
       ],
-      "content_hash": "4312d88a90773421dd0f07eb9f97d1a3f885cfa3f44e14c48dae5f298b0656fe",
+      "content_hash": "a7ab3940788e23f7590cf28f9c6e5237c77c3ccc9946af6dd979d685d297526c",
       "disclosure_type": "OTHER_DISCLOSURE",
       "narrative_extraction_state": "METADATA_WITH_OFFICIAL_ATTACHMENTS",
-      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261125_GTRA_E001_8ed491aa-c800-4c9b-bced-47a4bb4fbc88-20261125222530.pdf",
+      "official_detail_url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/20261126_PTPP_E019_60f7d85b-fe2f-4b26-b115-ed935c05c117-20261126105544.pdf",
       "point_in_time_eligible": true,
       "provenance_state": "OFFICIAL_BLOCK_IDX_SSR_POINT_IN_TIME",
       "publication_time_verified": true,
-      "published_at": "2026-11-25T22:25:28+07:00",
+      "published_at": "2026-11-26T10:55:42+07:00",
       "source_key": "IDX_DISCLOSURE_ANNOUNCEMENT",
       "source_verified": true,
-      "ticker": "GTRA",
-      "title": "Pengumuman RUPS [ GTRA ]"
+      "ticker": "PTPP",
+      "title": "Informasi atau Fakta Material lainnya [ PTPP ]"
     }
   ],
   "schema_version": "BLOCK_IDX_DISCLOSURE_CACHE_V5_1",
