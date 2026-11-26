@@ -5,50 +5,53 @@
     "providers": [],
     "status": "RETIRED"
   },
-  "generated_at": "2026-11-25T22:00:53.518442+00:00",
-  "target_trade_date": "2026-11-25",
+  "generated_at": "2026-11-26T21:56:38.042809+00:00",
+  "target_trade_date": "2026-11-26",
   "universe_count": 700,
   "zapi_capital_actions": {
-    "days": 77,
+    "days": 76,
     "details": {},
     "freshest": "2026-10-02",
-    "rows": 151,
-    "status": "QUOTA_EXHAUSTED: Zapi rate/monthly quota exhausted",
-    "tickers": 94,
+    "rows": 150,
+    "status": "UNAVAILABLE: Zapi HTTP 523",
+    "tickers": 93,
     "token_present": true,
     "upcoming_events": 0
   },
   "zapi_idx_foreign": {
-    "days": 39,
+    "days": 38,
     "flow_unit": "SHARES",
     "freshest": "2026-10-02",
     "refresh_mode": "INCREMENTAL_AFTER_BOOTSTRAP",
-    "rows": 21323,
-    "status": "QUOTA_EXHAUSTED: Zapi rate/monthly quota exhausted",
+    "rows": 20902,
+    "status": "UNAVAILABLE: Zapi HTTP 522",
     "target_history_days": 20,
-    "tickers": 673,
+    "tickers": 672,
     "token_present": true
   },
   "zapi_ownership": {
     "days": 3,
-    "details": {},
+    "details": {
+      "fallback_status": "UNAVAILABLE: Zapi HTTP 522",
+      "primary_error": "Zapi HTTP 522"
+    },
     "freshest": "2026-10-02",
     "latest_report_date": "2026-10-02",
     "refresh_policy": "WEEKLY_WEEKDAY_0_OR_MISSING",
     "report_periods": 3,
-    "rows": 1389,
-    "status": "QUOTA_EXHAUSTED: Zapi rate/monthly quota exhausted",
-    "tickers": 156,
+    "rows": 1383,
+    "status": "UNAVAILABLE: Zapi HTTP 522",
+    "tickers": 155,
     "token_present": true
   },
   "zapi_stock_summary": {
     "days": 1,
-    "free_float_structure_rows": 673,
+    "free_float_structure_rows": 672,
     "freshest": "2026-10-02",
-    "rows": 673,
+    "rows": 672,
     "selected_trade_date": null,
-    "status": "QUOTA_EXHAUSTED: Zapi rate/monthly quota exhausted",
-    "tickers": 673,
+    "status": "UNAVAILABLE: Zapi HTTP 523",
+    "tickers": 672,
     "token_present": true
   }
 }

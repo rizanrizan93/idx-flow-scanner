@@ -1,16 +1,16 @@
 {
   "coverage": {
     "core_complete": {
-      "pct": 95.86,
-      "tickers": 671
+      "pct": 95.71,
+      "tickers": 670
     },
     "corporate_action_events": {
       "semantics": "EVENT_DRIVEN_MARKET_WIDE_FEED_NOT_EXPECTED_FOR_EVERY_TICKER",
-      "tickers_with_events": 94
+      "tickers_with_events": 93
     },
     "foreign_flow": {
-      "pct": 96.14,
-      "tickers": 673
+      "pct": 96.0,
+      "tickers": 672
     },
     "free_float": {
       "pct": 0.0,
@@ -23,25 +23,24 @@
       "tickers": 651
     },
     "ohlcv": {
-      "pct": 99.14,
-      "tickers": 694
+      "pct": 99.71,
+      "tickers": 698
     },
     "ownership": {
-      "pct": 95.71,
-      "tickers": 670
+      "pct": 96.0,
+      "tickers": 672
     },
     "sector": {
       "pct": 100.0,
       "tickers": 700
     },
     "stock_summary": {
-      "pct": 96.14,
-      "tickers": 673
+      "pct": 96.0,
+      "tickers": 672
     }
   },
-  "generated_at": "2026-11-25T22:00:55.403519+00:00",
+  "generated_at": "2026-11-26T21:57:38.268973+00:00",
   "missing_core_sample": [
-    "AEGS",
     "ALII",
     "BAUT",
     "BBHI",
@@ -58,8 +57,10 @@
     "KLAS",
     "LOPI",
     "MDIY",
+    "MERI",
     "META",
     "MLBI",
+    "NELY",
     "NICK",
     "OPMS",
     "PJHB",
@@ -72,7 +73,6 @@
     "TBIG"
   ],
   "missing_full_sample": [
-    "AEGS",
     "AIMS",
     "AKKU",
     "AKSI",
@@ -102,9 +102,10 @@
     "KLAS",
     "LOPI",
     "MDIY",
+    "MERI",
     "META",
     "MLBI",
-    "NASA",
+    "NELY",
     "NICK",
     "OPMS",
     "PBRX",
@@ -123,10 +124,10 @@
     "UNSP"
   ],
   "provider_status": {
-    "capital_actions": "QUOTA_EXHAUSTED: Zapi rate/monthly quota exhausted",
-    "foreign_flow": "QUOTA_EXHAUSTED: Zapi rate/monthly quota exhausted",
-    "ownership": "QUOTA_EXHAUSTED: Zapi rate/monthly quota exhausted",
-    "stock_summary": "QUOTA_EXHAUSTED: Zapi rate/monthly quota exhausted"
+    "capital_actions": "UNAVAILABLE: Zapi HTTP 523",
+    "foreign_flow": "UNAVAILABLE: Zapi HTTP 522",
+    "ownership": "UNAVAILABLE: Zapi HTTP 522",
+    "stock_summary": "UNAVAILABLE: Zapi HTTP 523"
   },
   "readiness_contract": {
     "core_target_pct": 95.0,
