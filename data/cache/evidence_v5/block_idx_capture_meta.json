@@ -1,29 +1,29 @@
 {
   "announcement_rows": 10,
-  "captured_at": "2026-11-27T07:43:25.699485+07:00",
+  "captured_at": "2026-11-27T12:13:56.566648+07:00",
   "download_smoke": [
     {
-      "announcement_id": "BLOCKIDX-d6306c2dc3a0b487d0f2fc9d154b5a0d",
+      "announcement_id": "BLOCKIDX-36105e424b31cc2be7c30d47f06b396c",
       "binary_persisted": false,
-      "bytes": 843317,
+      "bytes": 11076,
       "content_type": "application/pdf",
-      "sha256": "ad9023ea9d22d91038f004f7ee76b7214fafd4b418dfb2257df7ffcc7099d7eb",
-      "ticker": "FORU",
-      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/f-d72b3010-3481-492e-b8ba-f42a0ca17323-1/FinancialStatement-2026-III-FORU.pdf"
+      "sha256": "70308e8ae9cd508f08cb1d3a99490b7e3687d1918e4d2175743a05548b0cfb70",
+      "ticker": "RLCO",
+      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_KSEI/LK-27112026-3346-00.pdf-0.pdf"
     },
     {
-      "announcement_id": "BLOCKIDX-d6306c2dc3a0b487d0f2fc9d154b5a0d",
+      "announcement_id": "BLOCKIDX-99148e0d5a7c94b387bd5301cbf6e4a9",
       "binary_persisted": false,
-      "bytes": 2004303,
+      "bytes": 780549,
       "content_type": "application/pdf",
-      "sha256": "5ffafeecff0264bfec94c917e75e6f720b5e189afface1113efcd859f7623615",
-      "ticker": "FORU",
-      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/f-d72b3010-3481-492e-b8ba-f42a0ca17323-1/1) Director Statement Letter.pdf"
+      "sha256": "1fc1f7a4cb230dd6e09648f580fc3540aedd0b71fc155fc06ff2062af7c55fbe",
+      "ticker": "AMIN",
+      "url": "https://www.idx.co.id/StaticData/NewsAndAnnouncement/ANNOUNCEMENTSTOCK/From_EREP/202611/f-81891415-9b64-4f16-81ad-fa471fa106a9-1/FinancialStatement-2026-III-AMIN.pdf"
     }
   ],
-  "financial_filing_rows": 0,
+  "financial_filing_rows": 3,
   "no_fabricated_evidence": true,
-  "ownership_rows_on_current_page": 0,
+  "ownership_rows_on_current_page": 2,
   "point_in_time_eligible_rows": 10,
   "production_scoring_changed": false,
   "source_page": "https://block.idx.id/id/berita/pengumuman"
