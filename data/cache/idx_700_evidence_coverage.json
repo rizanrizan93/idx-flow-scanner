@@ -1,16 +1,16 @@
 {
   "coverage": {
     "core_complete": {
-      "pct": 95.71,
-      "tickers": 670
+      "pct": 95.57,
+      "tickers": 669
     },
     "corporate_action_events": {
       "semantics": "EVENT_DRIVEN_MARKET_WIDE_FEED_NOT_EXPECTED_FOR_EVERY_TICKER",
       "tickers_with_events": 93
     },
     "foreign_flow": {
-      "pct": 96.0,
-      "tickers": 672
+      "pct": 95.86,
+      "tickers": 671
     },
     "free_float": {
       "pct": 0.0,
@@ -35,12 +35,13 @@
       "tickers": 700
     },
     "stock_summary": {
-      "pct": 96.0,
-      "tickers": 672
+      "pct": 95.86,
+      "tickers": 671
     }
   },
-  "generated_at": "2026-11-26T21:57:38.268973+00:00",
+  "generated_at": "2026-11-27T21:38:12.427632+00:00",
   "missing_core_sample": [
+    "AEGS",
     "ALII",
     "BAUT",
     "BBHI",
@@ -73,6 +74,7 @@
     "TBIG"
   ],
   "missing_full_sample": [
+    "AEGS",
     "AIMS",
     "AKKU",
     "AKSI",
@@ -92,7 +94,6 @@
     "DOOH",
     "ENAK",
     "FITT",
-    "GTRA",
     "HRME",
     "IDEA",
     "INOV",
@@ -124,10 +125,10 @@
     "UNSP"
   ],
   "provider_status": {
-    "capital_actions": "UNAVAILABLE: Zapi HTTP 523",
-    "foreign_flow": "UNAVAILABLE: Zapi HTTP 522",
-    "ownership": "UNAVAILABLE: Zapi HTTP 522",
-    "stock_summary": "UNAVAILABLE: Zapi HTTP 523"
+    "capital_actions": "QUOTA_EXHAUSTED: Zapi rate/monthly quota exhausted",
+    "foreign_flow": "QUOTA_EXHAUSTED: Zapi rate/monthly quota exhausted",
+    "ownership": "QUOTA_EXHAUSTED: Zapi rate/monthly quota exhausted",
+    "stock_summary": "QUOTA_EXHAUSTED: Zapi rate/monthly quota exhausted"
   },
   "readiness_contract": {
     "core_target_pct": 95.0,
